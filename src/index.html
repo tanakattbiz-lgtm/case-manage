@@ -1,0 +1,2641 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+    <title>案件管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        :root {
+            --bg: #f5f6f8;
+            --white: #ffffff;
+            --s1: #f0f2f5;
+            --s2: #e4e7ec;
+            --border: #d1d5db;
+            --border2: #9ca3af;
+            --txt: #111827;
+            --txt2: #6b7280;
+            --txt3: #9ca3af;
+            --acc: #111827;
+            --acc2: #1f2937;
+            --green: #059669;
+            --green-lt: #ecfdf5;
+            --green-bd: #a7f3d0;
+            --blue: #1d4ed8;
+            --blue-lt: #eff6ff;
+            --blue-bd: #bfdbfe;
+            --amber: #b45309;
+            --amber-lt: #fffbeb;
+            --amber-bd: #fde68a;
+            --red: #dc2626;
+            --red-lt: #fef2f2;
+            --red-bd: #fecaca;
+            --gray-lt: #f9fafb;
+            --radius: 10px;
+            --rsm: 8px;
+            --rmd: 6px;
+            --mono: 'JetBrains Mono', monospace;
+            --sans: 'Noto Sans JP', sans-serif;
+            --sh: 0 1px 3px rgba(0, 0, 0, .07), 0 1px 2px rgba(0, 0, 0, .04);
+            --sh2: 0 4px 16px rgba(0, 0, 0, .1);
+            --nh: 60px;
+            --th: 54px;
+            --sb: 228px;
+        }
+
+        html {
+            overflow: hidden;
+            height: 100%
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--txt);
+            font-family: var(--sans);
+            font-size: 15px;
+            height: 100%;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased
+        }
+
+        /* ── SVG ICONS ── */
+        .ico {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
+
+        .ico svg {
+            display: block
+        }
+
+        /* ── APP SHELL ── */
+        .app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: var(--sb);
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 12px 20px;
+            z-index: 200;
+            box-shadow: var(--sh)
+        }
+
+        .sb-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 10px;
+            margin-bottom: 28px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--acc);
+            letter-spacing: -.01em
+        }
+
+        .nav-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--rsm);
+            border: none;
+            background: none;
+            color: var(--txt2);
+            font-family: var(--sans);
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 3px;
+            transition: all .15s;
+            text-align: left;
+            line-height: 1
+        }
+
+        .nav-btn:hover {
+            background: var(--s1);
+            color: var(--txt)
+        }
+
+        .nav-btn.active {
+            background: var(--acc);
+            color: #fff;
+            font-weight: 500
+        }
+
+        .nav-btn .nav-ic {
+            width: 18px;
+            flex-shrink: 0
+        }
+
+        .nav-btn .nav-label {
+            flex: 1
+        }
+
+        .nav-badge {
+            background: var(--s2);
+            color: var(--txt2);
+            font-size: 11px;
+            font-family: var(--mono);
+            padding: 1px 7px;
+            border-radius: 20px;
+            font-weight: 500;
+            min-width: 24px;
+            text-align: center
+        }
+
+        .nav-btn.active .nav-badge {
+            background: rgba(255, 255, 255, .2);
+            color: #fff
+        }
+
+        /* ── MAIN ── */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0
+        }
+
+        .topbar {
+            height: var(--th);
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+            box-shadow: var(--sh);
+            gap: 12px
+        }
+
+        .topbar-title {
+            font-size: 17px;
+            font-weight: 700;
+            flex: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis
+        }
+
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px;
+            background: var(--bg)
+        }
+
+        /* ── VIEWS ── */
+        .view {
+            display: none
+        }
+
+        .view.active {
+            display: block;
+            animation: fadeUp .18s ease
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(5px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            padding: 0 18px;
+            height: 40px;
+            border-radius: var(--rsm);
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: var(--sans);
+            font-weight: 500;
+            transition: all .15s;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+            line-height: 1
+        }
+
+        .btn:active {
+            transform: scale(.97)
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none !important
+        }
+
+        .btn-primary {
+            background: var(--acc);
+            color: #fff;
+            border-color: var(--acc)
+        }
+
+        .btn-primary:hover {
+            background: var(--acc2)
+        }
+
+        .btn-outline {
+            background: var(--white);
+            color: var(--txt);
+            border-color: var(--border2)
+        }
+
+        .btn-outline:hover {
+            background: var(--s1)
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--txt2);
+            border-color: transparent
+        }
+
+        .btn-ghost:hover {
+            background: var(--s1);
+            color: var(--txt)
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--red);
+            border-color: var(--red-bd)
+        }
+
+        .btn-danger:hover {
+            background: var(--red-lt)
+        }
+
+        .btn-sm {
+            height: 34px;
+            padding: 0 12px;
+            font-size: 13px
+        }
+
+        .btn-xs {
+            height: 28px;
+            padding: 0 10px;
+            font-size: 12px
+        }
+
+        .btn-icon {
+            width: 40px;
+            padding: 0
+        }
+
+        .btn-icon-sm {
+            width: 34px;
+            height: 34px;
+            padding: 0
+        }
+
+        /* ── FAB ── */
+        .fab {
+            display: none;
+            position: fixed;
+            right: 18px;
+            bottom: calc(var(--nh)+16px+env(safe-area-inset-bottom));
+            width: 56px;
+            height: 56px;
+            background: var(--acc);
+            color: #fff;
+            border: none;
+            border-radius: 28px;
+            font-size: 28px;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .25);
+            z-index: 300;
+            transition: transform .2s;
+            align-items: center;
+            justify-content: center
+        }
+
+        .fab:active {
+            transform: scale(.9)
+        }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(var(--nh)+env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            z-index: 200
+        }
+
+        .bn-inner {
+            display: flex;
+            height: var(--nh)
+        }
+
+        .bnav-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            color: var(--txt3);
+            font-family: var(--sans);
+            font-size: 11px;
+            cursor: pointer;
+            transition: color .15s;
+            padding: 8px 0;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        .bnav-btn.active {
+            color: var(--acc)
+        }
+
+        /* ── SKELETON ── */
+        .sk {
+            background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 6px
+        }
+
+        @keyframes shimmer {
+            from {
+                background-position: 200%
+            }
+
+            to {
+                background-position: -200%
+            }
+        }
+
+        /* ── CARDS ── */
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh)
+        }
+
+        /* ── KPI ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px
+        }
+
+        .kpi-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+            box-shadow: var(--sh);
+            position: relative;
+            overflow: hidden
+        }
+
+        .kpi-tag {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%
+        }
+
+        .kpi-lbl {
+            font-size: 11px;
+            color: var(--txt2);
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-transform: uppercase;
+            letter-spacing: .04em
+        }
+
+        .kpi-val {
+            font-family: var(--mono);
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--txt);
+            line-height: 1;
+            margin-bottom: 3px
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: var(--txt3)
+        }
+
+        /* ── CHART ── */
+        .chart-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            box-shadow: var(--sh);
+            margin-bottom: 14px
+        }
+
+        .chart-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px
+        }
+
+        .chart-title {
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 14px
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            color: var(--txt2)
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        .chart-svg-wrap {
+            width: 100%;
+            position: relative
+        }
+
+        .chart-svg {
+            width: 100%;
+            overflow: visible;
+            display: block
+        }
+
+        .chart-x-labels {
+            display: flex;
+            margin-top: 5px
+        }
+
+        .chart-x-lbl {
+            font-size: 9px;
+            color: var(--txt3);
+            font-family: var(--mono);
+            text-align: center;
+            flex: 1;
+            overflow: hidden
+        }
+
+        /* ── STATUS CHIPS ── */
+        .status-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        .s-chip {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px 10px;
+            text-align: center;
+            box-shadow: var(--sh);
+            cursor: pointer;
+            transition: all .15s;
+            user-select: none;
+            -webkit-user-select: none
+        }
+
+        .s-chip:hover {
+            border-color: var(--acc);
+            box-shadow: var(--sh2);
+            transform: translateY(-1px)
+        }
+
+        .s-chip:active {
+            transform: scale(.97);
+            box-shadow: var(--sh)
+        }
+
+        .s-chip-cnt {
+            font-family: var(--mono);
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 5px
+        }
+
+        .s-chip-lbl {
+            font-size: 11px
+        }
+
+        /* ── RANKING ── */
+        .ranking-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            overflow: hidden;
+            margin-bottom: 14px
+        }
+
+        .ranking-hdr {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 7px
+        }
+
+        .ranking-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background .1s
+        }
+
+        .ranking-row:last-child {
+            border-bottom: none
+        }
+
+        .ranking-row:hover {
+            background: var(--s1)
+        }
+
+        .rank-num {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--txt3);
+            width: 16px;
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        .rank-num.top {
+            color: var(--amber);
+            font-weight: 700
+        }
+
+        .rank-name {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0
+        }
+
+        .rank-bar-wrap {
+            width: 80px;
+            height: 5px;
+            background: var(--s2);
+            border-radius: 3px;
+            overflow: hidden;
+            flex-shrink: 0
+        }
+
+        .rank-bar {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--acc)
+        }
+
+        .rank-val {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--txt2);
+            width: 80px;
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        .rank-mg {
+            font-size: 11px;
+            width: 38px;
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        /* ── RECENT ── */
+        .recent-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            overflow: hidden
+        }
+
+        .recent-hdr {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 700
+        }
+
+        .recent-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--border);
+            transition: background .1s
+        }
+
+        .recent-row:last-child {
+            border-bottom: none
+        }
+
+        .recent-row:hover {
+            background: var(--s1)
+        }
+
+        .rr-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0
+        }
+
+        .rr-info {
+            flex: 1;
+            min-width: 0
+        }
+
+        .rr-name {
+            font-size: 13px;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .rr-client {
+            font-size: 12px;
+            color: var(--txt2);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .rr-right {
+            text-align: right;
+            flex-shrink: 0
+        }
+
+        .rr-sales {
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--txt)
+        }
+
+        .rr-margin {
+            font-size: 11px;
+            color: var(--txt3)
+        }
+
+        /* ── BADGES ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1.4;
+            white-space: nowrap
+        }
+
+        .b-商談中 {
+            background: var(--amber-lt);
+            color: var(--amber);
+            border: 1px solid var(--amber-bd)
+        }
+
+        .b-進行中 {
+            background: var(--green-lt);
+            color: var(--green);
+            border: 1px solid var(--green-bd)
+        }
+
+        .b-完了 {
+            background: var(--blue-lt);
+            color: var(--blue);
+            border: 1px solid var(--blue-bd)
+        }
+
+        .b-停止 {
+            background: var(--red-lt);
+            color: var(--red);
+            border: 1px solid var(--red-bd)
+        }
+
+        .b-保留 {
+            background: var(--s1);
+            color: var(--txt2);
+            border: 1px solid var(--border)
+        }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 14px
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--txt3)
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--rsm);
+            padding: 0 10px 0 34px;
+            color: var(--txt);
+            font-size: 15px;
+            font-family: var(--sans);
+            outline: none;
+            height: 42px;
+            transition: border-color .15s;
+            box-shadow: var(--sh)
+        }
+
+        .search-input:focus {
+            border-color: var(--acc)
+        }
+
+        .filter-sel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--rsm);
+            padding: 0 28px 0 12px;
+            color: var(--txt);
+            font-size: 14px;
+            font-family: var(--sans);
+            outline: none;
+            height: 42px;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            box-shadow: var(--sh);
+            flex-shrink: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 9px center
+        }
+
+        .filter-sel:focus {
+            border-color: var(--acc)
+        }
+
+        /* ── TABLE ── */
+        .table-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            overflow: hidden
+        }
+
+        .tc-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .tc-title {
+            font-size: 14px;
+            font-weight: 700
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            font-size: 11px;
+            color: var(--txt2);
+            background: var(--s1);
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: .04em
+        }
+
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            vertical-align: middle
+        }
+
+        tr:last-child td {
+            border-bottom: none
+        }
+
+        tr:hover td {
+            background: var(--s1)
+        }
+
+        .td-mono {
+            font-family: var(--mono)
+        }
+
+        .td-act {
+            display: flex;
+            gap: 6px;
+            align-items: center
+        }
+
+        /* ── PROJECT CARDS (mobile) ── */
+        .proj-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+
+        .proj-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            overflow: hidden;
+            transition: box-shadow .15s
+        }
+
+        .proj-card:active {
+            box-shadow: none
+        }
+
+        .proj-card-inner {
+            padding: 16px
+        }
+
+        .proj-card-stripe {
+            height: 3px
+        }
+
+        .pc-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px
+        }
+
+        .pc-name {
+            font-size: 16px;
+            font-weight: 700;
+            flex: 1;
+            line-height: 1.35
+        }
+
+        .pc-client {
+            font-size: 13px;
+            color: var(--txt2);
+            margin-bottom: 13px
+        }
+
+        .pc-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px
+        }
+
+        .pc-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 3px
+        }
+
+        .pc-metric-lbl {
+            font-size: 11px;
+            color: var(--txt3);
+            font-weight: 500
+        }
+
+        .pc-metric-val {
+            font-family: var(--mono);
+            font-size: 15px;
+            font-weight: 500
+        }
+
+        .pc-metric-val.green {
+            color: var(--green)
+        }
+
+        .pc-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            padding-top: 13px;
+            border-top: 1px solid var(--border)
+        }
+
+        .pc-actions .btn {
+            flex: 1
+        }
+
+        /* ── CLIENTS GRID ── */
+        .clients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px
+        }
+
+        .cli-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--sh)
+        }
+
+        .cli-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px
+        }
+
+        .cli-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--acc);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0
+        }
+
+        .cli-name-text {
+            font-size: 15px;
+            font-weight: 700;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .cli-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 13px
+        }
+
+        .cli-meta-row {
+            display: flex;
+            gap: 8px;
+            font-size: 13px;
+            align-items: baseline
+        }
+
+        .cli-meta-lbl {
+            font-size: 11px;
+            color: var(--txt3);
+            width: 42px;
+            flex-shrink: 0
+        }
+
+        .cli-meta-val {
+            color: var(--txt2);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+
+        .cli-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid var(--border)
+        }
+
+        .cli-stats {
+            display: flex;
+            gap: 16px
+        }
+
+        .cli-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px
+        }
+
+        .cli-stat-lbl {
+            font-size: 11px;
+            color: var(--txt3)
+        }
+
+        .cli-stat-val {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 500
+        }
+
+        /* ── EMPTY STATE ── */
+        .empty {
+            text-align: center;
+            padding: 60px 24px
+        }
+
+        .empty-icon {
+            margin-bottom: 14px;
+            opacity: .3;
+            display: flex;
+            justify-content: center
+        }
+
+        .empty-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 6px
+        }
+
+        .empty-sub {
+            font-size: 14px;
+            color: var(--txt2);
+            margin-bottom: 20px
+        }
+
+        /* ── MODAL ── */
+        .modal-ov {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 400;
+            align-items: flex-end;
+            justify-content: center
+        }
+
+        .modal-ov.show {
+            display: flex
+        }
+
+        .modal-sheet {
+            background: var(--white);
+            width: 100%;
+            max-width: 600px;
+            max-height: 96vh;
+            border-radius: 18px 18px 0 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            animation: sheetUp .26s cubic-bezier(.4, 0, .2, 1);
+            border: 1px solid var(--border);
+            border-bottom: none;
+            padding-bottom: max(16px, env(safe-area-inset-bottom))
+        }
+
+        @keyframes sheetUp {
+            from {
+                transform: translateY(100%)
+            }
+
+            to {
+                transform: none
+            }
+        }
+
+        .sh-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--border2);
+            border-radius: 2px;
+            margin: 12px auto 0
+        }
+
+        .sh-hdr {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            z-index: 10;
+            gap: 10px
+        }
+
+        .sh-title {
+            font-size: 17px;
+            font-weight: 700
+        }
+
+        .sh-body {
+            padding: 20px
+        }
+
+        /* ── FORM ── */
+        .fg {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .fg.full {
+            grid-column: 1/-1
+        }
+
+        .form-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        label {
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 600;
+            letter-spacing: .03em
+        }
+
+        input[type=text],
+        input[type=number],
+        input[type=date],
+        select,
+        textarea {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--rsm);
+            padding: 0 13px;
+            color: var(--txt);
+            font-size: 16px;
+            font-family: var(--sans);
+            outline: none;
+            width: 100%;
+            height: 46px;
+            transition: border-color .15s;
+            -webkit-appearance: none;
+            appearance: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04)
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--acc);
+            box-shadow: 0 0 0 3px rgba(17, 24, 39, .08)
+        }
+
+        input.err,
+        select.err {
+            border-color: var(--red) !important;
+            box-shadow: none !important
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-color: var(--white);
+            padding-right: 32px
+        }
+
+        select option {
+            background: var(--white)
+        }
+
+        textarea {
+            height: auto;
+            min-height: 80px;
+            padding: 12px 13px;
+            resize: vertical;
+            line-height: 1.6
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--txt3);
+            margin-top: 2px
+        }
+
+        .profit-preview {
+            background: var(--green-lt);
+            border: 1px solid var(--green-bd);
+            border-radius: var(--rsm);
+            padding: 11px 14px;
+            font-size: 13px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 2px
+        }
+
+        .form-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0
+        }
+
+        .form-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 22px
+        }
+
+        .form-actions .btn {
+            height: 48px;
+            font-size: 15px
+        }
+
+        /* ── CLIENT INLINE (in project modal) ── */
+        .cli-select-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start
+        }
+
+        .cli-select-wrap select {
+            flex: 1
+        }
+
+        .cli-inline-form {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: var(--rsm);
+            padding: 14px;
+            margin-top: 8px;
+            display: none
+        }
+
+        .cli-inline-form.show {
+            display: block
+        }
+
+        .cli-inline-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--txt)
+        }
+
+        .cli-inline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px
+        }
+
+        .cli-inline-grid .fg.full {
+            grid-column: 1/-1
+        }
+
+        .cli-inline-grid input {
+            height: 40px;
+            font-size: 14px
+        }
+
+        .cli-inline-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+
+        /* ── TOAST ── */
+        .toast-wrap {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: min(340px, calc(100vw - 32px))
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 16px;
+            font-size: 14px;
+            box-shadow: var(--sh2);
+            animation: toastIn .22s ease
+        }
+
+        .toast.success {
+            border-left: 3px solid var(--green)
+        }
+
+        .toast.error {
+            border-left: 3px solid var(--red)
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(12px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .toast-out {
+            animation: toastOut .18s ease forwards
+        }
+
+        @keyframes toastOut {
+            to {
+                opacity: 0;
+                transform: translateX(12px)
+            }
+        }
+
+        /* ── SECTION LABEL ── */
+        .sec-lbl {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--txt2);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: .05em
+        }
+
+        .sec-lbl::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border)
+        }
+
+        /* ── RESPONSIVE ── */
+        @media(min-width:768px) {
+            .modal-sheet {
+                border-radius: 14px;
+                animation: mzoom .2s ease;
+                margin: auto;
+                border-bottom: 1px solid var(--border)
+            }
+
+            @keyframes mzoom {
+                from {
+                    opacity: 0;
+                    transform: scale(.95)
+                }
+
+                to {
+                    opacity: 1;
+                    transform: none
+                }
+            }
+
+            .modal-ov {
+                align-items: center
+            }
+
+            .sh-handle {
+                display: none
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(3, 1fr)
+            }
+
+            .status-row {
+                grid-template-columns: repeat(5, 1fr)
+            }
+
+            .proj-cards {
+                display: none
+            }
+
+            .desk-table {
+                display: block !important
+            }
+
+            .mob-only {
+                display: none !important
+            }
+
+            .clients-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))
+            }
+        }
+
+        @media(min-width:1100px) {
+            .kpi-grid {
+                grid-template-columns: repeat(6, 1fr)
+            }
+
+            .content-area {
+                padding: 24px
+            }
+        }
+
+        @media(max-width:767px) {
+            .sidebar {
+                display: none
+            }
+
+            .bottom-nav {
+                display: block
+            }
+
+            .fab {
+                display: flex
+            }
+
+            .content-area {
+                padding: 14px;
+                padding-bottom: calc(var(--nh) + 76px + env(safe-area-inset-bottom))
+            }
+
+            .topbar-actions .btn-primary {
+                display: none
+            }
+
+            .desk-table {
+                display: none
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px
+            }
+
+            .status-row {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px
+            }
+
+            .ranking-row {
+                gap: 8px
+            }
+
+            .rank-bar-wrap {
+                display: none
+            }
+
+            .form-2col {
+                grid-template-columns: 1fr
+            }
+
+            .form-2col .fg.full {
+                grid-column: 1
+            }
+
+            .cli-inline-grid {
+                grid-template-columns: 1fr
+            }
+
+            .cli-inline-grid .fg.full {
+                grid-column: 1
+            }
+
+            .clients-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media(max-width:400px) {
+            .status-row {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <nav class="sidebar">
+            <div class="sb-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <path d="M8 21h8M12 17v4" />
+                </svg>
+                案件管理
+            </div>
+            <button class="nav-btn active" id="sbnav-dashboard" onclick="showView('dashboard')">
+                <span class="nav-ic">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                </span>
+                <span class="nav-label">ダッシュボード</span>
+            </button>
+            <button class="nav-btn" id="sbnav-projects" onclick="showView('projects')">
+                <span class="nav-ic">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                </span>
+                <span class="nav-label">案件一覧</span>
+                <span class="nav-badge" id="badge-projects">0</span>
+            </button>
+            <button class="nav-btn" id="sbnav-clients" onclick="showView('clients')">
+                <span class="nav-ic">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                </span>
+                <span class="nav-label">クライアント</span>
+                <span class="nav-badge" id="badge-clients">0</span>
+            </button>
+        </nav>
+
+        <!-- ═══ MAIN ═══ -->
+        <div class="main">
+            <div class="topbar">
+                <div class="topbar-title" id="pageTitle">ダッシュボード</div>
+                <div id="topbarActions">
+                    <button class="btn btn-primary" id="topAddBtn" onclick="onTopAdd()" style="display:none">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <line x1="5" y1="12" x2="19" y2="12" />
+                        </svg>
+                        <span id="topAddLabel">追加</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-area" id="contentArea">
+
+                <!-- ══ DASHBOARD ══ -->
+                <div class="view active" id="view-dashboard">
+                    <div id="dashContent">
+                        <div class="kpi-grid" style="margin-bottom:16px">
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                            <div class="sk" style="height:78px;border-radius:var(--radius)"></div>
+                        </div>
+                        <div class="sk" style="height:200px;border-radius:var(--radius);margin-bottom:14px"></div>
+                        <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
+                    </div>
+                </div>
+
+                <!-- ══ PROJECTS ══ -->
+                <div class="view" id="view-projects">
+                    <div class="filter-bar">
+                        <div class="search-wrap">
+                            <span class="search-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </span>
+                            <input class="search-input" type="text" id="searchInput" placeholder="案件名・クライアントで検索"
+                                oninput="renderProjects()">
+                        </div>
+                        <select class="filter-sel" id="statusFilter" onchange="renderProjects()">
+                            <option value="">すべて</option>
+                            <option>商談中</option>
+                            <option>進行中</option>
+                            <option>完了</option>
+                            <option>停止</option>
+                            <option>保留</option>
+                        </select>
+                    </div>
+                    <!-- mobile -->
+                    <div class="proj-cards mob-only" id="projCards">
+                        <div class="sk" style="height:160px;border-radius:var(--radius)"></div>
+                        <div class="sk" style="height:160px;border-radius:var(--radius)"></div>
+                    </div>
+                    <!-- desktop -->
+                    <div class="desk-table" style="display:none">
+                        <div class="table-card">
+                            <div class="tc-hdr">
+                                <div class="tc-title">案件一覧</div>
+                                <div id="projCount" style="font-size:12px;color:var(--txt2)"></div>
+                            </div>
+                            <div id="projTable">
+                                <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
+                                    <div class="sk" style="height:44px;border-radius:6px"></div>
+                                    <div class="sk" style="height:44px;border-radius:6px"></div>
+                                    <div class="sk" style="height:44px;border-radius:6px"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ══ CLIENTS ══ -->
+                <div class="view" id="view-clients">
+                    <div class="clients-grid" id="clientsGrid">
+                        <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
+                        <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
+                    </div>
+                </div>
+
+            </div><!-- /content-area -->
+        </div><!-- /main -->
+
+        <!-- FAB -->
+        <button class="fab" id="fab" onclick="onTopAdd()" aria-label="追加">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+        </button>
+
+        <!-- BOTTOM NAV -->
+        <nav class="bottom-nav">
+            <div class="bn-inner">
+                <button class="bnav-btn active" id="bnav-dashboard" onclick="showView('dashboard')">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    ダッシュボード
+                </button>
+                <button class="bnav-btn" id="bnav-projects" onclick="showView('projects')">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                    案件
+                </button>
+                <button class="bnav-btn" id="bnav-clients" onclick="showView('clients')">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    クライアント
+                </button>
+            </div>
+        </nav>
+
+    </div><!-- /app -->
+
+    <!-- ═══ PROJECT MODAL ═══ -->
+    <div class="modal-ov" id="projModal" onclick="onOvClick(event,'projModal')">
+        <div class="modal-sheet">
+            <div class="sh-handle"></div>
+            <div class="sh-hdr">
+                <div class="sh-title" id="projModalTitle">案件を追加</div>
+                <button class="btn btn-icon btn-ghost" onclick="closeModal('projModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="sh-body">
+                <input type="hidden" id="p_row"><input type="hidden" id="p_id">
+                <input type="hidden" id="p_regdate">
+
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="fg">
+                        <label>案件名 *</label>
+                        <input type="text" id="p_name" placeholder="例: LP制作">
+                    </div>
+
+                    <!-- クライアント選択 + 新規登録 -->
+                    <div class="fg">
+                        <label>クライアント</label>
+                        <div class="cli-select-wrap">
+                            <select id="p_client" onchange="onCliSelectChange()"></select>
+                            <button class="btn btn-outline btn-sm" id="cliNewBtn" onclick="toggleCliInline()"
+                                type="button" style="white-space:nowrap;flex-shrink:0">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round">
+                                    <line x1="12" y1="5" x2="12" y2="19" />
+                                    <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                                新規
+                            </button>
+                        </div>
+                        <!-- インライン新規クライアント登録フォーム -->
+                        <div class="cli-inline-form" id="cliInlineForm">
+                            <div class="cli-inline-title">クライアント新規登録</div>
+                            <div class="cli-inline-grid">
+                                <div class="fg full">
+                                    <label>クライアント名 *</label>
+                                    <input type="text" id="ci_name" placeholder="例: 株式会社〇〇">
+                                </div>
+                                <div class="fg">
+                                    <label>担当者</label>
+                                    <input type="text" id="ci_contact" placeholder="例: 田中 太郎">
+                                </div>
+                                <div class="fg">
+                                    <label>メール</label>
+                                    <input type="text" id="ci_email" placeholder="">
+                                </div>
+                            </div>
+                            <div class="cli-inline-actions">
+                                <button class="btn btn-ghost btn-xs" onclick="toggleCliInline()"
+                                    type="button">キャンセル</button>
+                                <button class="btn btn-primary btn-xs" id="ciSaveBtn" onclick="saveInlineClient()"
+                                    type="button">登録して選択</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-2col">
+                        <div class="fg">
+                            <label>ステータス</label>
+                            <select id="p_status">
+                                <option>商談中</option>
+                                <option>進行中</option>
+                                <option>完了</option>
+                                <option>停止</option>
+                                <option>保留</option>
+                            </select>
+                        </div>
+                        <div class="fg">
+                            <label>日付</label>
+                            <input type="date" id="p_completeDate">
+                        </div>
+                    </div>
+
+                    <div class="form-2col">
+                        <div class="fg">
+                            <label>売上（円）</label>
+                            <input type="number" id="p_sales" placeholder="300000" min="0" oninput="updateProfitHint()">
+                        </div>
+                        <div class="fg">
+                            <label>利益（円）</label>
+                            <input type="number" id="p_profit" placeholder="未入力=利益率100%" min="0"
+                                oninput="updateProfitHint()">
+                            <div class="hint">空欄の場合、売上と同額で計算</div>
+                        </div>
+                    </div>
+
+                    <div id="profitPreview" style="display:none" class="profit-preview">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round">
+                            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                            <polyline points="16 7 22 7 22 13" />
+                        </svg>
+                        <span id="profitPreviewTxt"></span>
+                    </div>
+
+                    <div class="fg">
+                        <label>備考</label>
+                        <textarea id="p_memo" placeholder="メモ、URL など"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-outline" onclick="closeModal('projModal')">キャンセル</button>
+                    <button class="btn btn-primary" id="projSaveBtn" onclick="saveProject()">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ CLIENT MODAL ═══ -->
+    <div class="modal-ov" id="cliModal" onclick="onOvClick(event,'cliModal')">
+        <div class="modal-sheet">
+            <div class="sh-handle"></div>
+            <div class="sh-hdr">
+                <div class="sh-title" id="cliModalTitle">クライアントを追加</div>
+                <button class="btn btn-icon btn-ghost" onclick="closeModal('cliModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="sh-body">
+                <input type="hidden" id="c_row"><input type="hidden" id="c_id"><input type="hidden" id="c_regdate">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="fg">
+                        <label>クライアント名 *</label>
+                        <input type="text" id="c_name" placeholder="例: 株式会社〇〇">
+                    </div>
+                    <div class="form-2col">
+                        <div class="fg">
+                            <label>担当者名</label>
+                            <input type="text" id="c_contact" placeholder="例: 田中 太郎">
+                        </div>
+                        <div class="fg">
+                            <label>メールアドレス</label>
+                            <input type="text" id="c_email" placeholder="">
+                        </div>
+                        <div class="fg">
+                            <label>電話番号</label>
+                            <input type="text" id="c_phone" placeholder="03-xxxx-xxxx">
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label>備考</label>
+                        <textarea id="c_memo" placeholder="メモなど"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline" onclick="closeModal('cliModal')">キャンセル</button>
+                    <button class="btn btn-primary" id="cliSaveBtn" onclick="saveClient()">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-wrap" id="toastWrap"></div>
+
+    <script>
+        'use strict';
+
+        // ═══════════════════════════════════════════════
+        //  STATE
+        // ═══════════════════════════════════════════════
+        let allProjects = [];
+        let allClients = [];
+        let loaded = false;
+        let currentView = 'dashboard';
+
+        const SC = {
+            '商談中': 'var(--amber)',
+            '進行中': 'var(--green)',
+            '完了': 'var(--blue)',
+            '停止': 'var(--red)',
+            '保留': 'var(--txt3)',
+        };
+
+        const fmt = n => '¥' + Math.round(Number(n) || 0).toLocaleString('ja-JP');
+        const pct = n => Math.round(Number(n) || 0) + '%';
+        const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
+        const input2date = v => v ? v.replace(/-/g, '/') : '';
+
+        const iconPlus = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+        // ═══════════════════════════════════════════════
+        //  NAVIGATION
+        // ═══════════════════════════════════════════════
+        function showView(v) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + v).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            const sb = document.getElementById('sbnav-' + v); if (sb) sb.classList.add('active');
+            document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+            const bn = document.getElementById('bnav-' + v); if (bn) bn.classList.add('active');
+
+            const titles = { dashboard: 'ダッシュボード', projects: '案件一覧', clients: 'クライアント' };
+            document.getElementById('pageTitle').textContent = titles[v] || v;
+            currentView = v;
+            document.getElementById('contentArea').scrollTop = 0;
+
+            // topbar add button
+            const topBtn = document.getElementById('topAddBtn');
+            const topLbl = document.getElementById('topAddLabel');
+            if (v === 'dashboard') {
+                topBtn.style.display = 'none';
+            } else {
+                topBtn.style.display = '';
+                topLbl.textContent = v === 'projects' ? '案件を追加' : 'クライアントを追加';
+            }
+
+            if (loaded) {
+                if (v === 'dashboard') renderDashboard();
+                if (v === 'projects') renderProjects();
+                if (v === 'clients') renderClients();
+            }
+        }
+
+        function onTopAdd() {
+            if (currentView === 'projects') openProjModal();
+            else if (currentView === 'clients') openCliModal();
+        }
+
+        // ═══════════════════════════════════════════════
+        //  DATA LOAD
+        // ═══════════════════════════════════════════════
+        function loadAll() {
+            let pDone = false, cDone = false;
+            const check = () => { if (pDone && cDone) { loaded = true; renderDashboard(); renderProjects(); renderClients(); } };
+
+            google.script.run
+                .withSuccessHandler(d => { allProjects = d || []; setBadge('projects', allProjects.length); pDone = true; check(); })
+                .withFailureHandler(() => toast('案件データ取得エラー', 'error'))
+                .getProjects();
+
+            google.script.run
+                .withSuccessHandler(d => { allClients = d || []; setBadge('clients', allClients.length); cDone = true; check(); })
+                .withFailureHandler(() => toast('クライアントデータ取得エラー', 'error'))
+                .getClients();
+        }
+
+        function reload() {
+            google.script.run
+                .withSuccessHandler(d => { allProjects = d || []; setBadge('projects', allProjects.length); refreshCurrent(); })
+                .withFailureHandler(() => { })
+                .getProjects();
+            google.script.run
+                .withSuccessHandler(d => { allClients = d || []; setBadge('clients', allClients.length); refreshCurrent(); })
+                .withFailureHandler(() => { })
+                .getClients();
+        }
+
+        function refreshCurrent() {
+            if (currentView === 'dashboard') renderDashboard();
+            if (currentView === 'projects') renderProjects();
+            if (currentView === 'clients') renderClients();
+        }
+
+        function setBadge(view, n) {
+            const el = document.getElementById('badge-' + view);
+            if (el) el.textContent = n;
+        }
+
+        // ═══════════════════════════════════════════════
+        //  DASHBOARD
+        // ═══════════════════════════════════════════════
+        function renderDashboard() {
+            if (!loaded) return;
+            const ps = allProjects;
+            let totalSales = 0, totalProfit = 0, activeSales = 0;
+            const sc = {};
+            const mSales = {}, mProfit = {}, cmap = {};
+            // 月次集計（直近12ヶ月分を常に生成）
+            const now = new Date();
+            const monthlyKeys = [];
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthlyKeys.push(k);
+                mSales[k] = 0;
+                mProfit[k] = 0;
+            }
+
+            ps.forEach(p => {
+                const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0, st = p['ステータス'] || '不明';
+                totalSales += s; totalProfit += pr;
+                if (st === '進行中') activeSales += s;
+                sc[st] = (sc[st] || 0) + 1;
+                const ds = p['完了日'] || p['登録日'];
+                if (ds) {
+                    const d = new Date(ds);
+                    if (!isNaN(d)) {
+                        const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                        if (mSales.hasOwnProperty(k)) { mSales[k] += s; mProfit[k] += pr; }
+                    }
+                }
+                const cn = p['クライアント名'] || '未設定';
+                if (!cmap[cn]) cmap[cn] = { sales: 0, profit: 0, count: 0 };
+                cmap[cn].sales += s; cmap[cn].profit += pr; cmap[cn].count++;
+            });
+
+            const avgM = totalSales > 0 ? Math.round(totalProfit / totalSales * 100) : 0;
+            const monthly = monthlyKeys.map(k => ({
+                month: k,
+                sales: mSales[k] || 0,
+                profit: mProfit[k] || 0,
+                margin: mSales[k] ? Math.round((mProfit[k] || 0) / mSales[k] * 100) : 0
+            }));
+            const clientRanking = Object.entries(cmap).map(([n, v]) => ({ name: n, ...v, margin: v.sales > 0 ? Math.round(v.profit / v.sales * 100) : 0 })).sort((a, b) => b.sales - a.sales).slice(0, 8);
+            const recent = [...ps].sort((a, b) => new Date(b['登録日'] || 0) - new Date(a['登録日'] || 0)).slice(0, 5);
+            const maxCli = Math.max(...clientRanking.map(r => r.sales), 1);
+            const mColor = avgM >= 50 ? 'var(--green)' : avgM >= 30 ? 'var(--amber)' : 'var(--red)';
+
+            // KPI
+            let html = `<div class="kpi-grid">
+    ${kpi('総案件数', ps.length + '件', `進行中 ${sc['進行中'] || 0}件`, 'var(--acc)')}
+    ${kpi('累計売上', fmt(totalSales), '全案件', 'var(--green)')}
+    ${kpi('累計利益', fmt(totalProfit), '全案件', 'var(--blue)')}
+    ${kpi('平均利益率', pct(avgM), '全案件平均', mColor)}
+    ${kpi('進行中 売上', fmt(activeSales), '進行中案件', 'var(--amber)')}
+    ${kpi('完了件数', (sc['完了'] || 0) + '件', `商談中 ${sc['商談中'] || 0}件`, 'var(--blue)')}
+  </div>`;
+
+            // Status chips
+            html += `<div class="status-row">`;
+            ['商談中', '進行中', '完了', '停止', '保留'].forEach(s => {
+                html += `<div class="s-chip" onclick="filterByStatus('${s}')" title="${s}の案件一覧を表示">
+      <div class="s-chip-cnt" style="color:${SC[s]}">${sc[s] || 0}</div>
+      <span class="badge b-${s} s-chip-lbl">${s}</span>
+    </div>`;
+            });
+            html += `</div>`;
+
+            // Monthly bar chart
+            if (monthly.length > 0) {
+                const W = 360, H = 100, maxV = Math.max(...monthly.map(m => Math.max(m.sales, m.profit)), 1);
+                const cw = W / monthly.length, bw = Math.max(4, cw * .38);
+                let bars = '';
+                monthly.forEach((m, i) => {
+                    const cx = i * cw + cw / 2;
+                    const sh = Math.max(2, m.sales / maxV * (H - 6));
+                    const ph = Math.max(2, m.profit / maxV * (H - 6));
+                    bars += `<rect x="${cx - bw - 1}" y="${H - sh}" width="${bw}" height="${sh}" rx="3" fill="#e4e7ec"/>
+             <rect x="${cx + 1}" y="${H - ph}" width="${bw}" height="${ph}" rx="3" fill="${SC['進行中']}">
+               <title>${m.month}: 売上${fmt(m.sales)} / 利益${fmt(m.profit)}</title>
+             </rect>`;
+                });
+                html += `<div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-title">月別 売上 / 利益</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#e4e7ec;border:1px solid var(--border2)"></div>売上</div>
+          <div class="legend-item"><div class="legend-dot" style="background:${SC['進行中']}"></div>利益</div>
+        </div>
+      </div>
+      <div class="chart-svg-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+          ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>`).join('')}
+          ${bars}
+        </svg>
+        <div class="chart-x-labels">${monthly.map(m => `<div class="chart-x-lbl">${m.month.slice(5)}月</div>`).join('')}</div>
+      </div>
+    </div>`;
+
+                // Margin line chart
+                html += `<div class="chart-card">
+      <div class="chart-hdr"><div class="chart-title">利益率の推移</div></div>
+      <div class="chart-svg-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+          ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>
+          <text x="3" y="${H - H * v / 100 - 3}" font-size="8" fill="#9ca3af" font-family="JetBrains Mono">${v}%</text>`).join('')}
+          <polyline fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"
+            points="${monthly.map((m, i) => `${i * cw + cw / 2},${H - Math.max(0, m.margin / 100 * (H - 6))}`).join(' ')}"/>
+          ${monthly.map((m, i) => `<circle cx="${i * cw + cw / 2}" cy="${H - Math.max(0, m.margin / 100 * (H - 6))}" r="3.5" fill="var(--blue)" stroke="white" stroke-width="1.5"><title>${m.month}: ${m.margin}%</title></circle>`).join('')}
+        </svg>
+        <div class="chart-x-labels">${monthly.map(m => `<div class="chart-x-lbl">${m.month.slice(5)}月</div>`).join('')}</div>
+      </div>
+    </div>`;
+            } else {
+                html += `<div class="chart-card" style="text-align:center;padding:40px;color:var(--txt3);font-size:14px">案件を登録するとグラフが表示されます</div>`;
+            }
+
+            // Ranking
+            if (clientRanking.length > 0) {
+                html += `<div class="ranking-card">
+      <div class="ranking-hdr">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+        クライアント別 売上ランキング
+      </div>`;
+                clientRanking.forEach((r, i) => {
+                    const bp = Math.round(r.sales / maxCli * 100);
+                    const mc = r.margin >= 50 ? 'var(--green)' : r.margin >= 30 ? 'var(--amber)' : 'var(--red)';
+                    html += `<div class="ranking-row">
+        <div class="rank-num ${i < 3 ? 'top' : ''}">${i + 1}</div>
+        <div class="rank-name">${esc(r.name)}</div>
+        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${bp}%"></div></div>
+        <div class="rank-val">${fmt(r.sales)}</div>
+        <div class="rank-mg" style="color:${mc}">${r.margin}%</div>
+      </div>`;
+                });
+                html += `</div>`;
+            }
+
+            // Recent
+            if (recent.length > 0) {
+                html += `<div class="recent-card">
+      <div class="recent-hdr">最近の案件</div>`;
+                recent.forEach(p => {
+                    const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
+                    const m = s > 0 ? Math.round(pr / s * 100) : 100;
+                    html += `<div class="recent-row">
+        <div class="rr-dot" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
+        <div class="rr-info">
+          <div class="rr-name">${esc(p['案件名'])}</div>
+          <div class="rr-client">${esc(p['クライアント名']) || 'クライアント未設定'}</div>
+        </div>
+        <span class="badge b-${p['ステータス']}">${p['ステータス']}</span>
+        <div class="rr-right">
+          <div class="rr-sales">${fmt(s)}</div>
+          <div class="rr-margin">利益率 ${m}%</div>
+        </div>
+      </div>`;
+                });
+                html += `</div>`;
+            }
+
+            document.getElementById('dashContent').innerHTML = html;
+        }
+
+        function kpi(lbl, val, sub, color) {
+            return `<div class="kpi-card">
+    <div class="kpi-tag" style="background:${color}"></div>
+    <div class="kpi-lbl">${lbl}</div>
+    <div class="kpi-val">${val}</div>
+    ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
+  </div>`;
+        }
+
+        // ═══════════════════════════════════════════════
+        //  PROJECTS
+        // ═══════════════════════════════════════════════
+        function filterByStatus(status) {
+            showView('projects');
+            const sel = document.getElementById('statusFilter');
+            if (sel) sel.value = status;
+            const inp = document.getElementById('searchInput');
+            if (inp) inp.value = '';
+            renderProjects();
+        }
+
+        function getFiltered() {
+            const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const sf = document.getElementById('statusFilter')?.value || '';
+            return allProjects.filter(p =>
+                (!q || (p['案件名'] || '').toLowerCase().includes(q) || (p['クライアント名'] || '').toLowerCase().includes(q)) &&
+                (!sf || p['ステータス'] === sf)
+            );
+        }
+
+        function renderProjects() {
+            if (!loaded) return;
+            const f = getFiltered();
+
+            // Mobile cards
+            const ce = document.getElementById('projCards');
+            if (ce) {
+                if (f.length === 0) {
+                    ce.innerHTML = emptyState('案件がありません', '下の + ボタンから追加できます');
+                } else {
+                    ce.innerHTML = f.map(p => {
+                        const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
+                        const m = s > 0 ? Math.round(pr / s * 100) : 100;
+                        return `<div class="proj-card">
+          <div class="proj-card-stripe" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
+          <div class="proj-card-inner">
+            <div class="pc-top">
+              <div class="pc-name">${esc(p['案件名'])}</div>
+              <span class="badge b-${p['ステータス']}">${p['ステータス']}</span>
+            </div>
+            <div class="pc-client" style="display:flex;justify-content:space-between;align-items:center">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${esc(p['クライアント名']) || 'クライアント未設定'}</span>
+              <span style="color:var(--txt3);font-size:11px;font-family:var(--mono);flex-shrink:0">${p['完了日'] || '—'}</span>
+            </div>
+            <div class="pc-metrics">
+              <div class="pc-metric">
+                <div class="pc-metric-lbl">売上</div>
+                <div class="pc-metric-val green">${fmt(s)}</div>
+              </div>
+              <div class="pc-metric">
+                <div class="pc-metric-lbl">利益</div>
+                <div class="pc-metric-val">${fmt(pr)}</div>
+              </div>
+              <div class="pc-metric">
+                <div class="pc-metric-lbl">利益率</div>
+                <div class="pc-metric-val">${m}%</div>
+              </div>
+            </div>
+            <div class="pc-actions">
+              <button class="btn btn-outline btn-sm" onclick="openProjEdit(${p['_row']})">編集</button>
+              <button class="btn btn-danger btn-sm" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+            </div>
+          </div>
+        </div>`;
+                    }).join('');
+                }
+            }
+
+            // Desktop table
+            const te = document.getElementById('projTable');
+            const cnte = document.getElementById('projCount');
+            if (cnte) cnte.textContent = `${f.length}件`;
+            if (te) {
+                if (f.length === 0) {
+                    te.innerHTML = emptyState('案件がありません', '右上の「案件を追加」から登録できます');
+                } else {
+                    te.innerHTML = `<table>
+        <thead><tr>
+          <th>案件名</th><th>クライアント</th><th>ステータス</th>
+          <th style="text-align:right">売上</th>
+          <th style="text-align:right">利益</th>
+          <th style="text-align:right">利益率</th>
+          <th>日付</th><th></th>
+        </tr></thead>
+        <tbody>${f.map(p => {
+                        const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
+                        const m = s > 0 ? Math.round(pr / s * 100) : 100;
+                        const mc = m >= 50 ? 'var(--green)' : m >= 30 ? 'var(--amber)' : 'var(--red)';
+                        return `<tr>
+            <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['案件名'])}</td>
+            <td style="color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['クライアント名']) || '—'}</td>
+            <td><span class="badge b-${p['ステータス']}">${p['ステータス']}</span></td>
+            <td class="td-mono" style="text-align:right">${fmt(s)}</td>
+            <td class="td-mono" style="text-align:right">${fmt(pr)}</td>
+            <td class="td-mono" style="text-align:right;color:${mc}">${m}%</td>
+            <td style="color:var(--txt2);font-size:13px">${p['完了日'] || '—'}</td>
+            <td><div class="td-act">
+              <button class="btn btn-outline btn-xs" onclick="openProjEdit(${p['_row']})">編集</button>
+              <button class="btn btn-danger btn-xs" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+            </div></td>
+          </tr>`;
+                    }).join('')}</tbody>
+      </table>`;
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════
+        //  CLIENTS
+        // ═══════════════════════════════════════════════
+        function renderClients() {
+            if (!loaded) return;
+            const el = document.getElementById('clientsGrid');
+            if (!el) return;
+
+            const stats = {};
+            allProjects.forEach(p => {
+                const id = p['クライアントID'];
+                if (!id) return;
+                if (!stats[id]) stats[id] = { sales: 0, count: 0 };
+                stats[id].sales += Number(p['売上']) || 0;
+                stats[id].count++;
+            });
+
+            if (allClients.length === 0) {
+                el.innerHTML = emptyState('クライアントがいません', '右上の「クライアントを追加」から登録できます');
+                return;
+            }
+
+            el.innerHTML = allClients.map(c => {
+                const st = stats[c['ID']] || { sales: 0, count: 0 };
+                const init = (c['クライアント名'] || '?')[0];
+                return `<div class="cli-card">
+      <div class="cli-top">
+        <div class="cli-avatar">${esc(init)}</div>
+        <div class="cli-name-text">${esc(c['クライアント名'])}</div>
+      </div>
+      <div class="cli-meta">
+        ${c['担当者'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">担当者</span><span class="cli-meta-val">${esc(c['担当者'])}</span></div>` : ''}
+        ${c['メール'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">メール</span><span class="cli-meta-val">${esc(c['メール'])}</span></div>` : ''}
+        ${c['電話'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">電話</span><span class="cli-meta-val">${esc(c['電話'])}</span></div>` : ''}
+      </div>
+      <div class="cli-footer">
+        <div class="cli-stats">
+          <div class="cli-stat-item"><div class="cli-stat-lbl">案件数</div><div class="cli-stat-val">${st.count}件</div></div>
+          <div class="cli-stat-item"><div class="cli-stat-lbl">累計売上</div><div class="cli-stat-val">${fmt(st.sales)}</div></div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="openCliEdit(${c['_row']})">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="delCli(${c['_row']},'${esc(c['クライアント名'])}')">削除</button>
+        </div>
+      </div>
+    </div>`;
+            }).join('');
+        }
+
+        // ═══════════════════════════════════════════════
+        //  PROJECT MODAL
+        // ═══════════════════════════════════════════════
+        function populateCliSel(selectedId) {
+            const sel = document.getElementById('p_client');
+            sel.innerHTML = `<option value="">クライアントを選択</option>`;
+            allClients.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c['ID'];
+                opt.dataset.name = c['クライアント名'];
+                opt.textContent = c['クライアント名'];
+                if (c['ID'] === selectedId) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onCliSelectChange() { /* 選択時処理（将来拡張用） */ }
+
+        function toggleCliInline() {
+            const form = document.getElementById('cliInlineForm');
+            const btn = document.getElementById('cliNewBtn');
+            const show = !form.classList.contains('show');
+            form.classList.toggle('show', show);
+            if (show) {
+                ['ci_name', 'ci_contact', 'ci_email'].forEach(id => document.getElementById(id).value = '');
+                document.getElementById('ci_name').focus();
+            }
+        }
+
+        function saveInlineClient() {
+            const name = document.getElementById('ci_name').value.trim();
+            if (!name) { document.getElementById('ci_name').classList.add('err'); toast('クライアント名を入力してください', 'error'); return; }
+            document.getElementById('ci_name').classList.remove('err');
+
+            const btn = document.getElementById('ciSaveBtn');
+            btn.disabled = true; btn.textContent = '登録中...';
+
+            const cli = {
+                'クライアント名': name,
+                '担当者': document.getElementById('ci_contact').value,
+                'メール': document.getElementById('ci_email').value,
+                '電話': '', '備考': '', '登録日': '',
+            };
+
+            google.script.run
+                .withSuccessHandler(res => {
+                    btn.disabled = false; btn.textContent = '登録して選択';
+                    // reload clients then select the new one
+                    google.script.run
+                        .withSuccessHandler(data => {
+                            allClients = data || [];
+                            setBadge('clients', allClients.length);
+                            populateCliSel(res.id);
+                            // auto-select the new client
+                            const sel = document.getElementById('p_client');
+                            sel.value = res.id;
+                            toggleCliInline();
+                            toast(`「${name}」を登録しました`, 'success');
+                        })
+                        .withFailureHandler(() => { })
+                        .getClients();
+                })
+                .withFailureHandler(() => { btn.disabled = false; btn.textContent = '登録して選択'; toast('登録に失敗しました', 'error'); })
+                .addClient(cli);
+        }
+
+        function openProjModal() {
+            document.getElementById('projModalTitle').textContent = '案件を追加';
+            ['p_row', 'p_id', 'p_regdate'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('p_completeDate').value = new Date().toISOString().split('T')[0];
+            ['p_name', 'p_sales', 'p_profit', 'p_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
+            document.getElementById('p_status').value = '商談中';
+            document.getElementById('profitPreview').style.display = 'none';
+            const f = document.getElementById('cliInlineForm'); f.classList.remove('show');
+            populateCliSel('');
+            document.getElementById('projModal').classList.add('show');
+            setTimeout(() => document.getElementById('p_name').focus(), 150);
+        }
+
+        function openProjEdit(row) {
+            const p = allProjects.find(x => x['_row'] === row);
+            if (!p) return;
+            document.getElementById('projModalTitle').textContent = '案件を編集';
+            document.getElementById('p_row').value = row;
+            document.getElementById('p_id').value = p['ID'];
+            document.getElementById('p_regdate').value = p['登録日'] || '';
+            document.getElementById('p_completeDate').value = date2input(p['完了日']);
+            document.getElementById('p_name').value = p['案件名'] || '';
+            document.getElementById('p_sales').value = p['売上'] || '';
+            // 利益=売上の場合は空欄で表示（デフォルト100%）
+            const sameAsS = Number(p['利益']) === Number(p['売上']);
+            document.getElementById('p_profit').value = sameAsS ? '' : (p['利益'] || '');
+            document.getElementById('p_status').value = p['ステータス'] || '商談中';
+            document.getElementById('p_memo').value = p['備考'] || '';
+            document.getElementById('cliInlineForm').classList.remove('show');
+            populateCliSel(p['クライアントID'] || '');
+            updateProfitHint();
+            document.getElementById('projModal').classList.add('show');
+        }
+
+        function updateProfitHint() {
+            const s = Number(document.getElementById('p_sales').value) || 0;
+            const pv = document.getElementById('p_profit').value;
+            const prev = document.getElementById('profitPreview');
+            if (s > 0) {
+                const p = pv === '' || pv === null ? s : Number(pv) || 0;
+                const m = Math.round(p / s * 100);
+                document.getElementById('profitPreviewTxt').textContent = `売上 ${fmt(s)} / 利益 ${fmt(p)} → 利益率 ${m}%`;
+                prev.style.display = 'flex';
+            } else {
+                prev.style.display = 'none';
+            }
+        }
+
+        function saveProject() {
+            const name = document.getElementById('p_name').value.trim();
+            if (!name) { document.getElementById('p_name').classList.add('err'); toast('案件名を入力してください', 'error'); return; }
+            document.getElementById('p_name').classList.remove('err');
+
+            const btn = document.getElementById('projSaveBtn');
+            btn.disabled = true; btn.textContent = '保存中...';
+
+            const sel = document.getElementById('p_client');
+            const selOpt = sel.options[sel.selectedIndex];
+            const cliId = sel.value || '';
+            const cliName = cliId ? (selOpt?.dataset?.name || selOpt?.textContent || '') : '';
+            const row = document.getElementById('p_row').value;
+
+            const proj = {
+                'ID': document.getElementById('p_id').value,
+                '案件名': name,
+                'クライアントID': cliId,
+                'クライアント名': cliName,
+                '売上': document.getElementById('p_sales').value || 0,
+                '利益': document.getElementById('p_profit').value,
+                'ステータス': document.getElementById('p_status').value,
+                '完了日': input2date(document.getElementById('p_completeDate').value),
+                '備考': document.getElementById('p_memo').value,
+                '登録日': document.getElementById('p_regdate').value,
+                '_row': row ? Number(row) : undefined,
+            };
+
+            const ok = () => { btn.disabled = false; btn.textContent = '保存する'; closeModal('projModal'); toast('保存しました', 'success'); reload(); };
+            const ng = () => { btn.disabled = false; btn.textContent = '保存する'; toast('保存に失敗しました', 'error'); };
+
+            if (row) google.script.run.withSuccessHandler(ok).withFailureHandler(ng).updateProject(proj);
+            else google.script.run.withSuccessHandler(ok).withFailureHandler(ng).addProject(proj);
+        }
+
+        function delProj(row, name) {
+            if (!confirm(`「${name}」を削除しますか？`)) return;
+            google.script.run
+                .withSuccessHandler(() => { toast('削除しました', 'success'); reload(); })
+                .withFailureHandler(() => toast('削除に失敗しました', 'error'))
+                .deleteProject(row);
+        }
+
+        // ═══════════════════════════════════════════════
+        //  CLIENT MODAL
+        // ═══════════════════════════════════════════════
+        function openCliModal() {
+            document.getElementById('cliModalTitle').textContent = 'クライアントを追加';
+            ['c_row', 'c_id', 'c_regdate'].forEach(id => document.getElementById(id).value = '');
+            ['c_name', 'c_contact', 'c_email', 'c_phone', 'c_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
+            document.getElementById('cliModal').classList.add('show');
+            setTimeout(() => document.getElementById('c_name').focus(), 150);
+        }
+
+        function openCliEdit(row) {
+            const c = allClients.find(x => x['_row'] === row);
+            if (!c) return;
+            document.getElementById('cliModalTitle').textContent = 'クライアントを編集';
+            document.getElementById('c_row').value = row;
+            document.getElementById('c_id').value = c['ID'];
+            document.getElementById('c_regdate').value = c['登録日'] || '';
+            document.getElementById('c_name').value = c['クライアント名'] || '';
+            document.getElementById('c_contact').value = c['担当者'] || '';
+            document.getElementById('c_email').value = c['メール'] || '';
+            document.getElementById('c_phone').value = c['電話'] || '';
+            document.getElementById('c_memo').value = c['備考'] || '';
+            document.getElementById('cliModal').classList.add('show');
+        }
+
+        function saveClient() {
+            const name = document.getElementById('c_name').value.trim();
+            if (!name) { document.getElementById('c_name').classList.add('err'); toast('クライアント名を入力してください', 'error'); return; }
+            document.getElementById('c_name').classList.remove('err');
+
+            const btn = document.getElementById('cliSaveBtn');
+            btn.disabled = true; btn.textContent = '保存中...';
+            const row = document.getElementById('c_row').value;
+            const cli = {
+                'ID': document.getElementById('c_id').value,
+                'クライアント名': name,
+                '担当者': document.getElementById('c_contact').value,
+                'メール': document.getElementById('c_email').value,
+                '電話': document.getElementById('c_phone').value,
+                '備考': document.getElementById('c_memo').value,
+                '登録日': document.getElementById('c_regdate').value,
+                '_row': row ? Number(row) : undefined,
+            };
+
+            const ok = () => { btn.disabled = false; btn.textContent = '保存する'; closeModal('cliModal'); toast('保存しました', 'success'); reload(); };
+            const ng = () => { btn.disabled = false; btn.textContent = '保存する'; toast('保存に失敗しました', 'error'); };
+
+            if (row) google.script.run.withSuccessHandler(ok).withFailureHandler(ng).updateClient(cli);
+            else google.script.run.withSuccessHandler(ok).withFailureHandler(ng).addClient(cli);
+        }
+
+        function delCli(row, name) {
+            if (!confirm(`「${name}」を削除しますか？`)) return;
+            google.script.run
+                .withSuccessHandler(() => { toast('削除しました', 'success'); reload(); })
+                .withFailureHandler(() => toast('削除に失敗しました', 'error'))
+                .deleteClient(row);
+        }
+
+        // ═══════════════════════════════════════════════
+        //  MODAL / UTIL
+        // ═══════════════════════════════════════════════
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+        function onOvClick(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('projModal'); closeModal('cliModal'); } });
+
+        function toast(msg, type = 'success') {
+            const w = document.getElementById('toastWrap');
+            const el = document.createElement('div');
+            el.className = `toast ${type}`;
+            el.textContent = msg;
+            w.appendChild(el);
+            setTimeout(() => { el.classList.add('toast-out'); setTimeout(() => el.remove(), 200); }, 3000);
+        }
+
+        function emptyState(title, sub) {
+            return `<div class="empty">
+    <div class="empty-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-sub">${sub}</div>
+  </div>`;
+        }
+
+        // ═══════════════════════════════════════════════
+        //  INIT
+        // ═══════════════════════════════════════════════
+        window.addEventListener('load', () => {
+            showView('dashboard');
+            loadAll();
+        });
+    </script>
+</body>
+
+</html>
