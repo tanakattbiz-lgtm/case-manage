@@ -529,17 +529,19 @@
         }
 
         .chart-x-labels {
-            display: flex;
-            margin-top: 5px
+            display: none;
         }
 
-        .chart-x-lbl {
-            font-size: 9px;
-            color: var(--txt3);
-            font-family: var(--mono);
-            text-align: center;
-            flex: 1;
-            overflow: hidden
+        .chart-canvas-wrap {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            margin-top: 10px;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
         }
 
         /* ── STATUS CHIPS ── */
@@ -1615,6 +1617,7 @@
             }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -1976,6 +1979,7 @@
         let allClients = [];
         let loaded = false;
         let currentView = 'dashboard';
+        let dashboardFilter = { year: '', month: '' }; // Added for filtering
 
         const SC = {
             '商談中': 'var(--amber)',
@@ -2080,7 +2084,30 @@
             let totalSales = 0, totalProfit = 0, activeSales = 0;
             const sc = {};
             const mSales = {}, mProfit = {}, cmap = {};
-            // 月次集計（直近12ヶ月分を常に生成）
+            // ─── FILTER UI ───
+            const years = [...new Set(ps.map(p => {
+                const d = new Date(p['完了日'] || p['登録日']);
+                return isNaN(d) ? null : d.getFullYear();
+            }).filter(y => y))].sort((a, b) => b - a);
+
+            let filterHtml = `<div class="filter-bar" style="margin-bottom:16px; background:var(--white); padding:10px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--sh);">
+                <div style="font-size:12px; font-weight:700; margin-bottom:5px; color:var(--txt2);">期間で絞り込み</div>
+                <div style="display:flex; gap:8px;">
+                    <select class="filter-sel" style="flex:1;" onchange="updateDashFilter('year', this.value)">
+                        <option value="">すべての年</option>
+                        ${years.map(y => `<option value="${y}" ${dashboardFilter.year == y ? 'selected' : ''}>${y}年</option>`).join('')}
+                    </select>
+                    <select class="filter-sel" style="flex:1;" onchange="updateDashFilter('month', this.value)">
+                        <option value="">すべての月</option>
+                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => {
+                const val = String(m).padStart(2, '0');
+                return `<option value="${val}" ${dashboardFilter.month == val ? 'selected' : ''}>${m}月</option>`;
+            }).join('')}
+                    </select>
+                </div>
+            </div>`;
+
+            // ─── AGGREGATION SETUP ───
             const now = new Date();
             const monthlyKeys = [];
             for (let i = 11; i >= 0; i--) {
@@ -2091,7 +2118,18 @@
                 mProfit[k] = 0;
             }
 
-            ps.forEach(p => {
+            // ─── AGGREGATION ───
+            const filteredPs = ps.filter(p => {
+                const ds = p['完了日'] || p['登録日'];
+                if (!ds) return dashboardFilter.year === '' && dashboardFilter.month === '';
+                const d = new Date(ds);
+                if (isNaN(d)) return false;
+                const yMatch = dashboardFilter.year === '' || d.getFullYear().toString() === dashboardFilter.year;
+                const mMatch = dashboardFilter.month === '' || (d.getMonth() + 1).toString().padStart(2, '0') === dashboardFilter.month;
+                return yMatch && mMatch;
+            });
+
+            filteredPs.forEach(p => {
                 const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0, st = p['ステータス'] || '不明';
                 totalSales += s; totalProfit += pr;
                 if (st === '進行中') activeSales += s;
@@ -2117,17 +2155,18 @@
                 margin: mSales[k] ? Math.round((mProfit[k] || 0) / mSales[k] * 100) : 0
             }));
             const clientRanking = Object.entries(cmap).map(([n, v]) => ({ name: n, ...v, margin: v.sales > 0 ? Math.round(v.profit / v.sales * 100) : 0 })).sort((a, b) => b.sales - a.sales).slice(0, 8);
-            const recent = [...ps].sort((a, b) => new Date(b['登録日'] || 0) - new Date(a['登録日'] || 0)).slice(0, 5);
+            const recent = [...filteredPs].sort((a, b) => new Date(b['登録日'] || 0) - new Date(a['登録日'] || 0)).slice(0, 5);
             const maxCli = Math.max(...clientRanking.map(r => r.sales), 1);
             const mColor = avgM >= 50 ? 'var(--green)' : avgM >= 30 ? 'var(--amber)' : 'var(--red)';
 
             // KPI
-            let html = `<div class="kpi-grid">
-    ${kpi('総案件数', ps.length + '件', `進行中 ${sc['進行中'] || 0}件`, 'var(--acc)')}
-    ${kpi('累計売上', fmt(totalSales), '全案件', 'var(--green)')}
-    ${kpi('累計利益', fmt(totalProfit), '全案件', 'var(--blue)')}
-    ${kpi('平均利益率', pct(avgM), '全案件平均', mColor)}
-    ${kpi('進行中 売上', fmt(activeSales), '進行中案件', 'var(--amber)')}
+            let html = filterHtml;
+            html += `<div class="kpi-grid">
+    ${kpi('対象案件数', filteredPs.length + '件', `進行中 ${sc['進行中'] || 0}件`, 'var(--acc)')}
+    ${kpi('売上計', fmt(totalSales), dashboardFilter.year ? `${dashboardFilter.year}年${dashboardFilter.month ? dashboardFilter.month + '月' : ''}` : '期間合計', 'var(--green)')}
+    ${kpi('利益計', fmt(totalProfit), dashboardFilter.year ? `${dashboardFilter.year}年${dashboardFilter.month ? dashboardFilter.month + '月' : ''}` : '期間合計', 'var(--blue)')}
+    ${kpi('平均利益率', pct(avgM), '期間中平均', mColor)}
+    ${kpi('進行中 売上', fmt(activeSales), '絞り込み内', 'var(--amber)')}
     ${kpi('完了件数', (sc['完了'] || 0) + '件', `商談中 ${sc['商談中'] || 0}件`, 'var(--blue)')}
   </div>`;
 
@@ -2141,60 +2180,25 @@
             });
             html += `</div>`;
 
-            // Monthly bar chart
+            // Monthly aggregation
             if (monthly.length > 0) {
-                const W = 360, H = 100, maxV = Math.max(...monthly.map(m => Math.max(m.sales, m.profit)), 1);
-                const cw = W / monthly.length, bw = Math.max(4, cw * .38);
-                let bars = '', labels = '';
-                monthly.forEach((m, i) => {
-                    const cx = i * cw + cw / 2;
-                    const sh = Math.max(2, m.sales / maxV * (H - 6));
-                    const ph = Math.max(2, m.profit / maxV * (H - 6));
-                    bars += `<rect x="${cx - bw - 1}" y="${H - sh}" width="${bw}" height="${sh}" rx="3" fill="#e4e7ec"/>
-                             <rect x="${cx + 1}" y="${H - ph}" width="${bw}" height="${ph}" rx="3" fill="${SC['進行中']}">
-                               <title>${m.month}: 売上${fmt(m.sales)} / 利益${fmt(m.profit)}</title>
-                             </rect>`;
-                    labels += `<text x="${cx}" y="${H + 14}" font-size="9" fill="var(--txt3)" text-anchor="middle" font-family="JetBrains Mono">${m.month.slice(5)}月</text>`;
-                });
-                html += `<div class="chart-card">
-      <div class="chart-hdr">
-        <div class="chart-title">月別 売上 / 利益</div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:#e4e7ec;border:1px solid var(--border2)"></div>売上</div>
-          <div class="legend-item"><div class="legend-dot" style="background:${SC['進行中']}"></div>利益</div>
-        </div>
-      </div>
-      <div class="chart-svg-wrap">
-        <svg class="chart-svg" viewBox="0 0 ${W} ${H + 20}" style="height:${H + 20}px">
-          ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>`).join('')}
-          ${bars}
-          ${labels}
-        </svg>
-      </div>
-    </div>`;
-
-                // Margin line chart
-                let dots = '', linePoints = '', marginLabels = '';
-                monthly.forEach((m, i) => {
-                    const cx = i * cw + cw / 2;
-                    const cy = H - Math.max(0, m.margin / 100 * (H - 6));
-                    linePoints += `${cx},${cy} `;
-                    dots += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--blue)" stroke="white" stroke-width="1.5"><title>${m.month}: ${m.margin}%</title></circle>`;
-                    marginLabels += `<text x="${cx}" y="${H + 14}" font-size="9" fill="var(--txt3)" text-anchor="middle" font-family="JetBrains Mono">${m.month.slice(5)}月</text>`;
-                });
+                const labels = monthly.map(m => m.month.slice(5) + '月');
+                const salesData = monthly.map(m => m.sales);
+                const profitData = monthly.map(m => m.profit);
+                const marginData = monthly.map(m => m.margin);
 
                 html += `<div class="chart-card">
-      <div class="chart-hdr"><div class="chart-title">利益率の推移</div></div>
-      <div class="chart-svg-wrap">
-        <svg class="chart-svg" viewBox="0 0 ${W} ${H + 20}" style="height:${H + 20}px">
-          ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>
-          <text x="3" y="${H - H * v / 100 - 3}" font-size="8" fill="#9ca3af" font-family="JetBrains Mono">${v}%</text>`).join('')}
-          <polyline fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" points="${linePoints.trim()}"/>
-          ${dots}
-          ${marginLabels}
-        </svg>
-      </div>
-    </div>`;
+                    <div class="chart-hdr">
+                        <div class="chart-title">月別 売上 / 利益</div>
+                    </div>
+                    <div class="chart-canvas-wrap"><canvas id="barChart"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-hdr">
+                        <div class="chart-title">利益率の推移 (%)</div>
+                    </div>
+                    <div class="chart-canvas-wrap"><canvas id="lineChart"></canvas></div>
+                </div>`;
             } else {
                 html += `<div class="chart-card" style="text-align:center;padding:40px;color:var(--txt3);font-size:14px">案件を登録するとグラフが表示されます</div>`;
             }
@@ -2244,6 +2248,80 @@
             }
 
             document.getElementById('dashContent').innerHTML = html;
+
+            // Chart initialization after DOM update
+            if (monthly.length > 0) {
+                const labels = monthly.map(m => m.month.slice(5) + '月');
+                const salesData = monthly.map(m => m.sales);
+                const profitData = monthly.map(m => m.profit);
+                const marginData = monthly.map(m => m.margin);
+
+                const ctx1 = document.getElementById('barChart').getContext('2d');
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '売上',
+                                data: salesData,
+                                backgroundColor: '#e4e7ec',
+                                borderRadius: 4,
+                                barPercentage: 0.6
+                            },
+                            {
+                                label: '利益',
+                                data: profitData,
+                                backgroundColor: SC['進行中'],
+                                borderRadius: 4,
+                                barPercentage: 0.6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } }
+                        }
+                    }
+                });
+
+                const ctx2 = document.getElementById('lineChart').getContext('2d');
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '利益率',
+                            data: marginData,
+                            borderColor: 'var(--blue)',
+                            backgroundColor: 'rgba(29, 78, 216, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointBackgroundColor: 'white',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { min: 0, max: 100, ticks: { font: { size: 10 }, stepSize: 25, callback: v => v + '%' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateDashFilter(key, val) {
+            dashboardFilter[key] = val;
+            renderDashboard();
         }
 
         function kpi(lbl, val, sub, color) {
