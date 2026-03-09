@@ -826,12 +826,12 @@
 
         .search-icon {
             position: absolute;
-            left: 10px;
+            left: 12px;
             top: 50%;
             transform: translateY(-50%);
             pointer-events: none;
             color: var(--txt3);
-            z-index: 1
+            z-index: 3
         }
 
         .search-input {
@@ -839,7 +839,7 @@
             background: var(--white);
             border: 1px solid var(--border);
             border-radius: var(--rsm);
-            padding: 0 10px 0 34px;
+            padding: 0 10px 0 44px !important;
             color: var(--txt);
             font-size: 15px;
             font-family: var(--sans);
@@ -847,7 +847,9 @@
             height: 42px;
             transition: border-color .15s;
             box-shadow: var(--sh);
-            display: block
+            display: block;
+            position: relative;
+            z-index: 2
         }
 
         .search-input:focus {
@@ -2143,15 +2145,16 @@
             if (monthly.length > 0) {
                 const W = 360, H = 100, maxV = Math.max(...monthly.map(m => Math.max(m.sales, m.profit)), 1);
                 const cw = W / monthly.length, bw = Math.max(4, cw * .38);
-                let bars = '';
+                let bars = '', labels = '';
                 monthly.forEach((m, i) => {
                     const cx = i * cw + cw / 2;
                     const sh = Math.max(2, m.sales / maxV * (H - 6));
                     const ph = Math.max(2, m.profit / maxV * (H - 6));
                     bars += `<rect x="${cx - bw - 1}" y="${H - sh}" width="${bw}" height="${sh}" rx="3" fill="#e4e7ec"/>
-             <rect x="${cx + 1}" y="${H - ph}" width="${bw}" height="${ph}" rx="3" fill="${SC['進行中']}">
-               <title>${m.month}: 売上${fmt(m.sales)} / 利益${fmt(m.profit)}</title>
-             </rect>`;
+                             <rect x="${cx + 1}" y="${H - ph}" width="${bw}" height="${ph}" rx="3" fill="${SC['進行中']}">
+                               <title>${m.month}: 売上${fmt(m.sales)} / 利益${fmt(m.profit)}</title>
+                             </rect>`;
+                    labels += `<text x="${cx}" y="${H + 14}" font-size="9" fill="var(--txt3)" text-anchor="middle" font-family="JetBrains Mono">${m.month.slice(5)}月</text>`;
                 });
                 html += `<div class="chart-card">
       <div class="chart-hdr">
@@ -2162,26 +2165,34 @@
         </div>
       </div>
       <div class="chart-svg-wrap">
-        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${H + 20}" style="height:${H + 20}px">
           ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>`).join('')}
           ${bars}
+          ${labels}
         </svg>
-        <div class="chart-x-labels">${monthly.map(m => `<div class="chart-x-lbl">${m.month.slice(5)}月</div>`).join('')}</div>
       </div>
     </div>`;
 
                 // Margin line chart
+                let dots = '', linePoints = '', marginLabels = '';
+                monthly.forEach((m, i) => {
+                    const cx = i * cw + cw / 2;
+                    const cy = H - Math.max(0, m.margin / 100 * (H - 6));
+                    linePoints += `${cx},${cy} `;
+                    dots += `<circle cx="${cx}" cy="${cy}" r="3.5" fill="var(--blue)" stroke="white" stroke-width="1.5"><title>${m.month}: ${m.margin}%</title></circle>`;
+                    marginLabels += `<text x="${cx}" y="${H + 14}" font-size="9" fill="var(--txt3)" text-anchor="middle" font-family="JetBrains Mono">${m.month.slice(5)}月</text>`;
+                });
+
                 html += `<div class="chart-card">
       <div class="chart-hdr"><div class="chart-title">利益率の推移</div></div>
       <div class="chart-svg-wrap">
-        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" style="height:${H}px">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${H + 20}" style="height:${H + 20}px">
           ${[0, 25, 50, 75, 100].map(v => `<line x1="0" y1="${H - H * v / 100}" x2="${W}" y2="${H - H * v / 100}" stroke="#f0f2f5" stroke-width="1"/>
           <text x="3" y="${H - H * v / 100 - 3}" font-size="8" fill="#9ca3af" font-family="JetBrains Mono">${v}%</text>`).join('')}
-          <polyline fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round"
-            points="${monthly.map((m, i) => `${i * cw + cw / 2},${H - Math.max(0, m.margin / 100 * (H - 6))}`).join(' ')}"/>
-          ${monthly.map((m, i) => `<circle cx="${i * cw + cw / 2}" cy="${H - Math.max(0, m.margin / 100 * (H - 6))}" r="3.5" fill="var(--blue)" stroke="white" stroke-width="1.5"><title>${m.month}: ${m.margin}%</title></circle>`).join('')}
+          <polyline fill="none" stroke="var(--blue)" stroke-width="2" stroke-linejoin="round" points="${linePoints.trim()}"/>
+          ${dots}
+          ${marginLabels}
         </svg>
-        <div class="chart-x-labels">${monthly.map(m => `<div class="chart-x-lbl">${m.month.slice(5)}月</div>`).join('')}</div>
       </div>
     </div>`;
             } else {
