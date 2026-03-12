@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
     <title>案件管理</title>
@@ -85,11 +85,19 @@
             display: block
         }
 
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
         /* ── APP SHELL ── */
         .app {
             display: flex;
-            height: 100vh;
-            overflow: hidden
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: var(--bg)
         }
 
         /* ── SIDEBAR ── */
@@ -98,7 +106,7 @@
             background: var(--white);
             border-right: 1px solid var(--border);
             flex-shrink: 0;
-            display: flex;
+            display: none; /* Default: Hidden */
             flex-direction: column;
             padding: 20px 12px 20px;
             z-index: 200;
@@ -1251,7 +1259,7 @@
 
         .form-2col {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr; /* Default mobile */
             gap: 14px
         }
 
@@ -1386,7 +1394,7 @@
 
         .cli-inline-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr; /* Default mobile */
             gap: 10px;
             margin-bottom: 12px
         }
@@ -1483,138 +1491,56 @@
         }
 
         /* ── RESPONSIVE ── */
-        @media(min-width:768px) {
-            .modal-sheet {
-                border-radius: 14px;
-                animation: mzoom .2s ease;
-                margin: auto;
-                border-bottom: 1px solid var(--border)
-            }
-
-            @keyframes mzoom {
-                from {
-                    opacity: 0;
-                    transform: scale(.95)
-                }
-
-                to {
-                    opacity: 1;
-                    transform: none
-                }
-            }
-
-            .modal-ov {
-                align-items: center
-            }
-
-            .sh-handle {
-                display: none
-            }
-
-            .kpi-grid {
-                grid-template-columns: repeat(3, 1fr)
-            }
-
-            .status-row {
-                grid-template-columns: repeat(5, 1fr)
-            }
-
-            .proj-cards {
-                display: none
-            }
-
-            .desk-table {
-                display: block !important
-            }
-
-            .mob-only {
-                display: none !important
-            }
-
-            .clients-grid {
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr))
-            }
+        /* Default: Mobile (< 768px) */
+        .sidebar { display: none !important; }
+        .bottom-nav { display: flex !important; }
+        .fab { display: flex !important; }
+        .topbar-actions .btn-primary { display: none !important; }
+        .desk-table { display: none !important; }
+        .mob-only { display: block !important; }
+        
+        .content-area { 
+            padding: 12px; 
+            padding-bottom: 100px; /* Space for bottom nav */
+            overflow-x: hidden;
         }
 
+        .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .status-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .ranking-row { gap: 8px; }
+        .rank-bar-wrap { display: none; }
+        .chart-row { grid-template-columns: 1fr; gap: 12px; }
+        .chart-canvas-wrap { height: 200px; }
+        .modal-sheet { width: 100%; border-radius: 20px 20px 0 0; margin-top: auto; }
+
+        /* Tablet & Desktop (>= 850px) */
+        @media(min-width:850px) {
+            .sidebar { display: flex !important; width: 240px; }
+            .bottom-nav { display: none !important; }
+            .fab { display: none !important; }
+            .topbar-actions .btn-primary { display: flex !important; }
+            .desk-table { display: block !important; }
+            .mob-only { display: none !important; }
+            
+            .content-area { padding: 24px; }
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .status-row { grid-template-columns: repeat(5, 1fr); }
+            .form-2col, .cli-inline-grid { grid-template-columns: 1fr 1fr; }
+            .clients-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+            .chart-row { grid-template-columns: 1fr 1fr; gap: 14px; }
+            .modal-sheet { width: min(90vw, 560px); border-radius: 14px; margin: auto; }
+            .sh-handle { display: none; }
+            .modal-ov { align-items: center; }
+        }
+
+        /* Large Desktop (>= 1100px) */
         @media(min-width:1100px) {
-            .kpi-grid {
-                grid-template-columns: repeat(6, 1fr)
-            }
-
-            .content-area {
-                padding: 24px
-            }
-        }
-
-        @media(max-width:767px) {
-            .sidebar {
-                display: none
-            }
-
-            .bottom-nav {
-                display: block
-            }
-
-            .fab {
-                display: flex
-            }
-
-            .content-area {
-                padding: 14px;
-                padding-bottom: calc(var(--nh) + 76px + env(safe-area-inset-bottom))
-            }
-
-            .topbar-actions .btn-primary {
-                display: none
-            }
-
-            .desk-table {
-                display: none
-            }
-
-            .kpi-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px
-            }
-
-            .status-row {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 8px
-            }
-
-            .ranking-row {
-                gap: 8px
-            }
-
-            .rank-bar-wrap {
-                display: none
-            }
-
-            .form-2col {
-                grid-template-columns: 1fr
-            }
-
-            .form-2col .fg.full {
-                grid-column: 1
-            }
-
-            .cli-inline-grid {
-                grid-template-columns: 1fr
-            }
-
-            .cli-inline-grid .fg.full {
-                grid-column: 1
-            }
-
-            .clients-grid {
-                grid-template-columns: 1fr
-            }
+            .kpi-grid { grid-template-columns: repeat(6, 1fr); }
         }
 
         @media(max-width:400px) {
-            .status-row {
-                grid-template-columns: repeat(2, 1fr)
-            }
+            .status-row { grid-template-columns: repeat(2, 1fr); }
+            .kpi-grid { grid-template-columns: 1fr; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2118,6 +2044,9 @@
                 mProfit[k] = 0;
             }
 
+            let leadTimes = [];
+            let projectSizes = { 'S': 0, 'M': 0, 'L': 0, 'XL': 0 }; // Small, Medium, Large, Extra Large
+
             // ─── AGGREGATION ───
             const filteredPs = ps.filter(p => {
                 const ds = p['完了日'] || p['登録日'];
@@ -2131,43 +2060,76 @@
 
             filteredPs.forEach(p => {
                 const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0, st = p['ステータス'] || '不明';
-                totalSales += s; totalProfit += pr;
-                if (st === '進行中') activeSales += s;
                 sc[st] = (sc[st] || 0) + 1;
-                const ds = p['完了日'] || p['登録日'];
-                if (ds) {
-                    const d = new Date(ds);
-                    if (!isNaN(d)) {
-                        const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-                        if (mSales.hasOwnProperty(k)) { mSales[k] += s; mProfit[k] += pr; }
+                if (st === '進行中') activeSales += s;
+
+                if (st === '完了') {
+                    totalSales += s;
+                    totalProfit += pr;
+
+                    const ds = p['完了日'] || p['登録日'];
+                    if (ds) {
+                        const d = new Date(ds);
+                        if (!isNaN(d)) {
+                            const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                            if (mSales.hasOwnProperty(k)) { mSales[k] += s; mProfit[k] += pr; }
+                        }
                     }
+
+                    // Lead Time (Days)
+                    if (p['登録日'] && p['完了日']) {
+                        const d1 = new Date(p['登録日']), d2 = new Date(p['完了日']);
+                        if (!isNaN(d1) && !isNaN(d2)) {
+                            const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
+                            if (diff >= 0) leadTimes.push(diff);
+                        }
+                    }
+
+                    // Project Size
+                    if (s < 10000) projectSizes['S']++;
+                    else if (s < 50000) projectSizes['M']++;
+                    else if (s < 100000) projectSizes['L']++;
+                    else projectSizes['XL']++;
+
+                    const cn = p['クライアント名'] || '未設定';
+                    if (!cmap[cn]) cmap[cn] = { sales: 0, profit: 0, count: 0 };
+                    cmap[cn].sales += s; cmap[cn].profit += pr; cmap[cn].count++;
                 }
-                const cn = p['クライアント名'] || '未設定';
-                if (!cmap[cn]) cmap[cn] = { sales: 0, profit: 0, count: 0 };
-                cmap[cn].sales += s; cmap[cn].profit += pr; cmap[cn].count++;
             });
 
             const avgM = totalSales > 0 ? Math.round(totalProfit / totalSales * 100) : 0;
+            const avgLead = leadTimes.length > 0 ? Math.round(leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length) : 0;
+            const avgVal = sc['完了'] > 0 ? Math.round(totalSales / sc['完了']) : 0;
+
             const monthly = monthlyKeys.map(k => ({
                 month: k,
                 sales: mSales[k] || 0,
                 profit: mProfit[k] || 0,
                 margin: mSales[k] ? Math.round((mProfit[k] || 0) / mSales[k] * 100) : 0
             }));
+
+            // Cumulative Data
+            let cumSales = 0, cumProfit = 0;
+            const cumulativeData = monthly.map(m => {
+                cumSales += m.sales;
+                cumProfit += m.profit;
+                return { month: m.month, sales: cumSales, profit: cumProfit };
+            });
+
             const clientRanking = Object.entries(cmap).map(([n, v]) => ({ name: n, ...v, margin: v.sales > 0 ? Math.round(v.profit / v.sales * 100) : 0 })).sort((a, b) => b.sales - a.sales).slice(0, 8);
-            const recent = [...filteredPs].sort((a, b) => new Date(b['登録日'] || 0) - new Date(a['登録日'] || 0)).slice(0, 5);
+            const recent = [...filteredPs].filter(p => p['ステータス'] === '完了').sort((a, b) => new Date(b['完了日'] || 0) - new Date(a['完了日'] || 0)).slice(0, 5);
             const maxCli = Math.max(...clientRanking.map(r => r.sales), 1);
             const mColor = avgM >= 50 ? 'var(--green)' : avgM >= 30 ? 'var(--amber)' : 'var(--red)';
 
             // KPI
             let html = filterHtml;
             html += `<div class="kpi-grid">
-    ${kpi('対象案件数', filteredPs.length + '件', `進行中 ${sc['進行中'] || 0}件`, 'var(--acc)')}
-    ${kpi('売上計', fmt(totalSales), dashboardFilter.year ? `${dashboardFilter.year}年${dashboardFilter.month ? dashboardFilter.month + '月' : ''}` : '期間合計', 'var(--green)')}
-    ${kpi('利益計', fmt(totalProfit), dashboardFilter.year ? `${dashboardFilter.year}年${dashboardFilter.month ? dashboardFilter.month + '月' : ''}` : '期間合計', 'var(--blue)')}
-    ${kpi('平均利益率', pct(avgM), '期間中平均', mColor)}
-    ${kpi('進行中 売上', fmt(activeSales), '絞り込み内', 'var(--amber)')}
-    ${kpi('完了件数', (sc['完了'] || 0) + '件', `商談中 ${sc['商談中'] || 0}件`, 'var(--blue)')}
+    ${kpi('確定売上計', fmt(totalSales), '完了案件のみ', 'var(--green)')}
+    ${kpi('確定利益計', fmt(totalProfit), '完了案件のみ', 'var(--blue)')}
+    ${kpi('平均利益率', pct(avgM), '完了案件のみ', mColor)}
+    ${kpi('平均リードタイム', avgLead + '日', '登録〜完了まで', 'var(--acc)')}
+    ${kpi('平均単価', fmt(avgVal), '完了1件あたり', 'var(--amber)')}
+    ${kpi('完了件数', (sc['完了'] || 0) + '件', `絞り込み期間内`, 'var(--blue)')}
   </div>`;
 
             // Status chips
@@ -2180,72 +2142,79 @@
             });
             html += `</div>`;
 
-            // Monthly aggregation
             if (monthly.length > 0) {
-                const labels = monthly.map(m => m.month.slice(5) + '月');
-                const salesData = monthly.map(m => m.sales);
-                const profitData = monthly.map(m => m.profit);
-                const marginData = monthly.map(m => m.margin);
-
-                html += `<div class="chart-card">
-                    <div class="chart-hdr">
-                        <div class="chart-title">月別 売上 / 利益</div>
-                    </div>
+                html += `
+                <div class="chart-card">
+                    <div class="chart-hdr"><div class="chart-title">月別 売上 / 利益</div></div>
                     <div class="chart-canvas-wrap"><canvas id="barChart"></canvas></div>
                 </div>
-                <div class="chart-card">
-                    <div class="chart-hdr">
-                        <div class="chart-title">利益率の推移 (%)</div>
+                
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">累積実績の推移</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="cumChart"></canvas></div>
                     </div>
-                    <div class="chart-canvas-wrap"><canvas id="lineChart"></canvas></div>
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">利益率の推移 (%)</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="lineChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">クライアント別売上比率</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="clientPie"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">案件サイズ分布 (売上)</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="sizeDoughnut"></canvas></div>
+                    </div>
                 </div>`;
             } else {
-                html += `<div class="chart-card" style="text-align:center;padding:40px;color:var(--txt3);font-size:14px">案件を登録するとグラフが表示されます</div>`;
+                html += `<div class="chart-card" style="text-align:center;padding:40px;color:var(--txt3);font-size:14px">案件を登録すると詳細な分析が表示されます</div>`;
             }
 
-            // Ranking
+            // Ranking & Recent (Side by Side in Desktop)
+            html += `<div class="chart-row">`;
             if (clientRanking.length > 0) {
-                html += `<div class="ranking-card">
-      <div class="ranking-hdr">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
-        クライアント別 売上ランキング
-      </div>`;
+                html += `<div class="ranking-card" style="margin-bottom:0">
+                    <div class="ranking-hdr">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>
+                        クライアント別売上
+                    </div>`;
                 clientRanking.forEach((r, i) => {
                     const bp = Math.round(r.sales / maxCli * 100);
-                    const mc = r.margin >= 50 ? 'var(--green)' : r.margin >= 30 ? 'var(--amber)' : 'var(--red)';
                     html += `<div class="ranking-row">
-        <div class="rank-num ${i < 3 ? 'top' : ''}">${i + 1}</div>
-        <div class="rank-name">${esc(r.name)}</div>
-        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${bp}%"></div></div>
-        <div class="rank-val">${fmt(r.sales)}</div>
-        <div class="rank-mg" style="color:${mc}">${r.margin}%</div>
-      </div>`;
+                        <div class="rank-num ${i < 3 ? 'top' : ''}">${i + 1}</div>
+                        <div class="rank-name">${esc(r.name)}</div>
+                        <div class="rank-bar-wrap"><div class="rank-bar" style="width:${bp}%"></div></div>
+                        <div class="rank-val">${fmt(r.sales)}</div>
+                    </div>`;
                 });
                 html += `</div>`;
             }
 
-            // Recent
             if (recent.length > 0) {
                 html += `<div class="recent-card">
-      <div class="recent-hdr">最近の案件</div>`;
+                    <div class="recent-hdr">最近の完了案件</div>`;
                 recent.forEach(p => {
                     const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
                     const m = s > 0 ? Math.round(pr / s * 100) : 100;
                     html += `<div class="recent-row">
-        <div class="rr-dot" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
-        <div class="rr-info">
-          <div class="rr-name">${esc(p['案件名'])}</div>
-          <div class="rr-client">${esc(p['クライアント名']) || 'クライアント未設定'}</div>
-        </div>
-        <span class="badge b-${p['ステータス']}">${p['ステータス']}</span>
-        <div class="rr-right">
-          <div class="rr-sales">${fmt(s)}</div>
-          <div class="rr-margin">利益率 ${m}%</div>
-        </div>
-      </div>`;
+                        <div class="rr-dot" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
+                        <div class="rr-info">
+                            <div class="rr-name">${esc(p['案件名'])}</div>
+                            <div class="rr-client">${esc(p['クライアント名']) || '未設定'}</div>
+                        </div>
+                        <div class="rr-right">
+                            <div class="rr-sales">${fmt(s)}</div>
+                            <div class="rr-margin">利益率 ${m}%</div>
+                        </div>
+                    </div>`;
                 });
                 html += `</div>`;
             }
+            html += `</div>`;
 
             document.getElementById('dashContent').innerHTML = html;
 
@@ -2255,32 +2224,21 @@
                 const salesData = monthly.map(m => m.sales);
                 const profitData = monthly.map(m => m.profit);
                 const marginData = monthly.map(m => m.margin);
+                const cumSalesData = cumulativeData.map(c => c.sales);
+                const cumProfitData = cumulativeData.map(c => c.profit);
 
-                const ctx1 = document.getElementById('barChart').getContext('2d');
-                new Chart(ctx1, {
+                // 1. Monthly Bar Chart
+                new Chart(document.getElementById('barChart'), {
                     type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [
-                            {
-                                label: '売上',
-                                data: salesData,
-                                backgroundColor: '#e4e7ec',
-                                borderRadius: 4,
-                                barPercentage: 0.6
-                            },
-                            {
-                                label: '利益',
-                                data: profitData,
-                                backgroundColor: SC['進行中'],
-                                borderRadius: 4,
-                                barPercentage: 0.6
-                            }
+                            { label: '売上', data: salesData, backgroundColor: '#e4e7ec', borderRadius: 4, barPercentage: 0.6 },
+                            { label: '利益', data: profitData, backgroundColor: SC['進行中'], borderRadius: 4, barPercentage: 0.6 }
                         ]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
@@ -2289,31 +2247,77 @@
                     }
                 });
 
-                const ctx2 = document.getElementById('lineChart').getContext('2d');
-                new Chart(ctx2, {
+                // 2. Cumulative Area Chart
+                new Chart(document.getElementById('cumChart'), {
                     type: 'line',
                     data: {
                         labels: labels,
-                        datasets: [{
-                            label: '利益率',
-                            data: marginData,
-                            borderColor: 'var(--blue)',
-                            backgroundColor: 'rgba(29, 78, 216, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 4,
-                            pointBackgroundColor: 'white',
-                            pointBorderWidth: 2
-                        }]
+                        datasets: [
+                            { label: '累積売上', data: cumSalesData, borderColor: 'var(--txt3)', backgroundColor: 'rgba(0,0,0,0.05)', fill: true, tension: 0.3 },
+                            { label: '累積利益', data: cumProfitData, borderColor: 'var(--blue)', backgroundColor: 'rgba(29, 78, 216, 0.1)', fill: true, tension: 0.3 }
+                        ]
                     },
                     options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } }
+                        }
+                    }
+                });
+
+                // 3. Margin Line Chart
+                new Chart(document.getElementById('lineChart'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{ label: '利益率', data: marginData, borderColor: 'var(--blue)', backgroundColor: 'rgba(29, 78, 216, 0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                             y: { min: 0, max: 100, ticks: { font: { size: 10 }, stepSize: 25, callback: v => v + '%' } }
                         }
+                    }
+                });
+
+                // 4. Client Pie Chart
+                const topClients = clientRanking.slice(0, 5);
+                const otherSales = totalSales - topClients.reduce((s, c) => s + c.sales, 0);
+                new Chart(document.getElementById('clientPie'), {
+                    type: 'pie',
+                    data: {
+                        labels: [...topClients.map(c => c.name), 'その他'],
+                        datasets: [{
+                            data: [...topClients.map(c => c.sales), otherSales],
+                            backgroundColor: ['#111827', '#1f2937', '#374151', '#4b5563', '#6b7280', '#e4e7ec'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } }
+                    }
+                });
+
+                // 5. Size Doughnut Chart
+                new Chart(document.getElementById('sizeDoughnut'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['S (<1万)', 'M (1-5万)', 'L (5-10万)', 'XL (10万〜)'],
+                        datasets: [{
+                            data: [projectSizes['S'], projectSizes['M'], projectSizes['L'], projectSizes['XL']],
+                            backgroundColor: ['#ecfdf5', '#a7f3d0', '#059669', '#064e3b'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
                     }
                 });
             }
@@ -2737,6 +2741,13 @@
         //  INIT
         // ═══════════════════════════════════════════════
         window.addEventListener('load', () => {
+            // Ensure viewport meta is respected in some environments
+            if (!document.querySelector('meta[name="viewport"]')) {
+                const meta = document.createElement('meta');
+                meta.name = "viewport";
+                meta.content = "width=device-width, initial-scale=1.0";
+                document.getElementsByTagName('head')[0].appendChild(meta);
+            }
             showView('dashboard');
             loadAll();
         });

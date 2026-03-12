@@ -23,7 +23,8 @@ const clientSheet = () => getSheet(SN.clients, CLI_COLS);
 function doGet() {
     return HtmlService.createHtmlOutputFromFile('index')
         .setTitle('案件管理')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 function genId(prefix) { return prefix + '-' + Date.now().toString(36).toUpperCase(); }
@@ -114,26 +115,32 @@ function getDashboard() {
         const s = Number(p['売上']) || 0;
         const pr = Number(p['利益']) || 0;
         const st = p['ステータス'] || '不明';
-        totalSales += s;
-        totalProfit += pr;
-        if (st === '進行中') activeSales += s;
+        
         statusCount[st] = (statusCount[st] || 0) + 1;
 
-        // 手入力の「完了日」を優先して月次集計
-        const ds = p['完了日'] || p['登録日'];
-        if (ds) {
-            const d = new Date(ds);
-            if (!isNaN(d)) {
-                const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-                monthlySales[k] = (monthlySales[k] || 0) + s;
-                monthlyProfit[k] = (monthlyProfit[k] || 0) + pr;
+        // 完了案件のみを集計対象とする
+        if (st === '完了') {
+            totalSales += s;
+            totalProfit += pr;
+
+            // 手入力の「完了日」を優先して月次集計
+            const ds = p['完了日'] || p['登録日'];
+            if (ds) {
+                const d = new Date(ds);
+                if (!isNaN(d)) {
+                    const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    monthlySales[k] = (monthlySales[k] || 0) + s;
+                    monthlyProfit[k] = (monthlyProfit[k] || 0) + pr;
+                }
             }
+            const cn = p['クライアント名'] || '未設定';
+            if (!clientMap[cn]) clientMap[cn] = { sales: 0, profit: 0, count: 0 };
+            clientMap[cn].sales += s;
+            clientMap[cn].profit += pr;
+            clientMap[cn].count += 1;
+        } else if (st === '進行中') {
+            activeSales += s;
         }
-        const cn = p['クライアント名'] || '未設定';
-        if (!clientMap[cn]) clientMap[cn] = { sales: 0, profit: 0, count: 0 };
-        clientMap[cn].sales += s;
-        clientMap[cn].profit += pr;
-        clientMap[cn].count += 1;
     });
 
     const allKeys = [...new Set([...Object.keys(monthlySales), ...Object.keys(monthlyProfit)])].sort().slice(-12);
