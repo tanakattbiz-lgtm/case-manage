@@ -338,67 +338,52 @@
             padding: 0
         }
 
-        /* ── FAB ── */
-        .fab {
-            display: none;
-            position: fixed;
-            right: 18px;
-            bottom: calc(var(--nh)+16px+env(safe-area-inset-bottom));
-            width: 56px;
-            height: 56px;
-            background: var(--acc);
-            color: #fff;
-            border: none;
-            border-radius: 28px;
-            font-size: 28px;
-            line-height: 1;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .25);
-            z-index: 300;
-            transition: transform .2s;
-            align-items: center;
-            justify-content: center
-        }
-
-        .fab:active {
-            transform: scale(.9)
-        }
-
         /* ── BOTTOM NAV ── */
         .bottom-nav {
             display: none;
             position: fixed;
             bottom: 0;
             left: 0;
-            right: 0;
-            height: calc(var(--nh)+env(safe-area-inset-bottom));
+            width: 100%;
+            height: calc(var(--nh) + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
-            background: var(--white);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
-            z-index: 200
+            z-index: 500
         }
 
         .bn-inner {
-            display: flex;
-            height: var(--nh)
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            height: var(--nh);
+            width: 100%
         }
 
         .bnav-btn {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 2px;
             background: none;
             border: none;
             color: var(--txt3);
             font-family: var(--sans);
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: 500;
             cursor: pointer;
-            transition: color .15s;
-            padding: 8px 0;
+            transition: all .15s;
+            padding: 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
             -webkit-tap-highlight-color: transparent
+        }
+        
+        .bnav-btn svg {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
         }
 
         .bnav-btn.active {
@@ -1494,14 +1479,13 @@
         /* Default: Mobile (< 768px) */
         .sidebar { display: none !important; }
         .bottom-nav { display: flex !important; }
-        .fab { display: flex !important; }
         .topbar-actions .btn-primary { display: none !important; }
         .desk-table { display: none !important; }
         .mob-only { display: block !important; }
         
         .content-area { 
             padding: 12px; 
-            padding-bottom: 100px; /* Space for bottom nav */
+            padding-bottom: 80px; /* Space for bottom nav */
             overflow-x: hidden;
         }
 
@@ -1685,46 +1669,32 @@
             </div><!-- /content-area -->
         </div><!-- /main -->
 
-        <!-- FAB -->
-        <button class="fab" id="fab" onclick="onTopAdd()" aria-label="追加">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-        </button>
-
         <!-- BOTTOM NAV -->
         <nav class="bottom-nav">
             <div class="bn-inner">
                 <button class="bnav-btn active" id="bnav-dashboard" onclick="showView('dashboard')">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="3" width="7" height="7" />
-                        <rect x="14" y="3" width="7" height="7" />
-                        <rect x="14" y="14" width="7" height="7" />
-                        <rect x="3" y="14" width="7" height="7" />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
                     </svg>
-                    ダッシュボード
+                    ダッシュ
                 </button>
                 <button class="bnav-btn" id="bnav-projects" onclick="showView('projects')">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                     </svg>
-                    案件
+                    案件一覧
                 </button>
                 <button class="bnav-btn" id="bnav-clients" onclick="showView('clients')">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                        <polyline points="9 22 9 12 15 12 15 22" />
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
-                    クライアント
+                    取引先
                 </button>
             </div>
         </nav>
-
     </div><!-- /app -->
 
     <!-- ═══ PROJECT MODAL ═══ -->
@@ -2298,8 +2268,8 @@
                         }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
-                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } }
+                        responsive: true, maintainAspectRatio: true,
+                        plugins: { legend: { position: window.innerWidth < 600 ? 'bottom' : 'right', labels: { boxWidth: 10, font: { size: 9 } } } }
                     }
                 });
 
@@ -2315,9 +2285,9 @@
                         }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: true,
                         cutout: '70%',
-                        plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+                        plugins: { legend: { position: window.innerWidth < 600 ? 'bottom' : 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
                     }
                 });
             }
