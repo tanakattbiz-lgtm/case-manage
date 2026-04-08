@@ -73,7 +73,6 @@
             -webkit-font-smoothing: antialiased
         }
 
-        /* ── SVG ICONS ── */
         .ico {
             display: inline-flex;
             align-items: center;
@@ -91,7 +90,6 @@
             height: 100%;
         }
 
-        /* ── APP SHELL ── */
         .app {
             display: flex;
             height: 100%;
@@ -100,13 +98,12 @@
             background: var(--bg)
         }
 
-        /* ── SIDEBAR ── */
         .sidebar {
             width: var(--sb);
             background: var(--white);
             border-right: 1px solid var(--border);
             flex-shrink: 0;
-            display: none; /* Default: Hidden */
+            display: none;
             flex-direction: column;
             padding: 20px 12px 20px;
             z-index: 200;
@@ -181,7 +178,6 @@
             color: #fff
         }
 
-        /* ── MAIN ── */
         .main {
             flex: 1;
             display: flex;
@@ -221,7 +217,6 @@
             background: var(--bg)
         }
 
-        /* ── VIEWS ── */
         .view {
             display: none
         }
@@ -243,7 +238,6 @@
             }
         }
 
-        /* ── BUTTONS ── */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -338,7 +332,6 @@
             padding: 0
         }
 
-        /* ── BOTTOM NAV ── */
         .bottom-nav {
             display: none;
             position: fixed;
@@ -379,7 +372,7 @@
             overflow: hidden;
             -webkit-tap-highlight-color: transparent
         }
-        
+
         .bnav-btn svg {
             flex-shrink: 0;
             width: 20px;
@@ -390,7 +383,6 @@
             color: var(--acc)
         }
 
-        /* ── SKELETON ── */
         .sk {
             background: linear-gradient(90deg, var(--s1) 25%, var(--s2) 50%, var(--s1) 75%);
             background-size: 200% 100%;
@@ -408,7 +400,6 @@
             }
         }
 
-        /* ── CARDS ── */
         .card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -416,7 +407,6 @@
             box-shadow: var(--sh)
         }
 
-        /* ── KPI ── */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -468,7 +458,6 @@
             color: var(--txt3)
         }
 
-        /* ── CHART ── */
         .chart-card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -525,19 +514,145 @@
             display: none;
         }
 
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
         .chart-canvas-wrap {
             position: relative;
             width: 100%;
-            height: 180px;
+            height: 220px;
             margin-top: 10px;
+        }
+
+        .chart-canvas-wrap.circle-chart {
+            height: 260px;
+            max-width: 420px;
+            margin: 10px auto 0;
+        }
+
+
+        .dash-summary-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .insight-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            padding: 16px;
+        }
+
+        .insight-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .insight-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .insight-item {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            font-size: 13px;
+            color: var(--txt2);
+            line-height: 1.5;
+        }
+
+        .insight-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--acc);
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .mini-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .mini-kpi {
+            background: var(--s1);
+            border: 1px solid var(--border);
+            border-radius: var(--rsm);
+            padding: 10px 12px;
+        }
+
+        .mini-kpi-label {
+            font-size: 11px;
+            color: var(--txt3);
+            margin-bottom: 4px;
+        }
+
+        .mini-kpi-value {
+            font-size: 14px;
+            font-family: var(--mono);
+            color: var(--txt);
+            font-weight: 500;
+        }
+
+        .section-spacer {
+            margin-top: 4px;
         }
 
         canvas {
             width: 100% !important;
             height: 100% !important;
+            display: block;
         }
 
-        /* ── STATUS CHIPS ── */
+
+        .dash-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .dash-summary-card {
+            width: 100%;
+        }
+
+        .adv-search {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .adv-search-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .adv-search-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media(min-width:850px) {
+            .adv-search-row {
+                grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
+            }
+        }
+
         .status-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -581,7 +696,6 @@
             font-size: 11px
         }
 
-        /* ── RANKING ── */
         .ranking-card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -673,7 +787,6 @@
             flex-shrink: 0
         }
 
-        /* ── RECENT ── */
         .recent-card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -750,7 +863,6 @@
             color: var(--txt3)
         }
 
-        /* ── BADGES ── */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -792,7 +904,6 @@
             border: 1px solid var(--border)
         }
 
-        /* ── FILTER BAR ── */
         .filter-bar {
             display: flex;
             gap: 8px;
@@ -876,7 +987,6 @@
             border-color: var(--acc)
         }
 
-        /* ── TABLE ── */
         .table-card {
             background: var(--white);
             border: 1px solid var(--border);
@@ -941,7 +1051,6 @@
             align-items: center
         }
 
-        /* ── PROJECT CARDS (mobile) ── */
         .proj-cards {
             display: flex;
             flex-direction: column;
@@ -1031,7 +1140,6 @@
             flex: 1
         }
 
-        /* ── CLIENTS GRID ── */
         .clients-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1135,7 +1243,6 @@
             font-weight: 500
         }
 
-        /* ── EMPTY STATE ── */
         .empty {
             text-align: center;
             padding: 60px 24px
@@ -1160,7 +1267,6 @@
             margin-bottom: 20px
         }
 
-        /* ── MODAL ── */
         .modal-ov {
             display: none;
             position: fixed;
@@ -1231,7 +1337,6 @@
             padding: 20px
         }
 
-        /* ── FORM ── */
         .fg {
             display: flex;
             flex-direction: column;
@@ -1244,7 +1349,7 @@
 
         .form-2col {
             display: grid;
-            grid-template-columns: 1fr; /* Default mobile */
+            grid-template-columns: 1fr;
             gap: 14px
         }
 
@@ -1346,7 +1451,6 @@
             font-size: 15px
         }
 
-        /* ── CLIENT INLINE (in project modal) ── */
         .cli-select-wrap {
             display: flex;
             gap: 8px;
@@ -1379,7 +1483,7 @@
 
         .cli-inline-grid {
             display: grid;
-            grid-template-columns: 1fr; /* Default mobile */
+            grid-template-columns: 1fr;
             gap: 10px;
             margin-bottom: 12px
         }
@@ -1399,7 +1503,6 @@
             justify-content: flex-end
         }
 
-        /* ── TOAST ── */
         .toast-wrap {
             position: fixed;
             top: 16px;
@@ -1455,7 +1558,6 @@
             }
         }
 
-        /* ── SECTION LABEL ── */
         .sec-lbl {
             font-size: 12px;
             font-weight: 700;
@@ -1475,17 +1577,15 @@
             background: var(--border)
         }
 
-        /* ── RESPONSIVE ── */
-        /* Default: Mobile (< 768px) */
         .sidebar { display: none !important; }
         .bottom-nav { display: flex !important; }
         .topbar-actions .btn-primary { display: none !important; }
         .desk-table { display: none !important; }
         .mob-only { display: block !important; }
-        
+
         .content-area { 
             padding: 12px; 
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 80px;
             overflow-x: hidden;
         }
 
@@ -1495,9 +1595,11 @@
         .rank-bar-wrap { display: none; }
         .chart-row { grid-template-columns: 1fr; gap: 12px; }
         .chart-canvas-wrap { height: 200px; }
+        .chart-canvas-wrap.circle-chart { height: 260px; max-width: 100%; }
+        .dash-summary-grid { grid-template-columns: 1fr; }
+        .mini-kpi-grid { grid-template-columns: 1fr 1fr; }
         .modal-sheet { width: 100%; border-radius: 20px 20px 0 0; margin-top: auto; }
 
-        /* Tablet & Desktop (>= 850px) */
         @media(min-width:850px) {
             .sidebar { display: flex !important; width: 240px; }
             .bottom-nav { display: none !important; }
@@ -1505,19 +1607,29 @@
             .topbar-actions .btn-primary { display: flex !important; }
             .desk-table { display: block !important; }
             .mob-only { display: none !important; }
-            
+
             .content-area { padding: 24px; }
             .kpi-grid { grid-template-columns: repeat(3, 1fr); }
             .status-row { grid-template-columns: repeat(5, 1fr); }
             .form-2col, .cli-inline-grid { grid-template-columns: 1fr 1fr; }
             .clients-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
             .chart-row { grid-template-columns: 1fr 1fr; gap: 14px; }
+            .chart-canvas-wrap.circle-chart { height: 300px; max-width: 460px; }
+            .dash-summary-grid { grid-template-columns: 1fr; }
+            .mini-kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .modal-sheet { width: min(90vw, 560px); border-radius: 14px; margin: auto; }
             .sh-handle { display: none; }
             .modal-ov { align-items: center; }
         }
 
-        /* Large Desktop (>= 1100px) */
+
+        @media(min-width:850px) {
+            .dash-summary-grid,
+            .dash-stack > .dash-summary-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
         @media(min-width:1100px) {
             .kpi-grid { grid-template-columns: repeat(6, 1fr); }
         }
@@ -1533,7 +1645,6 @@
 <body>
     <div class="app">
 
-        <!-- ═══ SIDEBAR ═══ -->
         <nav class="sidebar">
             <div class="sb-logo">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1578,7 +1689,6 @@
             </button>
         </nav>
 
-        <!-- ═══ MAIN ═══ -->
         <div class="main">
             <div class="topbar">
                 <div class="topbar-title" id="pageTitle">ダッシュボード</div>
@@ -1596,7 +1706,6 @@
 
             <div class="content-area" id="contentArea">
 
-                <!-- ══ DASHBOARD ══ -->
                 <div class="view active" id="view-dashboard">
                     <div id="dashContent">
                         <div class="kpi-grid" style="margin-bottom:16px">
@@ -1612,35 +1721,49 @@
                     </div>
                 </div>
 
-                <!-- ══ PROJECTS ══ -->
                 <div class="view" id="view-projects">
-                    <div class="filter-bar">
-                        <div class="search-wrap">
-                            <span class="search-icon">
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                                </svg>
-                            </span>
-                            <input class="search-input" type="text" id="searchInput" placeholder="案件名・クライアントで検索"
-                                oninput="renderProjects()">
+                    <div class="table-card" style="padding:12px; margin-bottom:14px;">
+                        <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <div style="font-size:14px; font-weight:700;">高度な検索</div>
+                            <div class="adv-search-actions">
+                                <button class="btn btn-outline btn-xs" type="button" onclick="renderProjects()">絞り込み適用</button>
+                                <button class="btn btn-outline btn-xs" type="button" onclick="resetProjectScope(); renderProjects();">条件クリア</button>
+                                <button class="btn btn-primary btn-xs" type="button" onclick="useAllProjectsView()">全案件に戻す</button>
+                            </div>
                         </div>
-                        <select class="filter-sel" id="statusFilter" onchange="renderProjects()">
-                            <option value="">すべて</option>
-                            <option>商談中</option>
-                            <option>進行中</option>
-                            <option>完了</option>
-                            <option>停止</option>
-                            <option>保留</option>
-                        </select>
+                        <div class="adv-search">
+                            <div class="adv-search-row">
+                                <div class="search-wrap">
+                                    <span class="search-icon">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                        </svg>
+                                    </span>
+                                    <input class="search-input" type="text" id="searchInput" placeholder="案件名・クライアント・備考で検索"
+                                        oninput="renderProjects()">
+                                </div>
+                                <select class="filter-sel" id="statusFilter" onchange="renderProjects()">
+                                    <option value="">ステータスすべて</option>
+                                    <option>商談中</option>
+                                    <option>進行中</option>
+                                    <option>完了</option>
+                                    <option>停止</option>
+                                    <option>保留</option>
+                                </select>
+                                <input type="number" id="minSales" placeholder="売上 下限" oninput="renderProjects()">
+                                <input type="number" id="maxSales" placeholder="売上 上限" oninput="renderProjects()">
+                                <input type="date" id="dateFrom" title="対象日 From" onchange="renderProjects()">
+                                <input type="date" id="dateTo" title="対象日 To" onchange="renderProjects()">
+                            </div>
+                        </div>
+                        <div id="projectScopeInfo" style="margin-top:10px; font-size:12px; color:var(--txt2);"></div>
                     </div>
-                    <!-- mobile -->
                     <div class="proj-cards mob-only" id="projCards">
                         <div class="sk" style="height:160px;border-radius:var(--radius)"></div>
                         <div class="sk" style="height:160px;border-radius:var(--radius)"></div>
                     </div>
-                    <!-- desktop -->
                     <div class="desk-table" style="display:none">
                         <div class="table-card">
                             <div class="tc-hdr">
@@ -1658,7 +1781,6 @@
                     </div>
                 </div>
 
-                <!-- ══ CLIENTS ══ -->
                 <div class="view" id="view-clients">
                     <div class="clients-grid" id="clientsGrid">
                         <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
@@ -1666,10 +1788,9 @@
                     </div>
                 </div>
 
-            </div><!-- /content-area -->
-        </div><!-- /main -->
+            </div>
+        </div>
 
-        <!-- BOTTOM NAV -->
         <nav class="bottom-nav">
             <div class="bn-inner">
                 <button class="bnav-btn active" id="bnav-dashboard" onclick="showView('dashboard')">
@@ -1695,9 +1816,8 @@
                 </button>
             </div>
         </nav>
-    </div><!-- /app -->
+    </div>
 
-    <!-- ═══ PROJECT MODAL ═══ -->
     <div class="modal-ov" id="projModal" onclick="onOvClick(event,'projModal')">
         <div class="modal-sheet">
             <div class="sh-handle"></div>
@@ -1721,7 +1841,6 @@
                         <input type="text" id="p_name" placeholder="例: LP制作">
                     </div>
 
-                    <!-- クライアント選択 + 新規登録 -->
                     <div class="fg">
                         <label>クライアント</label>
                         <div class="cli-select-wrap">
@@ -1736,7 +1855,6 @@
                                 新規
                             </button>
                         </div>
-                        <!-- インライン新規クライアント登録フォーム -->
                         <div class="cli-inline-form" id="cliInlineForm">
                             <div class="cli-inline-title">クライアント新規登録</div>
                             <div class="cli-inline-grid">
@@ -1815,7 +1933,6 @@
         </div>
     </div>
 
-    <!-- ═══ CLIENT MODAL ═══ -->
     <div class="modal-ov" id="cliModal" onclick="onOvClick(event,'cliModal')">
         <div class="modal-sheet">
             <div class="sh-handle"></div>
@@ -1868,14 +1985,24 @@
     <script>
         'use strict';
 
-        // ═══════════════════════════════════════════════
-        //  STATE
-        // ═══════════════════════════════════════════════
         let allProjects = [];
         let allClients = [];
         let loaded = false;
         let currentView = 'dashboard';
-        let dashboardFilter = { year: '', month: '' }; // Added for filtering
+        let dashboardFilter = getDefaultDashboardFilter();
+        let dashboardCharts = [];
+        let projectViewBaseList = null;
+        let projectViewLabel = '';
+
+
+        function getDefaultDashboardFilter() {
+            const now = new Date();
+            return {
+                mode: 'month',
+                year: String(now.getFullYear()),
+                month: String(now.getMonth() + 1).padStart(2, '0')
+            };
+        }
 
         const SC = {
             '商談中': 'var(--amber)',
@@ -1891,11 +2018,13 @@
         const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
         const input2date = v => v ? v.replace(/-/g, '/') : '';
 
-        const iconPlus = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+        function destroyDashboardCharts() {
+            dashboardCharts.forEach(ch => {
+                try { ch.destroy(); } catch (e) {}
+            });
+            dashboardCharts = [];
+        }
 
-        // ═══════════════════════════════════════════════
-        //  NAVIGATION
-        // ═══════════════════════════════════════════════
         function showView(v) {
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + v).classList.add('active');
@@ -1909,7 +2038,6 @@
             currentView = v;
             document.getElementById('contentArea').scrollTop = 0;
 
-            // topbar add button
             const topBtn = document.getElementById('topAddBtn');
             const topLbl = document.getElementById('topAddLabel');
             if (v === 'dashboard') {
@@ -1917,6 +2045,10 @@
             } else {
                 topBtn.style.display = '';
                 topLbl.textContent = v === 'projects' ? '案件を追加' : 'クライアントを追加';
+            }
+
+            if (v === 'projects' && currentView !== 'dashboard' && !projectViewLabel) {
+                projectViewBaseList = null;
             }
 
             if (loaded) {
@@ -1931,9 +2063,6 @@
             else if (currentView === 'clients') openCliModal();
         }
 
-        // ═══════════════════════════════════════════════
-        //  DATA LOAD
-        // ═══════════════════════════════════════════════
         function loadAll() {
             let pDone = false, cDone = false;
             const check = () => { if (pDone && cDone) { loaded = true; renderDashboard(); renderProjects(); renderClients(); } };
@@ -1952,11 +2081,11 @@
         function reload() {
             google.script.run
                 .withSuccessHandler(d => { allProjects = d || []; setBadge('projects', allProjects.length); refreshCurrent(); })
-                .withFailureHandler(() => { })
+                .withFailureHandler(() => {})
                 .getProjects();
             google.script.run
                 .withSuccessHandler(d => { allClients = d || []; setBadge('clients', allClients.length); refreshCurrent(); })
-                .withFailureHandler(() => { })
+                .withFailureHandler(() => {})
                 .getClients();
         }
 
@@ -1971,114 +2100,218 @@
             if (el) el.textContent = n;
         }
 
-        // ═══════════════════════════════════════════════
-        //  DASHBOARD
-        // ═══════════════════════════════════════════════
+
+
+        function getProjectBaseDate(p) {
+            const ds = p['完了日'] || p['登録日'];
+            const d = new Date(ds);
+            return isNaN(d) ? null : d;
+        }
+
+        function isProjectInDashboardPeriod(p) {
+            const d = getProjectBaseDate(p);
+            if (!d) return dashboardFilter.mode === 'all';
+            if (dashboardFilter.mode === 'all') return true;
+            if (dashboardFilter.mode === 'year') return String(d.getFullYear()) === dashboardFilter.year;
+            return String(d.getFullYear()) === dashboardFilter.year &&
+                   String(d.getMonth() + 1).padStart(2, '0') === dashboardFilter.month;
+        }
+
+        function getDashboardPeriodLabel() {
+            if (dashboardFilter.mode === 'all') return '全期間';
+            if (dashboardFilter.mode === 'year') return `${dashboardFilter.year}年`;
+            return `${dashboardFilter.year}年${Number(dashboardFilter.month)}月`;
+        }
+
+        function applyDashboardPreset(mode) {
+            const now = new Date();
+            if (mode === 'all') {
+                dashboardFilter = { mode: 'all', year: '', month: '' };
+            } else if (mode === 'year') {
+                dashboardFilter = { mode: 'year', year: String(now.getFullYear()), month: '' };
+            } else {
+                dashboardFilter = {
+                    mode: 'month',
+                    year: String(now.getFullYear()),
+                    month: String(now.getMonth() + 1).padStart(2, '0')
+                };
+            }
+            renderDashboard();
+        }
+
+        function openDashboardTargets() {
+            projectViewBaseList = allProjects.filter(isProjectInDashboardPeriod);
+            projectViewLabel = `対象期間: ${getDashboardPeriodLabel()}`;
+            showView('projects');
+            const statusSel = document.getElementById('statusFilter');
+            if (statusSel) statusSel.value = '';
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            const minSales = document.getElementById('minSales');
+            if (minSales) minSales.value = '';
+            const maxSales = document.getElementById('maxSales');
+            if (maxSales) maxSales.value = '';
+            const dateFrom = document.getElementById('dateFrom');
+            if (dateFrom) dateFrom.value = '';
+            const dateTo = document.getElementById('dateTo');
+            if (dateTo) dateTo.value = '';
+            renderProjects();
+            const title = document.getElementById('pageTitle');
+            if (title) title.textContent = `案件一覧（${getDashboardPeriodLabel()}）`;
+        }
+
         function renderDashboard() {
             if (!loaded) return;
+
+            destroyDashboardCharts();
+
             const ps = allProjects;
-            let totalSales = 0, totalProfit = 0, activeSales = 0;
+
+            let totalSales = 0;
+            let totalProfit = 0;
+            let activeSales = 0;
+            let proposalSales = 0;
+            let forecastSales = 0;
+            let forecastProfit = 0;
+            let holdCount = 0;
+
             const sc = {};
-            const mSales = {}, mProfit = {}, cmap = {};
-            // ─── FILTER UI ───
+            const mCompletedSales = {}, mCompletedProfit = {}, clientMap = {};
+            const monthlyStatusSales = {};
+            const monthlyStatusCount = {};
+            const statusSales = { '商談中': 0, '進行中': 0, '完了': 0, '停止': 0, '保留': 0 };
+
             const years = [...new Set(ps.map(p => {
                 const d = new Date(p['完了日'] || p['登録日']);
                 return isNaN(d) ? null : d.getFullYear();
             }).filter(y => y))].sort((a, b) => b - a);
 
-            let filterHtml = `<div class="filter-bar" style="margin-bottom:16px; background:var(--white); padding:10px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--sh);">
-                <div style="font-size:12px; font-weight:700; margin-bottom:5px; color:var(--txt2);">期間で絞り込み</div>
-                <div style="display:flex; gap:8px;">
-                    <select class="filter-sel" style="flex:1;" onchange="updateDashFilter('year', this.value)">
+            const filterHtml = `<div class="filter-bar" style="margin-bottom:16px; background:var(--white); padding:12px; border-radius:var(--radius); border:1px solid var(--border); box-shadow:var(--sh); display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between;">
+                    <div style="font-size:12px; font-weight:700; color:var(--txt2);">期間で絞り込み</div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button class="btn btn-outline btn-xs" type="button" onclick="applyDashboardPreset('all')" style="${dashboardFilter.mode === 'all' ? 'background:var(--acc);color:#fff;border-color:var(--acc);' : ''}">全期間</button>
+                        <button class="btn btn-outline btn-xs" type="button" onclick="applyDashboardPreset('year')" style="${dashboardFilter.mode === 'year' ? 'background:var(--acc);color:#fff;border-color:var(--acc);' : ''}">今年</button>
+                        <button class="btn btn-outline btn-xs" type="button" onclick="applyDashboardPreset('month')" style="${dashboardFilter.mode === 'month' ? 'background:var(--acc);color:#fff;border-color:var(--acc);' : ''}">今月</button>
+                    </div>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; width:100%;">
+                    <select class="filter-sel" style="flex:1; min-width:120px;" onchange="updateDashFilter('year', this.value)">
                         <option value="">すべての年</option>
                         ${years.map(y => `<option value="${y}" ${dashboardFilter.year == y ? 'selected' : ''}>${y}年</option>`).join('')}
                     </select>
-                    <select class="filter-sel" style="flex:1;" onchange="updateDashFilter('month', this.value)">
+                    <select class="filter-sel" style="flex:1; min-width:120px;" onchange="updateDashFilter('month', this.value)">
                         <option value="">すべての月</option>
-                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => {
-                const val = String(m).padStart(2, '0');
-                return `<option value="${val}" ${dashboardFilter.month == val ? 'selected' : ''}>${m}月</option>`;
-            }).join('')}
+                        ${[1,2,3,4,5,6,7,8,9,10,11,12].map(m => {
+                            const val = String(m).padStart(2, '0');
+                            return `<option value="${val}" ${dashboardFilter.month == val ? 'selected' : ''}>${m}月</option>`;
+                        }).join('')}
                     </select>
+                    <button class="btn btn-primary btn-sm" type="button" onclick="openDashboardTargets()">対象案件を表示</button>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between;">
+                    <div style="font-size:12px; color:var(--txt2);">現在の集計期間: <strong style="color:var(--txt)">${getDashboardPeriodLabel()}</strong></div>
+                    <div style="font-size:12px; color:var(--txt3);">完了日優先 / 未設定時は登録日で判定</div>
                 </div>
             </div>`;
 
-            // ─── AGGREGATION SETUP ───
             const now = new Date();
             const monthlyKeys = [];
             for (let i = 11; i >= 0; i--) {
                 const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
                 const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
                 monthlyKeys.push(k);
-                mSales[k] = 0;
-                mProfit[k] = 0;
+                mCompletedSales[k] = 0;
+                mCompletedProfit[k] = 0;
+                monthlyStatusSales[k] = { '商談中': 0, '進行中': 0, '完了': 0, '停止': 0, '保留': 0 };
+                monthlyStatusCount[k] = { '商談中': 0, '進行中': 0, '完了': 0, '停止': 0, '保留': 0 };
             }
 
-            let leadTimes = [];
-            let projectSizes = { 'S': 0, 'M': 0, 'L': 0, 'XL': 0 }; // Small, Medium, Large, Extra Large
+            const leadTimes = [];
+            const projectSizes = { 'S': 0, 'M': 0, 'L': 0, 'XL': 0 };
 
-            // ─── AGGREGATION ───
-            const filteredPs = ps.filter(p => {
-                const ds = p['完了日'] || p['登録日'];
-                if (!ds) return dashboardFilter.year === '' && dashboardFilter.month === '';
-                const d = new Date(ds);
-                if (isNaN(d)) return false;
-                const yMatch = dashboardFilter.year === '' || d.getFullYear().toString() === dashboardFilter.year;
-                const mMatch = dashboardFilter.month === '' || (d.getMonth() + 1).toString().padStart(2, '0') === dashboardFilter.month;
-                return yMatch && mMatch;
-            });
+            const filteredPs = ps.filter(isProjectInDashboardPeriod);
 
             filteredPs.forEach(p => {
-                const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0, st = p['ステータス'] || '不明';
-                sc[st] = (sc[st] || 0) + 1;
-                if (st === '進行中') activeSales += s;
+                const sales = Number(p['売上']) || 0;
+                const profit = Number(p['利益']) || 0;
+                const status = p['ステータス'] || '不明';
+                const bucketDate = new Date((status === '完了' ? (p['完了日'] || p['登録日']) : (p['登録日'] || p['完了日'])) || '');
+                const bucketKey = !isNaN(bucketDate) ? `${bucketDate.getFullYear()}/${String(bucketDate.getMonth() + 1).padStart(2, '0')}` : '';
 
-                if (st === '完了') {
-                    totalSales += s;
-                    totalProfit += pr;
+                sc[status] = (sc[status] || 0) + 1;
+                if (statusSales[status] == null) statusSales[status] = 0;
+                statusSales[status] += sales;
 
-                    const ds = p['完了日'] || p['登録日'];
-                    if (ds) {
-                        const d = new Date(ds);
-                        if (!isNaN(d)) {
-                            const k = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-                            if (mSales.hasOwnProperty(k)) { mSales[k] += s; mProfit[k] += pr; }
-                        }
+                if (status === '保留' || status === '停止') holdCount++;
+
+                if (bucketKey && monthlyStatusSales[bucketKey]) {
+                    monthlyStatusSales[bucketKey][status] = (monthlyStatusSales[bucketKey][status] || 0) + sales;
+                    monthlyStatusCount[bucketKey][status] = (monthlyStatusCount[bucketKey][status] || 0) + 1;
+                }
+
+                if (status === '商談中') {
+                    proposalSales += sales;
+                    forecastSales += sales;
+                    forecastProfit += profit;
+                } else if (status === '進行中') {
+                    activeSales += sales;
+                    forecastSales += sales;
+                    forecastProfit += profit;
+                } else if (status === '完了') {
+                    totalSales += sales;
+                    totalProfit += profit;
+                    forecastSales += sales;
+                    forecastProfit += profit;
+
+                    if (bucketKey && mCompletedSales[bucketKey] != null) {
+                        mCompletedSales[bucketKey] += sales;
+                        mCompletedProfit[bucketKey] += profit;
                     }
 
-                    // Lead Time (Days)
                     if (p['登録日'] && p['完了日']) {
-                        const d1 = new Date(p['登録日']), d2 = new Date(p['完了日']);
+                        const d1 = new Date(p['登録日']);
+                        const d2 = new Date(p['完了日']);
                         if (!isNaN(d1) && !isNaN(d2)) {
                             const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
                             if (diff >= 0) leadTimes.push(diff);
                         }
                     }
 
-                    // Project Size
-                    if (s < 10000) projectSizes['S']++;
-                    else if (s < 50000) projectSizes['M']++;
-                    else if (s < 100000) projectSizes['L']++;
+                    if (sales < 10000) projectSizes['S']++;
+                    else if (sales < 50000) projectSizes['M']++;
+                    else if (sales < 100000) projectSizes['L']++;
                     else projectSizes['XL']++;
 
-                    const cn = p['クライアント名'] || '未設定';
-                    if (!cmap[cn]) cmap[cn] = { sales: 0, profit: 0, count: 0 };
-                    cmap[cn].sales += s; cmap[cn].profit += pr; cmap[cn].count++;
+                    const clientName = p['クライアント名'] || '未設定';
+                    if (!clientMap[clientName]) clientMap[clientName] = { sales: 0, profit: 0, count: 0 };
+                    clientMap[clientName].sales += sales;
+                    clientMap[clientName].profit += profit;
+                    clientMap[clientName].count += 1;
                 }
             });
 
-            const avgM = totalSales > 0 ? Math.round(totalProfit / totalSales * 100) : 0;
+            const pipelineSales = proposalSales + activeSales;
+            const avgMargin = totalSales > 0 ? Math.round(totalProfit / totalSales * 100) : 0;
             const avgLead = leadTimes.length > 0 ? Math.round(leadTimes.reduce((a, b) => a + b, 0) / leadTimes.length) : 0;
-            const avgVal = sc['完了'] > 0 ? Math.round(totalSales / sc['完了']) : 0;
+            const avgVal = (sc['完了'] || 0) > 0 ? Math.round(totalSales / (sc['完了'] || 0)) : 0;
+            const forecastMargin = forecastSales > 0 ? Math.round(forecastProfit / forecastSales * 100) : 0;
+            const completionRate = filteredPs.length > 0 ? Math.round(((sc['完了'] || 0) / filteredPs.length) * 100) : 0;
+            const actionRate = filteredPs.length > 0 ? Math.round((((sc['商談中'] || 0) + (sc['進行中'] || 0)) / filteredPs.length) * 100) : 0;
 
             const monthly = monthlyKeys.map(k => ({
                 month: k,
-                sales: mSales[k] || 0,
-                profit: mProfit[k] || 0,
-                margin: mSales[k] ? Math.round((mProfit[k] || 0) / mSales[k] * 100) : 0
+                sales: mCompletedSales[k] || 0,
+                profit: mCompletedProfit[k] || 0,
+                margin: mCompletedSales[k] ? Math.round((mCompletedProfit[k] || 0) / mCompletedSales[k] * 100) : 0,
+                completedSales: monthlyStatusSales[k]['完了'] || 0,
+                activeSales: monthlyStatusSales[k]['進行中'] || 0,
+                proposalSales: monthlyStatusSales[k]['商談中'] || 0,
+                completedCount: monthlyStatusCount[k]['完了'] || 0,
+                activeCount: monthlyStatusCount[k]['進行中'] || 0,
+                proposalCount: monthlyStatusCount[k]['商談中'] || 0
             }));
 
-            // Cumulative Data
             let cumSales = 0, cumProfit = 0;
             const cumulativeData = monthly.map(m => {
                 cumSales += m.sales;
@@ -2086,39 +2319,95 @@
                 return { month: m.month, sales: cumSales, profit: cumProfit };
             });
 
-            const clientRanking = Object.entries(cmap).map(([n, v]) => ({ name: n, ...v, margin: v.sales > 0 ? Math.round(v.profit / v.sales * 100) : 0 })).sort((a, b) => b.sales - a.sales).slice(0, 8);
-            const recent = [...filteredPs].filter(p => p['ステータス'] === '完了').sort((a, b) => new Date(b['完了日'] || 0) - new Date(a['完了日'] || 0)).slice(0, 5);
+            const clientRanking = Object.entries(clientMap)
+                .map(([name, v]) => ({ name, ...v, margin: v.sales > 0 ? Math.round(v.profit / v.sales * 100) : 0 }))
+                .sort((a, b) => b.sales - a.sales)
+                .slice(0, 8);
+
+            const recent = [...filteredPs]
+                .filter(p => p['ステータス'] === '完了')
+                .sort((a, b) => new Date(b['完了日'] || 0) - new Date(a['完了日'] || 0))
+                .slice(0, 5);
+
+            const topClient = clientRanking[0];
             const maxCli = Math.max(...clientRanking.map(r => r.sales), 1);
-            const mColor = avgM >= 50 ? 'var(--green)' : avgM >= 30 ? 'var(--amber)' : 'var(--red)';
+            const marginColor = avgMargin >= 50 ? 'var(--green)' : avgMargin >= 30 ? 'var(--amber)' : 'var(--red)';
 
-            // KPI
+            const insightItems = [];
+            if (pipelineSales > 0) insightItems.push(`進行中＋商談中のパイプラインは ${fmt(pipelineSales)} です。`);
+            if (forecastSales > 0 && totalSales > 0) insightItems.push(`見込売上は確定売上の ${Math.max(1, Math.round(forecastSales / Math.max(totalSales, 1) * 10) / 10)} 倍です。`);
+            if (topClient) insightItems.push(`最大クライアントは「${esc(topClient.name)}」で、売上 ${fmt(topClient.sales)} です。`);
+            if (avgLead > 0) insightItems.push(`平均リードタイムは ${avgLead}日 です。`);
+            if ((sc['商談中'] || 0) > (sc['完了'] || 0)) insightItems.push(`商談中案件が多めです。案件化の優先順位付けをすると改善余地があります。`);
+            if ((sc['保留'] || 0) + (sc['停止'] || 0) > 0) insightItems.push(`保留・停止が ${holdCount}件 あります。棚卸し対象として確認すると良いです。`);
+            if (insightItems.length === 0) insightItems.push('案件を追加すると、見込売上・月次推移・クライアント比率などを自動分析します。');
+
             let html = filterHtml;
-            html += `<div class="kpi-grid">
-    ${kpi('確定売上計', fmt(totalSales), '完了案件のみ', 'var(--green)')}
-    ${kpi('確定利益計', fmt(totalProfit), '完了案件のみ', 'var(--blue)')}
-    ${kpi('平均利益率', pct(avgM), '完了案件のみ', mColor)}
-    ${kpi('平均リードタイム', avgLead + '日', '登録〜完了まで', 'var(--acc)')}
-    ${kpi('平均単価', fmt(avgVal), '完了1件あたり', 'var(--amber)')}
-    ${kpi('完了件数', (sc['完了'] || 0) + '件', `絞り込み期間内`, 'var(--blue)')}
-  </div>`;
+            html += `<div class="dash-stack">`;
 
-            // Status chips
+            html += `<div class="dash-summary-grid">
+                <div class="kpi-grid">
+                    ${kpi('予測売上', fmt(forecastSales), '完了＋進行中＋商談中', 'var(--acc)')}
+                    ${kpi('パイプライン売上', fmt(pipelineSales), '進行中＋商談中', 'var(--amber)')}
+                    ${kpi('進行中売上', fmt(activeSales), '進行中のみ', 'var(--green)')}
+                    ${kpi('商談中売上', fmt(proposalSales), '商談中のみ', 'var(--amber)')}
+                    ${kpi('確定売上計', fmt(totalSales), '完了案件のみ', 'var(--green)')}
+                    ${kpi('確定利益計', fmt(totalProfit), '完了案件のみ', 'var(--blue)')}
+                    ${kpi('予測利益率', pct(forecastMargin), '見込ベース', 'var(--acc)')}
+                    ${kpi('平均利益率', pct(avgMargin), '完了案件のみ', marginColor)}
+                    ${kpi('平均単価', fmt(avgVal), '完了1件あたり', 'var(--blue)')}
+                    ${kpi('平均リードタイム', avgLead ? (avgLead + '日') : '—', '登録〜完了まで', 'var(--acc)')}
+                    ${kpi('完了率', pct(completionRate), '期間内の全案件比', 'var(--blue)')}
+                    ${kpi('稼働率', pct(actionRate), '商談中＋進行中', 'var(--green)')}
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-title">サマリー</div>
+                    <div class="insight-list">
+                        ${insightItems.map(t => `<div class="insight-item"><span class="insight-dot"></span><span>${t}</span></div>`).join('')}
+                    </div>
+                    <div class="mini-kpi-grid">
+                        <div class="mini-kpi">
+                            <div class="mini-kpi-label">完了件数</div>
+                            <div class="mini-kpi-value">${(sc['完了'] || 0)}件</div>
+                        </div>
+                        <div class="mini-kpi">
+                            <div class="mini-kpi-label">進行中件数</div>
+                            <div class="mini-kpi-value">${(sc['進行中'] || 0)}件</div>
+                        </div>
+                        <div class="mini-kpi">
+                            <div class="mini-kpi-label">商談中件数</div>
+                            <div class="mini-kpi-value">${(sc['商談中'] || 0)}件</div>
+                        </div>
+                        <div class="mini-kpi">
+                            <div class="mini-kpi-label">保留・停止</div>
+                            <div class="mini-kpi-value">${holdCount}件</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+
             html += `<div class="status-row">`;
             ['商談中', '進行中', '完了', '停止', '保留'].forEach(s => {
                 html += `<div class="s-chip" onclick="filterByStatus('${s}')" title="${s}の案件一覧を表示">
-      <div class="s-chip-cnt" style="color:${SC[s]}">${sc[s] || 0}</div>
-      <span class="badge b-${s} s-chip-lbl">${s}</span>
-    </div>`;
+                    <div class="s-chip-cnt" style="color:${SC[s]}">${sc[s] || 0}</div>
+                    <span class="badge b-${s} s-chip-lbl">${s}</span>
+                </div>`;
             });
             html += `</div>`;
 
-            if (monthly.length > 0) {
+            if (filteredPs.length > 0) {
                 html += `
                 <div class="chart-card">
-                    <div class="chart-hdr"><div class="chart-title">月別 売上 / 利益</div></div>
+                    <div class="chart-hdr"><div class="chart-title">月別 実績売上 / 利益</div></div>
                     <div class="chart-canvas-wrap"><canvas id="barChart"></canvas></div>
                 </div>
-                
+
+                <div class="chart-card">
+                    <div class="chart-hdr"><div class="chart-title">月別 予測売上構成（完了・進行中・商談中）</div></div>
+                    <div class="chart-canvas-wrap"><canvas id="forecastStackChart"></canvas></div>
+                </div>
+
                 <div class="chart-row">
                     <div class="chart-card">
                         <div class="chart-hdr"><div class="chart-title">累積実績の推移</div></div>
@@ -2132,20 +2421,31 @@
 
                 <div class="chart-row">
                     <div class="chart-card">
-                        <div class="chart-hdr"><div class="chart-title">クライアント別売上比率</div></div>
-                        <div class="chart-canvas-wrap"><canvas id="clientPie"></canvas></div>
+                        <div class="chart-hdr"><div class="chart-title">ステータス別 売上</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="statusSalesChart"></canvas></div>
                     </div>
                     <div class="chart-card">
-                        <div class="chart-hdr"><div class="chart-title">案件サイズ分布 (売上)</div></div>
-                        <div class="chart-canvas-wrap"><canvas id="sizeDoughnut"></canvas></div>
+                        <div class="chart-hdr"><div class="chart-title">月別 案件件数（完了・進行中・商談中）</div></div>
+                        <div class="chart-canvas-wrap"><canvas id="countTrendChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="chart-row">
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">クライアント別売上比率</div></div>
+                        <div class="chart-canvas-wrap circle-chart"><canvas id="clientPie"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-hdr"><div class="chart-title">案件サイズ分布（完了売上）</div></div>
+                        <div class="chart-canvas-wrap circle-chart"><canvas id="sizeDoughnut"></canvas></div>
                     </div>
                 </div>`;
             } else {
                 html += `<div class="chart-card" style="text-align:center;padding:40px;color:var(--txt3);font-size:14px">案件を登録すると詳細な分析が表示されます</div>`;
             }
 
-            // Ranking & Recent (Side by Side in Desktop)
-            html += `<div class="chart-row">`;
+            html += `<div class="chart-row section-spacer">`;
+
             if (clientRanking.length > 0) {
                 html += `<div class="ranking-card" style="margin-bottom:0">
                     <div class="ranking-hdr">
@@ -2168,7 +2468,8 @@
                 html += `<div class="recent-card">
                     <div class="recent-hdr">最近の完了案件</div>`;
                 recent.forEach(p => {
-                    const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
+                    const s = Number(p['売上']) || 0;
+                    const pr = Number(p['利益']) || 0;
                     const m = s > 0 ? Math.round(pr / s * 100) : 100;
                     html += `<div class="recent-row">
                         <div class="rr-dot" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
@@ -2184,97 +2485,180 @@
                 });
                 html += `</div>`;
             }
+
             html += `</div>`;
 
+            html += `</div>`;
             document.getElementById('dashContent').innerHTML = html;
 
-            // Chart initialization after DOM update
-            if (monthly.length > 0) {
+            if (filteredPs.length > 0) {
                 const labels = monthly.map(m => m.month.slice(5) + '月');
                 const salesData = monthly.map(m => m.sales);
                 const profitData = monthly.map(m => m.profit);
                 const marginData = monthly.map(m => m.margin);
                 const cumSalesData = cumulativeData.map(c => c.sales);
                 const cumProfitData = cumulativeData.map(c => c.profit);
+                const completedForecastData = monthly.map(m => m.completedSales);
+                const activeForecastData = monthly.map(m => m.activeSales);
+                const proposalForecastData = monthly.map(m => m.proposalSales);
+                const completedCountData = monthly.map(m => m.completedCount);
+                const activeCountData = monthly.map(m => m.activeCount);
+                const proposalCountData = monthly.map(m => m.proposalCount);
 
-                // 1. Monthly Bar Chart
-                new Chart(document.getElementById('barChart'), {
+                dashboardCharts.push(new Chart(document.getElementById('barChart'), {
                     type: 'bar',
                     data: {
-                        labels: labels,
+                        labels,
                         datasets: [
                             { label: '売上', data: salesData, backgroundColor: '#e4e7ec', borderRadius: 4, barPercentage: 0.6 },
-                            { label: '利益', data: profitData, backgroundColor: SC['進行中'], borderRadius: 4, barPercentage: 0.6 }
+                            { label: '利益', data: profitData, backgroundColor: '#059669', borderRadius: 4, barPercentage: 0.6 }
                         ]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                             y: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } }
                         }
                     }
-                });
+                }));
 
-                // 2. Cumulative Area Chart
-                new Chart(document.getElementById('cumChart'), {
-                    type: 'line',
+                dashboardCharts.push(new Chart(document.getElementById('forecastStackChart'), {
+                    type: 'bar',
                     data: {
-                        labels: labels,
+                        labels,
                         datasets: [
-                            { label: '累積売上', data: cumSalesData, borderColor: 'var(--txt3)', backgroundColor: 'rgba(0,0,0,0.05)', fill: true, tension: 0.3 },
-                            { label: '累積利益', data: cumProfitData, borderColor: 'var(--blue)', backgroundColor: 'rgba(29, 78, 216, 0.1)', fill: true, tension: 0.3 }
+                            { label: '完了', data: completedForecastData, backgroundColor: '#1d4ed8', borderRadius: 4 },
+                            { label: '進行中', data: activeForecastData, backgroundColor: '#059669', borderRadius: 4 },
+                            { label: '商談中', data: proposalForecastData, backgroundColor: '#b45309', borderRadius: 4 }
                         ]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } },
+                            tooltip: { mode: 'index', intersect: false }
+                        },
+                        scales: {
+                            x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { stacked: true, grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } }
+                        }
+                    }
+                }));
+
+                dashboardCharts.push(new Chart(document.getElementById('cumChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: '累積売上', data: cumSalesData, borderColor: '#6b7280', backgroundColor: 'rgba(107,114,128,0.08)', fill: true, tension: 0.3 },
+                            { label: '累積利益', data: cumProfitData, borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.1)', fill: true, tension: 0.3 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                             y: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } }
                         }
                     }
-                });
+                }));
 
-                // 3. Margin Line Chart
-                new Chart(document.getElementById('lineChart'), {
+                dashboardCharts.push(new Chart(document.getElementById('lineChart'), {
                     type: 'line',
                     data: {
-                        labels: labels,
-                        datasets: [{ label: '利益率', data: marginData, borderColor: 'var(--blue)', backgroundColor: 'rgba(29, 78, 216, 0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 }]
+                        labels,
+                        datasets: [{ label: '利益率', data: marginData, borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.1)', fill: true, tension: 0.4, pointRadius: 4, pointBackgroundColor: 'white', pointBorderWidth: 2 }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: false,
+                        responsive: true,
+                        maintainAspectRatio: false,
                         plugins: { legend: { display: false } },
                         scales: {
                             x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                             y: { min: 0, max: 100, ticks: { font: { size: 10 }, stepSize: 25, callback: v => v + '%' } }
                         }
                     }
-                });
+                }));
 
-                // 4. Client Pie Chart
+                dashboardCharts.push(new Chart(document.getElementById('statusSalesChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['商談中', '進行中', '完了', '停止', '保留'],
+                        datasets: [{
+                            data: ['商談中', '進行中', '完了', '停止', '保留'].map(k => statusSales[k] || 0),
+                            backgroundColor: ['#b45309', '#059669', '#1d4ed8', '#dc2626', '#9ca3af'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#f0f2f5' }, ticks: { font: { size: 10 }, callback: v => v >= 10000 ? (v / 10000) + '万' : v } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        }
+                    }
+                }));
+
+                dashboardCharts.push(new Chart(document.getElementById('countTrendChart'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: '完了', data: completedCountData, borderColor: '#1d4ed8', backgroundColor: 'rgba(29,78,216,0.08)', fill: true, tension: 0.35 },
+                            { label: '進行中', data: activeCountData, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.08)', fill: true, tension: 0.35 },
+                            { label: '商談中', data: proposalCountData, borderColor: '#b45309', backgroundColor: 'rgba(180,83,9,0.08)', fill: true, tension: 0.35 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top', align: 'end', labels: { boxWidth: 8, font: { size: 10 } } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { beginAtZero: true, ticks: { precision: 0, font: { size: 10 } }, grid: { color: '#f0f2f5' } }
+                        }
+                    }
+                }));
+
                 const topClients = clientRanking.slice(0, 5);
-                const otherSales = totalSales - topClients.reduce((s, c) => s + c.sales, 0);
-                new Chart(document.getElementById('clientPie'), {
+                const topSum = topClients.reduce((s, c) => s + c.sales, 0);
+                const otherSales = Math.max(totalSales - topSum, 0);
+                const pieLabels = otherSales > 0 ? [...topClients.map(c => c.name), 'その他'] : topClients.map(c => c.name);
+                const pieData = otherSales > 0 ? [...topClients.map(c => c.sales), otherSales] : topClients.map(c => c.sales);
+
+                dashboardCharts.push(new Chart(document.getElementById('clientPie'), {
                     type: 'pie',
                     data: {
-                        labels: [...topClients.map(c => c.name), 'その他'],
+                        labels: pieLabels,
                         datasets: [{
-                            data: [...topClients.map(c => c.sales), otherSales],
+                            data: pieData,
                             backgroundColor: ['#111827', '#1f2937', '#374151', '#4b5563', '#6b7280', '#e4e7ec'],
                             borderWidth: 0
                         }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: true,
-                        plugins: { legend: { position: window.innerWidth < 600 ? 'bottom' : 'right', labels: { boxWidth: 10, font: { size: 9 } } } }
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: { padding: 8 },
+                        plugins: {
+                            legend: {
+                                position: window.innerWidth < 600 ? 'bottom' : 'right',
+                                labels: { boxWidth: 10, font: { size: 9 } }
+                            }
+                        }
                     }
-                });
+                }));
 
-                // 5. Size Doughnut Chart
-                new Chart(document.getElementById('sizeDoughnut'), {
+                dashboardCharts.push(new Chart(document.getElementById('sizeDoughnut'), {
                     type: 'doughnut',
                     data: {
                         labels: ['S (<1万)', 'M (1-5万)', 'L (5-10万)', 'XL (10万〜)'],
@@ -2285,31 +2669,39 @@
                         }]
                     },
                     options: {
-                        responsive: true, maintainAspectRatio: true,
+                        responsive: true,
+                        maintainAspectRatio: false,
                         cutout: '70%',
-                        plugins: { legend: { position: window.innerWidth < 600 ? 'bottom' : 'right', labels: { boxWidth: 10, font: { size: 10 } } } }
+                        layout: { padding: 8 },
+                        plugins: {
+                            legend: {
+                                position: window.innerWidth < 600 ? 'bottom' : 'right',
+                                labels: { boxWidth: 10, font: { size: 10 } }
+                            }
+                        }
                     }
-                });
+                }));
             }
         }
 
+
         function updateDashFilter(key, val) {
             dashboardFilter[key] = val;
+            if (dashboardFilter.year && dashboardFilter.month) dashboardFilter.mode = 'month';
+            else if (dashboardFilter.year) dashboardFilter.mode = 'year';
+            else dashboardFilter.mode = 'all';
             renderDashboard();
         }
 
         function kpi(lbl, val, sub, color) {
             return `<div class="kpi-card">
-    <div class="kpi-tag" style="background:${color}"></div>
-    <div class="kpi-lbl">${lbl}</div>
-    <div class="kpi-val">${val}</div>
-    ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
-  </div>`;
+                <div class="kpi-tag" style="background:${color}"></div>
+                <div class="kpi-lbl">${lbl}</div>
+                <div class="kpi-val">${val}</div>
+                ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
+            </div>`;
         }
 
-        // ═══════════════════════════════════════════════
-        //  PROJECTS
-        // ═══════════════════════════════════════════════
         function filterByStatus(status) {
             showView('projects');
             const sel = document.getElementById('statusFilter');
@@ -2319,20 +2711,64 @@
             renderProjects();
         }
 
-        function getFiltered() {
-            const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
-            const sf = document.getElementById('statusFilter')?.value || '';
-            return allProjects.filter(p =>
-                (!q || (p['案件名'] || '').toLowerCase().includes(q) || (p['クライアント名'] || '').toLowerCase().includes(q)) &&
-                (!sf || p['ステータス'] === sf)
-            );
+
+        function resetProjectScope() {
+            projectViewBaseList = null;
+            projectViewLabel = '';
+            const sf = document.getElementById('statusFilter'); if (sf) sf.value = '';
+            const si = document.getElementById('searchInput'); if (si) si.value = '';
+            const ms1 = document.getElementById('minSales'); if (ms1) ms1.value = '';
+            const ms2 = document.getElementById('maxSales'); if (ms2) ms2.value = '';
+            const df = document.getElementById('dateFrom'); if (df) df.value = '';
+            const dt = document.getElementById('dateTo'); if (dt) dt.value = '';
         }
 
-        function renderProjects() {
-            if (!loaded) return;
-            const f = getFiltered();
+        function useAllProjectsView() {
+            projectViewBaseList = null;
+            projectViewLabel = '';
+            renderProjects();
+        }
 
-            // Mobile cards
+        function getFiltered(baseList = allProjects) {
+            const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+            const sf = document.getElementById('statusFilter')?.value || '';
+            const minSalesEl = document.getElementById('minSales');
+            const maxSalesEl = document.getElementById('maxSales');
+            const dateFrom = document.getElementById('dateFrom')?.value || '';
+            const dateTo = document.getElementById('dateTo')?.value || '';
+            const hasMin = !!(minSalesEl && minSalesEl.value !== '');
+            const hasMax = !!(maxSalesEl && maxSalesEl.value !== '');
+            const minSales = hasMin ? Number(minSalesEl.value) : null;
+            const maxSales = hasMax ? Number(maxSalesEl.value) : null;
+
+            return baseList.filter(p => {
+                const text = `${p['案件名'] || ''} ${p['クライアント名'] || ''} ${p['備考'] || ''}`.toLowerCase();
+                const sales = Number(p['売上']) || 0;
+                const d = getProjectBaseDate(p);
+                const dv = d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '';
+
+                if (q && !text.includes(q)) return false;
+                if (sf && p['ステータス'] !== sf) return false;
+                if (hasMin && sales < minSales) return false;
+                if (hasMax && sales > maxSales) return false;
+                if (dateFrom && (!dv || dv < dateFrom)) return false;
+                if (dateTo && (!dv || dv > dateTo)) return false;
+                return true;
+            });
+        }
+
+        function renderProjects(baseList = null, caption = '') {
+            if (!loaded) return;
+            const effectiveBase = baseList || projectViewBaseList || allProjects;
+            const effectiveCaption = caption || projectViewLabel || '';
+            const f = getFiltered(effectiveBase);
+            const scopeInfo = document.getElementById('projectScopeInfo');
+            if (scopeInfo) {
+                scopeInfo.innerHTML = effectiveCaption
+                    ? `<strong style="color:var(--txt)">対象:</strong> ${effectiveCaption} / 母集団 ${effectiveBase.length}件`
+                    : `<strong style="color:var(--txt)">対象:</strong> 全案件 ${effectiveBase.length}件`;
+            }
+
             const ce = document.getElementById('projCards');
             if (ce) {
                 if (f.length === 0) {
@@ -2342,82 +2778,78 @@
                         const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
                         const m = s > 0 ? Math.round(pr / s * 100) : 100;
                         return `<div class="proj-card">
-          <div class="proj-card-stripe" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
-          <div class="proj-card-inner">
-            <div class="pc-top">
-              <div class="pc-name">${esc(p['案件名'])}</div>
-              <span class="badge b-${p['ステータス']}">${p['ステータス']}</span>
-            </div>
-            <div class="pc-client" style="display:flex;justify-content:space-between;align-items:center">
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${esc(p['クライアント名']) || 'クライアント未設定'}</span>
-              <span style="color:var(--txt3);font-size:11px;font-family:var(--mono);flex-shrink:0">${p['完了日'] || '—'}</span>
-            </div>
-            <div class="pc-metrics">
-              <div class="pc-metric">
-                <div class="pc-metric-lbl">売上</div>
-                <div class="pc-metric-val green">${fmt(s)}</div>
-              </div>
-              <div class="pc-metric">
-                <div class="pc-metric-lbl">利益</div>
-                <div class="pc-metric-val">${fmt(pr)}</div>
-              </div>
-              <div class="pc-metric">
-                <div class="pc-metric-lbl">利益率</div>
-                <div class="pc-metric-val">${m}%</div>
-              </div>
-            </div>
-            <div class="pc-actions">
-              <button class="btn btn-outline btn-sm" onclick="openProjEdit(${p['_row']})">編集</button>
-              <button class="btn btn-danger btn-sm" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
-            </div>
-          </div>
-        </div>`;
+                            <div class="proj-card-stripe" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
+                            <div class="proj-card-inner">
+                                <div class="pc-top">
+                                    <div class="pc-name">${esc(p['案件名'])}</div>
+                                    <span class="badge b-${p['ステータス']}">${p['ステータス']}</span>
+                                </div>
+                                <div class="pc-client" style="display:flex;justify-content:space-between;align-items:center">
+                                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px">${esc(p['クライアント名']) || 'クライアント未設定'}</span>
+                                    <span style="color:var(--txt3);font-size:11px;font-family:var(--mono);flex-shrink:0">${p['完了日'] || '—'}</span>
+                                </div>
+                                <div class="pc-metrics">
+                                    <div class="pc-metric">
+                                        <div class="pc-metric-lbl">売上</div>
+                                        <div class="pc-metric-val green">${fmt(s)}</div>
+                                    </div>
+                                    <div class="pc-metric">
+                                        <div class="pc-metric-lbl">利益</div>
+                                        <div class="pc-metric-val">${fmt(pr)}</div>
+                                    </div>
+                                    <div class="pc-metric">
+                                        <div class="pc-metric-lbl">利益率</div>
+                                        <div class="pc-metric-val">${m}%</div>
+                                    </div>
+                                </div>
+                                <div class="pc-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="openProjEdit(${p['_row']})">編集</button>
+                                    <button class="btn btn-danger btn-sm" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+                                </div>
+                            </div>
+                        </div>`;
                     }).join('');
                 }
             }
 
-            // Desktop table
             const te = document.getElementById('projTable');
             const cnte = document.getElementById('projCount');
-            if (cnte) cnte.textContent = `${f.length}件`;
+            if (cnte) cnte.textContent = effectiveCaption ? `${f.length}件 / ${effectiveCaption}` : `${f.length}件`;
             if (te) {
                 if (f.length === 0) {
                     te.innerHTML = emptyState('案件がありません', '右上の「案件を追加」から登録できます');
                 } else {
                     te.innerHTML = `<table>
-        <thead><tr>
-          <th>案件名</th><th>クライアント</th><th>ステータス</th>
-          <th style="text-align:right">売上</th>
-          <th style="text-align:right">利益</th>
-          <th style="text-align:right">利益率</th>
-          <th>日付</th><th></th>
-        </tr></thead>
-        <tbody>${f.map(p => {
-                        const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
-                        const m = s > 0 ? Math.round(pr / s * 100) : 100;
-                        const mc = m >= 50 ? 'var(--green)' : m >= 30 ? 'var(--amber)' : 'var(--red)';
-                        return `<tr>
-            <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['案件名'])}</td>
-            <td style="color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['クライアント名']) || '—'}</td>
-            <td><span class="badge b-${p['ステータス']}">${p['ステータス']}</span></td>
-            <td class="td-mono" style="text-align:right">${fmt(s)}</td>
-            <td class="td-mono" style="text-align:right">${fmt(pr)}</td>
-            <td class="td-mono" style="text-align:right;color:${mc}">${m}%</td>
-            <td style="color:var(--txt2);font-size:13px">${p['完了日'] || '—'}</td>
-            <td><div class="td-act">
-              <button class="btn btn-outline btn-xs" onclick="openProjEdit(${p['_row']})">編集</button>
-              <button class="btn btn-danger btn-xs" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
-            </div></td>
-          </tr>`;
-                    }).join('')}</tbody>
-      </table>`;
+                        <thead><tr>
+                            <th>案件名</th><th>クライアント</th><th>ステータス</th>
+                            <th style="text-align:right">売上</th>
+                            <th style="text-align:right">利益</th>
+                            <th style="text-align:right">利益率</th>
+                            <th>日付</th><th></th>
+                        </tr></thead>
+                        <tbody>${f.map(p => {
+                            const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
+                            const m = s > 0 ? Math.round(pr / s * 100) : 100;
+                            const mc = m >= 50 ? 'var(--green)' : m >= 30 ? 'var(--amber)' : 'var(--red)';
+                            return `<tr>
+                                <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['案件名'])}</td>
+                                <td style="color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['クライアント名']) || '—'}</td>
+                                <td><span class="badge b-${p['ステータス']}">${p['ステータス']}</span></td>
+                                <td class="td-mono" style="text-align:right">${fmt(s)}</td>
+                                <td class="td-mono" style="text-align:right">${fmt(pr)}</td>
+                                <td class="td-mono" style="text-align:right;color:${mc}">${m}%</td>
+                                <td style="color:var(--txt2);font-size:13px">${p['完了日'] || '—'}</td>
+                                <td><div class="td-act">
+                                    <button class="btn btn-outline btn-xs" onclick="openProjEdit(${p['_row']})">編集</button>
+                                    <button class="btn btn-danger btn-xs" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+                                </div></td>
+                            </tr>`;
+                        }).join('')}</tbody>
+                    </table>`;
                 }
             }
         }
 
-        // ═══════════════════════════════════════════════
-        //  CLIENTS
-        // ═══════════════════════════════════════════════
         function renderClients() {
             if (!loaded) return;
             const el = document.getElementById('clientsGrid');
@@ -2441,32 +2873,29 @@
                 const st = stats[c['ID']] || { sales: 0, count: 0 };
                 const init = (c['クライアント名'] || '?')[0];
                 return `<div class="cli-card">
-      <div class="cli-top">
-        <div class="cli-avatar">${esc(init)}</div>
-        <div class="cli-name-text">${esc(c['クライアント名'])}</div>
-      </div>
-      <div class="cli-meta">
-        ${c['担当者'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">担当者</span><span class="cli-meta-val">${esc(c['担当者'])}</span></div>` : ''}
-        ${c['メール'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">メール</span><span class="cli-meta-val">${esc(c['メール'])}</span></div>` : ''}
-        ${c['電話'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">電話</span><span class="cli-meta-val">${esc(c['電話'])}</span></div>` : ''}
-      </div>
-      <div class="cli-footer">
-        <div class="cli-stats">
-          <div class="cli-stat-item"><div class="cli-stat-lbl">案件数</div><div class="cli-stat-val">${st.count}件</div></div>
-          <div class="cli-stat-item"><div class="cli-stat-lbl">累計売上</div><div class="cli-stat-val">${fmt(st.sales)}</div></div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-outline btn-sm" onclick="openCliEdit(${c['_row']})">編集</button>
-          <button class="btn btn-danger btn-sm" onclick="delCli(${c['_row']},'${esc(c['クライアント名'])}')">削除</button>
-        </div>
-      </div>
-    </div>`;
+                    <div class="cli-top">
+                        <div class="cli-avatar">${esc(init)}</div>
+                        <div class="cli-name-text">${esc(c['クライアント名'])}</div>
+                    </div>
+                    <div class="cli-meta">
+                        ${c['担当者'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">担当者</span><span class="cli-meta-val">${esc(c['担当者'])}</span></div>` : ''}
+                        ${c['メール'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">メール</span><span class="cli-meta-val">${esc(c['メール'])}</span></div>` : ''}
+                        ${c['電話'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">電話</span><span class="cli-meta-val">${esc(c['電話'])}</span></div>` : ''}
+                    </div>
+                    <div class="cli-footer">
+                        <div class="cli-stats">
+                            <div class="cli-stat-item"><div class="cli-stat-lbl">案件数</div><div class="cli-stat-val">${st.count}件</div></div>
+                            <div class="cli-stat-item"><div class="cli-stat-lbl">累計売上</div><div class="cli-stat-val">${fmt(st.sales)}</div></div>
+                        </div>
+                        <div style="display:flex;gap:6px">
+                            <button class="btn btn-outline btn-sm" onclick="openCliEdit(${c['_row']})">編集</button>
+                            <button class="btn btn-danger btn-sm" onclick="delCli(${c['_row']},'${esc(c['クライアント名'])}')">削除</button>
+                        </div>
+                    </div>
+                </div>`;
             }).join('');
         }
 
-        // ═══════════════════════════════════════════════
-        //  PROJECT MODAL
-        // ═══════════════════════════════════════════════
         function populateCliSel(selectedId) {
             const sel = document.getElementById('p_client');
             sel.innerHTML = `<option value="">クライアントを選択</option>`;
@@ -2480,11 +2909,10 @@
             });
         }
 
-        function onCliSelectChange() { /* 選択時処理（将来拡張用） */ }
+        function onCliSelectChange() {}
 
         function toggleCliInline() {
             const form = document.getElementById('cliInlineForm');
-            const btn = document.getElementById('cliNewBtn');
             const show = !form.classList.contains('show');
             form.classList.toggle('show', show);
             if (show) {
@@ -2511,19 +2939,17 @@
             google.script.run
                 .withSuccessHandler(res => {
                     btn.disabled = false; btn.textContent = '登録して選択';
-                    // reload clients then select the new one
                     google.script.run
                         .withSuccessHandler(data => {
                             allClients = data || [];
                             setBadge('clients', allClients.length);
                             populateCliSel(res.id);
-                            // auto-select the new client
                             const sel = document.getElementById('p_client');
                             sel.value = res.id;
                             toggleCliInline();
                             toast(`「${name}」を登録しました`, 'success');
                         })
-                        .withFailureHandler(() => { })
+                        .withFailureHandler(() => {})
                         .getClients();
                 })
                 .withFailureHandler(() => { btn.disabled = false; btn.textContent = '登録して選択'; toast('登録に失敗しました', 'error'); })
@@ -2553,7 +2979,6 @@
             document.getElementById('p_completeDate').value = date2input(p['完了日']);
             document.getElementById('p_name').value = p['案件名'] || '';
             document.getElementById('p_sales').value = p['売上'] || '';
-            // 利益=売上の場合は空欄で表示（デフォルト100%）
             const sameAsS = Number(p['利益']) === Number(p['売上']);
             document.getElementById('p_profit').value = sameAsS ? '' : (p['利益'] || '');
             document.getElementById('p_status').value = p['ステータス'] || '商談中';
@@ -2621,9 +3046,6 @@
                 .deleteProject(row);
         }
 
-        // ═══════════════════════════════════════════════
-        //  CLIENT MODAL
-        // ═══════════════════════════════════════════════
         function openCliModal() {
             document.getElementById('cliModalTitle').textContent = 'クライアントを追加';
             ['c_row', 'c_id', 'c_regdate'].forEach(id => document.getElementById(id).value = '');
@@ -2681,9 +3103,6 @@
                 .deleteClient(row);
         }
 
-        // ═══════════════════════════════════════════════
-        //  MODAL / UTIL
-        // ═══════════════════════════════════════════════
         function closeModal(id) { document.getElementById(id).classList.remove('show'); }
         function onOvClick(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
         document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('projModal'); closeModal('cliModal'); } });
@@ -2699,19 +3118,15 @@
 
         function emptyState(title, sub) {
             return `<div class="empty">
-    <div class="empty-icon">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    </div>
-    <div class="empty-title">${title}</div>
-    <div class="empty-sub">${sub}</div>
-  </div>`;
+                <div class="empty-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="empty-title">${title}</div>
+                <div class="empty-sub">${sub}</div>
+            </div>`;
         }
 
-        // ═══════════════════════════════════════════════
-        //  INIT
-        // ═══════════════════════════════════════════════
         window.addEventListener('load', () => {
-            // Ensure viewport meta is respected in some environments
             if (!document.querySelector('meta[name="viewport"]')) {
                 const meta = document.createElement('meta');
                 meta.name = "viewport";
