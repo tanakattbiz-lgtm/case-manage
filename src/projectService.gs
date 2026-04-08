@@ -1,4 +1,5 @@
-function getProjects() {
+function getProjects(sessionToken) {
+  requireReadAccess_(sessionToken);
   const rows = sheetToObjects(projSheet());
 
   // 手入力の「完了日」を優先してソートし、空の場合は「登録日」でフォールバック
@@ -11,7 +12,8 @@ function getProjects() {
   return rows;
 }
 
-function addProject(p) {
+function addProject(sessionToken, p) {
+  requireEditAccess_(sessionToken);
   const sales = Number(p['売上']) || 0;
   const profit = (p['利益'] !== '' && p['利益'] != null) ? Number(p['利益']) : sales;
   const id = genId('PRJ');
@@ -35,7 +37,8 @@ function addProject(p) {
   return { success: true, id };
 }
 
-function updateProject(p) {
+function updateProject(sessionToken, p) {
+  requireEditAccess_(sessionToken);
   const sh = projSheet();
   const row = Number(p['_row']);
   if (!row) return { success: false };
@@ -64,7 +67,8 @@ function updateProject(p) {
   return { success: true };
 }
 
-function deleteProject(row) {
+function deleteProject(sessionToken, row) {
+  requireEditAccess_(sessionToken);
   projSheet().deleteRow(Number(row));
   return { success: true };
 }

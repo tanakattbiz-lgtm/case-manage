@@ -1577,6 +1577,253 @@
             background: var(--border)
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
+        .auth-shell {
+            min-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background:
+                radial-gradient(circle at top left, rgba(29, 78, 216, 0.14), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(5, 150, 105, 0.14), transparent 30%),
+                linear-gradient(180deg, #f7fafc 0%, #eef2f7 100%);
+        }
+
+        .auth-card {
+            width: min(100%, 460px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(209, 213, 219, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+            padding: 28px;
+            backdrop-filter: blur(14px);
+        }
+
+        .auth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--blue-lt);
+            color: var(--blue);
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+
+        .auth-sub {
+            color: var(--txt2);
+            line-height: 1.6;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .auth-form,
+        .auth-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .auth-note {
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            line-height: 1.6;
+            border: 1px solid var(--border);
+            background: var(--gray-lt);
+            color: var(--txt2);
+        }
+
+        .auth-note.error {
+            background: var(--red-lt);
+            border-color: var(--red-bd);
+            color: var(--red);
+        }
+
+        .auth-note.success {
+            background: var(--green-lt);
+            border-color: var(--green-bd);
+            color: var(--green);
+        }
+
+        .auth-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .auth-meta-chip {
+            font-size: 11px;
+            color: var(--txt2);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: var(--white);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .user-chip {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            min-width: 150px;
+        }
+
+        .user-chip-name {
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .user-chip-role {
+            font-size: 11px;
+            color: var(--txt2);
+            line-height: 1.2;
+        }
+
+        .security-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .security-summary {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        }
+
+        .security-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--sh);
+            padding: 16px;
+        }
+
+        .security-value {
+            font-family: var(--mono);
+            font-size: 22px;
+            font-weight: 700;
+            line-height: 1;
+            margin-top: 8px;
+        }
+
+        .security-label {
+            font-size: 12px;
+            color: var(--txt2);
+            font-weight: 600;
+        }
+
+        .security-help {
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--txt3);
+            line-height: 1.5;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 74px;
+            height: 26px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .status-pill.active {
+            background: var(--green-lt);
+            border-color: var(--green-bd);
+            color: var(--green);
+        }
+
+        .status-pill.disabled {
+            background: var(--red-lt);
+            border-color: var(--red-bd);
+            color: var(--red);
+        }
+
+        .status-pill.locked {
+            background: var(--amber-lt);
+            border-color: var(--amber-bd);
+            color: var(--amber);
+        }
+
+        .audit-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .audit-item {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            box-shadow: var(--sh);
+        }
+
+        .audit-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .audit-event {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .audit-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--txt2);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .audit-detail {
+            color: var(--txt);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 8px;
+            word-break: break-word;
+        }
+
         .sidebar { display: none !important; }
         .bottom-nav { display: flex !important; }
         .topbar-actions .btn-primary { display: none !important; }
@@ -1643,7 +1890,57 @@
 </head>
 
 <body>
-    <div class="app">
+    <div class="auth-shell" id="authShell">
+        <div class="auth-card">
+            <div class="auth-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Secure Access
+            </div>
+            <div class="auth-title" id="authTitle">ログイン</div>
+            <div class="auth-sub" id="authSubtitle">案件管理アプリへ安全にアクセスするため、認証情報を入力してください。</div>
+            <div class="auth-note" id="authMessage">認証ポリシーを読み込み中です...</div>
+
+            <form class="auth-form" id="loginForm" onsubmit="submitLogin(event)">
+                <div class="fg">
+                    <label>メールアドレス</label>
+                    <input type="email" id="loginEmail" autocomplete="username" placeholder="name@example.com">
+                </div>
+                <div class="fg">
+                    <label>パスワード</label>
+                    <input type="password" id="loginPassword" autocomplete="current-password" placeholder="パスワード">
+                </div>
+                <button class="btn btn-primary" type="submit" id="loginBtn">ログイン</button>
+            </form>
+
+            <form class="auth-form" id="setupForm" onsubmit="submitBootstrap(event)" hidden>
+                <div class="fg">
+                    <label>管理者名</label>
+                    <input type="text" id="setupName" autocomplete="name" placeholder="例: 田中 太郎">
+                </div>
+                <div class="fg">
+                    <label>管理者メールアドレス</label>
+                    <input type="email" id="setupEmail" autocomplete="username" placeholder="admin@example.com">
+                </div>
+                <div class="fg">
+                    <label>初期パスワード</label>
+                    <input type="password" id="setupPassword" autocomplete="new-password" placeholder="10文字以上、英字と数字を含む">
+                </div>
+                <div class="fg">
+                    <label>初期パスワード確認</label>
+                    <input type="password" id="setupPasswordConfirm" autocomplete="new-password" placeholder="確認用パスワード">
+                </div>
+                <button class="btn btn-primary" type="submit" id="setupBtn">管理者アカウントを作成</button>
+            </form>
+
+            <div class="auth-meta" id="authMeta"></div>
+        </div>
+    </div>
+
+    <div class="app" id="appShell" hidden>
 
         <nav class="sidebar">
             <div class="sb-logo">
@@ -1687,12 +1984,31 @@
                 <span class="nav-label">クライアント</span>
                 <span class="nav-badge" id="badge-clients">0</span>
             </button>
+            <button class="nav-btn" id="sbnav-users" onclick="showView('users')" hidden>
+                <span class="nav-ic">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                </span>
+                <span class="nav-label">認証管理</span>
+            </button>
         </nav>
 
         <div class="main">
             <div class="topbar">
                 <div class="topbar-title" id="pageTitle">ダッシュボード</div>
-                <div id="topbarActions">
+                <div id="topbarActions" class="topbar-actions">
+                    <button class="btn btn-outline" id="securityBtn" onclick="showView('users')" hidden>認証管理</button>
+                    <button class="btn btn-outline" id="passwordBtn" onclick="openPasswordModal()" hidden>パスワード変更</button>
+                    <div class="user-chip" id="userChip" hidden>
+                        <div class="user-chip-name" id="userChipName">-</div>
+                        <div class="user-chip-role" id="userChipRole">-</div>
+                    </div>
+                    <button class="btn btn-outline" id="logoutBtn" onclick="logoutApp()" hidden>ログアウト</button>
                     <button class="btn btn-primary" id="topAddBtn" onclick="onTopAdd()" style="display:none">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="round">
@@ -1785,6 +2101,54 @@
                     <div class="clients-grid" id="clientsGrid">
                         <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
                         <div class="sk" style="height:180px;border-radius:var(--radius)"></div>
+                    </div>
+                </div>
+
+                <div class="view" id="view-users">
+                    <div class="security-grid">
+                        <div class="security-summary">
+                            <div class="security-card">
+                                <div class="security-label">登録ユーザー</div>
+                                <div class="security-value" id="userCount">0</div>
+                                <div class="security-help">ロール付きアカウント数</div>
+                            </div>
+                            <div class="security-card">
+                                <div class="security-label">ロック中アカウント</div>
+                                <div class="security-value" id="lockedUserCount">0</div>
+                                <div class="security-help">ログイン失敗上限に達した件数</div>
+                            </div>
+                            <div class="security-card">
+                                <div class="security-label">最新監査イベント</div>
+                                <div class="security-value" id="auditCount">0</div>
+                                <div class="security-help">直近の認証監査ログ件数</div>
+                            </div>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="tc-hdr">
+                                <div class="tc-title">ユーザー一覧</div>
+                                <div style="font-size:12px;color:var(--txt2)">管理者のみ編集可能</div>
+                            </div>
+                            <div id="userTable">
+                                <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
+                                    <div class="sk" style="height:44px;border-radius:6px"></div>
+                                    <div class="sk" style="height:44px;border-radius:6px"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-card">
+                            <div class="tc-hdr">
+                                <div class="tc-title">監査ログ</div>
+                                <div style="font-size:12px;color:var(--txt2)">認証、ロック、権限拒否を記録</div>
+                            </div>
+                            <div id="auditList">
+                                <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
+                                    <div class="sk" style="height:84px;border-radius:10px"></div>
+                                    <div class="sk" style="height:84px;border-radius:10px"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1980,19 +2344,453 @@
         </div>
     </div>
 
+    <div class="modal-ov" id="userModal" onclick="onOvClick(event,'userModal')">
+        <div class="modal-sheet">
+            <div class="sh-handle"></div>
+            <div class="sh-hdr">
+                <div class="sh-title" id="userModalTitle">ユーザーを追加</div>
+                <button class="btn btn-icon btn-ghost" onclick="closeModal('userModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="sh-body">
+                <input type="hidden" id="u_id">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="fg">
+                        <label>氏名 *</label>
+                        <input type="text" id="u_name" placeholder="例: 田中 太郎">
+                    </div>
+                    <div class="fg">
+                        <label>メールアドレス *</label>
+                        <input type="email" id="u_email" placeholder="name@example.com">
+                    </div>
+                    <div class="form-2col">
+                        <div class="fg">
+                            <label>ロール</label>
+                            <select id="u_role">
+                                <option value="admin">管理者</option>
+                                <option value="editor">編集者</option>
+                                <option value="viewer">閲覧者</option>
+                            </select>
+                        </div>
+                        <div class="fg">
+                            <label>状態</label>
+                            <select id="u_status">
+                                <option value="active">有効</option>
+                                <option value="disabled">無効</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="fg">
+                        <label id="u_passwordLabel">初期パスワード *</label>
+                        <input type="password" id="u_password" placeholder="10文字以上、英字と数字を含む">
+                        <div class="hint">編集時に空欄ならパスワードは変更しません。</div>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt2)">
+                        <input type="checkbox" id="u_unlock">
+                        ログイン失敗回数とロック状態を解除する
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline" onclick="closeModal('userModal')">キャンセル</button>
+                    <button class="btn btn-primary" id="userSaveBtn" onclick="saveUserAccount()">保存する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-ov" id="passwordModal" onclick="onOvClick(event,'passwordModal')">
+        <div class="modal-sheet">
+            <div class="sh-handle"></div>
+            <div class="sh-hdr">
+                <div class="sh-title">パスワード変更</div>
+                <button class="btn btn-icon btn-ghost" onclick="closeModal('passwordModal')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="sh-body">
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="fg">
+                        <label>現在のパスワード</label>
+                        <input type="password" id="pw_current" autocomplete="current-password">
+                    </div>
+                    <div class="fg">
+                        <label>新しいパスワード</label>
+                        <input type="password" id="pw_next" autocomplete="new-password" placeholder="10文字以上、英字と数字を含む">
+                    </div>
+                    <div class="fg">
+                        <label>新しいパスワード確認</label>
+                        <input type="password" id="pw_confirm" autocomplete="new-password">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button class="btn btn-outline" onclick="closeModal('passwordModal')">キャンセル</button>
+                    <button class="btn btn-primary" id="passwordSaveBtn" onclick="saveMyPassword()">更新する</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-wrap" id="toastWrap"></div>
 
     <script>
         'use strict';
 
+        const TOKEN_STORAGE_KEY = 'case-manage.auth.token';
+        const DEFAULT_AUTH_SETTINGS = {
+            passwordMinLength: 10,
+            maxFailedAttempts: 5,
+            lockoutMinutes: 15,
+            sessionTtlMinutes: 480,
+            roles: {
+                admin: '管理者',
+                editor: '編集者',
+                viewer: '閲覧者',
+            }
+        };
+
+        let authState = {
+            token: '',
+            user: null,
+            permissions: { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false },
+            session: null,
+            settings: { ...DEFAULT_AUTH_SETTINGS },
+        };
         let allProjects = [];
         let allClients = [];
+        let allUsers = [];
+        let auditLogs = [];
         let loaded = false;
         let currentView = 'dashboard';
         let dashboardFilter = getDefaultDashboardFilter();
         let dashboardCharts = [];
         let projectViewBaseList = null;
         let projectViewLabel = '';
+
+        const fmt = n => '¥' + Math.round(Number(n) || 0).toLocaleString('ja-JP');
+        const pct = n => Math.round(Number(n) || 0) + '%';
+        const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
+        const input2date = v => v ? v.replace(/-/g, '/') : '';
+
+        function cloneAuthSettings(settings) {
+            return {
+                ...DEFAULT_AUTH_SETTINGS,
+                ...(settings || {}),
+                roles: {
+                    ...DEFAULT_AUTH_SETTINGS.roles,
+                    ...((settings && settings.roles) || {})
+                }
+            };
+        }
+
+        function getStoredToken() {
+            try {
+                return localStorage.getItem(TOKEN_STORAGE_KEY) || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function setStoredToken(token) {
+            try {
+                if (token) localStorage.setItem(TOKEN_STORAGE_KEY, token);
+                else localStorage.removeItem(TOKEN_STORAGE_KEY);
+            } catch (e) {}
+        }
+
+        function normalizeServerError(err) {
+            const raw = String((err && err.message) || err || '不明なエラーが発生しました。');
+            const idx = raw.indexOf(':');
+            if (idx > 0) {
+                return {
+                    code: raw.slice(0, idx).trim(),
+                    message: raw.slice(idx + 1).trim() || raw,
+                    raw,
+                };
+            }
+            return { code: 'APP_ERROR', message: raw, raw };
+        }
+
+        function isAuthenticated() {
+            return Boolean(authState.user && authState.token);
+        }
+
+        function canEdit() {
+            return Boolean(authState.permissions && authState.permissions.canEdit);
+        }
+
+        function canManageUsers() {
+            return Boolean(authState.permissions && authState.permissions.canManageUsers);
+        }
+
+        function getUserAgent() {
+            return navigator.userAgent || '';
+        }
+
+        function showAuthMessage(message, type = '') {
+            const el = document.getElementById('authMessage');
+            if (!el) return;
+            el.className = `auth-note${type ? ' ' + type : ''}`;
+            el.textContent = message;
+        }
+
+        function renderAuthMeta() {
+            const meta = document.getElementById('authMeta');
+            if (!meta) return;
+            meta.innerHTML = `
+                <div class="auth-meta-chip">最小 ${authState.settings.passwordMinLength} 文字</div>
+                <div class="auth-meta-chip">失敗 ${authState.settings.maxFailedAttempts} 回で ${authState.settings.lockoutMinutes} 分ロック</div>
+                <div class="auth-meta-chip">セッション ${Math.round(authState.settings.sessionTtlMinutes / 60)} 時間</div>
+            `;
+        }
+
+        function setAuthMode(mode) {
+            const loginForm = document.getElementById('loginForm');
+            const setupForm = document.getElementById('setupForm');
+            const title = document.getElementById('authTitle');
+            const subtitle = document.getElementById('authSubtitle');
+
+            loginForm.hidden = mode !== 'login';
+            setupForm.hidden = mode !== 'setup';
+
+            if (mode === 'setup') {
+                title.textContent = '初回セットアップ';
+                subtitle.textContent = '最初の管理者アカウントを作成して、ユーザー管理を開始します。';
+                showAuthMessage('まだユーザーが存在しません。最初の管理者を作成してください。');
+                setTimeout(() => document.getElementById('setupName')?.focus(), 60);
+                return;
+            }
+
+            if (mode === 'loading') {
+                title.textContent = '認証状態を確認中';
+                subtitle.textContent = 'セキュアセッションを確認しています。しばらくお待ちください。';
+                showAuthMessage('認証情報を確認中です...');
+                return;
+            }
+
+            title.textContent = 'ログイン';
+            subtitle.textContent = 'メールアドレスとパスワードでログインしてください。';
+            showAuthMessage('メールアドレスとパスワードを入力してください。');
+            setTimeout(() => document.getElementById('loginEmail')?.focus(), 60);
+        }
+
+        function showAuthShell() {
+            document.getElementById('authShell').hidden = false;
+            document.getElementById('appShell').hidden = true;
+        }
+
+        function showAppShell() {
+            document.getElementById('authShell').hidden = true;
+            document.getElementById('appShell').hidden = false;
+        }
+
+        function resetAuthState() {
+            authState = {
+                token: '',
+                user: null,
+                permissions: { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false },
+                session: null,
+                settings: cloneAuthSettings(authState.settings),
+            };
+            setStoredToken('');
+            allProjects = [];
+            allClients = [];
+            allUsers = [];
+            auditLogs = [];
+            loaded = false;
+            updateAuthUi();
+        }
+
+        function updateAuthUi() {
+            const userChip = document.getElementById('userChip');
+            const passwordBtn = document.getElementById('passwordBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const securityBtn = document.getElementById('securityBtn');
+            const userNav = document.getElementById('sbnav-users');
+            const userName = document.getElementById('userChipName');
+            const userRole = document.getElementById('userChipRole');
+
+            const loggedIn = Boolean(authState.user);
+            userChip.hidden = !loggedIn;
+            passwordBtn.hidden = !loggedIn;
+            logoutBtn.hidden = !loggedIn;
+            securityBtn.hidden = !canManageUsers();
+            userNav.hidden = !canManageUsers();
+
+            if (loggedIn) {
+                userName.textContent = authState.user.name;
+                userRole.textContent = `${authState.permissions.roleLabel} / ${authState.user.email}`;
+            } else {
+                userName.textContent = '-';
+                userRole.textContent = '-';
+            }
+
+            if (!canManageUsers() && currentView === 'users') {
+                currentView = 'dashboard';
+            }
+            updateTopbarActions();
+        }
+
+        function applyAuthPayload(payload) {
+            authState = {
+                token: payload.token || getStoredToken(),
+                user: payload.user || null,
+                permissions: payload.permissions || { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false },
+                session: payload.session || null,
+                settings: cloneAuthSettings(payload.settings),
+            };
+            setStoredToken(authState.token);
+            renderAuthMeta();
+            updateAuthUi();
+            showAppShell();
+        }
+
+        function handleAuthLoss(message, type = 'error') {
+            resetAuthState();
+            showAuthShell();
+            setAuthMode('login');
+            showAuthMessage(message || 'セッションの有効期限が切れました。再度ログインしてください。', type);
+        }
+
+        function setButtonBusy(buttonId, busy, busyText, idleText) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+            btn.disabled = busy;
+            btn.textContent = busy ? busyText : idleText;
+        }
+
+        function serverCall(method, args = [], options = {}) {
+            const opts = {
+                secure: true,
+                silentAuth: false,
+                ...options
+            };
+            const finalArgs = opts.secure ? [authState.token, ...args] : args;
+
+            return new Promise((resolve, reject) => {
+                const runner = google.script.run
+                    .withSuccessHandler(resolve)
+                    .withFailureHandler(err => {
+                        const normalized = normalizeServerError(err);
+                        if (opts.secure && !opts.silentAuth && ['AUTH_REQUIRED', 'AUTH_EXPIRED'].includes(normalized.code)) {
+                            handleAuthLoss(normalized.message);
+                        }
+                        reject(normalized);
+                    });
+
+                runner[method](...finalArgs);
+            });
+        }
+
+        async function bootAuth() {
+            showAuthShell();
+            renderAuthMeta();
+            setAuthMode('loading');
+
+            try {
+                const state = await serverCall('getAuthState', [getStoredToken()], { secure: false, silentAuth: true });
+                authState.settings = cloneAuthSettings(state.settings);
+                renderAuthMeta();
+
+                if (state.requiresSetup) {
+                    resetAuthState();
+                    authState.settings = cloneAuthSettings(state.settings);
+                    renderAuthMeta();
+                    setAuthMode('setup');
+                    return;
+                }
+
+                if (!state.authenticated) {
+                    resetAuthState();
+                    authState.settings = cloneAuthSettings(state.settings);
+                    renderAuthMeta();
+                    setAuthMode('login');
+                    return;
+                }
+
+                applyAuthPayload(state);
+                try {
+                    await loadAll();
+                    showView(currentView === 'users' && canManageUsers() ? 'users' : 'dashboard');
+                } catch (err) {
+                    showView('dashboard');
+                    toast(err.message || 'データ読込に失敗しました。', 'error');
+                }
+            } catch (err) {
+                resetAuthState();
+                showAuthShell();
+                setAuthMode('login');
+                showAuthMessage(err.message || '認証状態の取得に失敗しました。', 'error');
+            }
+        }
+
+        async function submitLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            setButtonBusy('loginBtn', true, 'ログイン中...', 'ログイン');
+            try {
+                const state = await serverCall('login', [{ email, password, userAgent: getUserAgent() }], { secure: false, silentAuth: true });
+                applyAuthPayload(state);
+                document.getElementById('loginPassword').value = '';
+                try {
+                    await loadAll();
+                } catch (err) {
+                    toast(err.message || 'データ読込に失敗しました。', 'error');
+                }
+                showView('dashboard');
+            } catch (err) {
+                showAuthMessage(err.message || 'ログインに失敗しました。', 'error');
+            } finally {
+                setButtonBusy('loginBtn', false, 'ログイン中...', 'ログイン');
+            }
+        }
+
+        async function submitBootstrap(event) {
+            event.preventDefault();
+            const name = document.getElementById('setupName').value.trim();
+            const email = document.getElementById('setupEmail').value.trim();
+            const password = document.getElementById('setupPassword').value;
+            const confirm = document.getElementById('setupPasswordConfirm').value;
+
+            if (password !== confirm) {
+                showAuthMessage('確認用パスワードが一致しません。', 'error');
+                return;
+            }
+
+            setButtonBusy('setupBtn', true, '作成中...', '管理者アカウントを作成');
+            try {
+                const state = await serverCall('bootstrapAdmin', [{ name, email, password, userAgent: getUserAgent() }], { secure: false, silentAuth: true });
+                applyAuthPayload(state);
+                try {
+                    await loadAll();
+                } catch (err) {
+                    toast(err.message || 'データ読込に失敗しました。', 'error');
+                }
+                showView('dashboard');
+            } catch (err) {
+                showAuthMessage(err.message || '初回セットアップに失敗しました。', 'error');
+            } finally {
+                setButtonBusy('setupBtn', false, '作成中...', '管理者アカウントを作成');
+            }
+        }
+
+        async function logoutApp() {
+            try {
+                await serverCall('logout');
+            } catch (err) {}
+            handleAuthLoss('ログアウトしました。', 'success');
+        }
 
 
         function getDefaultDashboardFilter() {
@@ -2012,12 +2810,6 @@
             '保留': 'var(--txt3)',
         };
 
-        const fmt = n => '¥' + Math.round(Number(n) || 0).toLocaleString('ja-JP');
-        const pct = n => Math.round(Number(n) || 0) + '%';
-        const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
-        const input2date = v => v ? v.replace(/-/g, '/') : '';
-
         function destroyDashboardCharts() {
             dashboardCharts.forEach(ch => {
                 try { ch.destroy(); } catch (e) {}
@@ -2026,6 +2818,9 @@
         }
 
         function showView(v) {
+            if (v === 'users' && !canManageUsers()) v = 'dashboard';
+
+            const previousView = currentView;
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + v).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -2033,66 +2828,99 @@
             document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
             const bn = document.getElementById('bnav-' + v); if (bn) bn.classList.add('active');
 
-            const titles = { dashboard: 'ダッシュボード', projects: '案件一覧', clients: 'クライアント' };
+            const titles = { dashboard: 'ダッシュボード', projects: '案件一覧', clients: 'クライアント', users: '認証管理' };
             document.getElementById('pageTitle').textContent = titles[v] || v;
             currentView = v;
             document.getElementById('contentArea').scrollTop = 0;
 
-            const topBtn = document.getElementById('topAddBtn');
-            const topLbl = document.getElementById('topAddLabel');
-            if (v === 'dashboard') {
-                topBtn.style.display = 'none';
-            } else {
-                topBtn.style.display = '';
-                topLbl.textContent = v === 'projects' ? '案件を追加' : 'クライアントを追加';
-            }
-
-            if (v === 'projects' && currentView !== 'dashboard' && !projectViewLabel) {
+            if (v === 'projects' && previousView !== 'dashboard' && !projectViewLabel) {
                 projectViewBaseList = null;
             }
+
+            updateTopbarActions();
 
             if (loaded) {
                 if (v === 'dashboard') renderDashboard();
                 if (v === 'projects') renderProjects();
                 if (v === 'clients') renderClients();
+                if (v === 'users') renderUsers();
             }
         }
 
+        function updateTopbarActions() {
+            const topBtn = document.getElementById('topAddBtn');
+            const topLbl = document.getElementById('topAddLabel');
+            if (!topBtn || !topLbl) return;
+
+            if (currentView === 'projects' && canEdit()) {
+                topBtn.style.display = '';
+                topLbl.textContent = '案件を追加';
+                return;
+            }
+            if (currentView === 'clients' && canEdit()) {
+                topBtn.style.display = '';
+                topLbl.textContent = 'クライアントを追加';
+                return;
+            }
+            if (currentView === 'users' && canManageUsers()) {
+                topBtn.style.display = '';
+                topLbl.textContent = 'ユーザーを追加';
+                return;
+            }
+
+            topBtn.style.display = 'none';
+        }
+
         function onTopAdd() {
-            if (currentView === 'projects') openProjModal();
-            else if (currentView === 'clients') openCliModal();
+            if (currentView === 'projects' && canEdit()) openProjModal();
+            else if (currentView === 'clients' && canEdit()) openCliModal();
+            else if (currentView === 'users' && canManageUsers()) openUserModal();
         }
 
-        function loadAll() {
-            let pDone = false, cDone = false;
-            const check = () => { if (pDone && cDone) { loaded = true; renderDashboard(); renderProjects(); renderClients(); } };
+        async function loadAdminData() {
+            if (!canManageUsers()) {
+                allUsers = [];
+                auditLogs = [];
+                return;
+            }
 
-            google.script.run
-                .withSuccessHandler(d => { allProjects = d || []; setBadge('projects', allProjects.length); pDone = true; check(); })
-                .withFailureHandler(() => toast('案件データ取得エラー', 'error'))
-                .getProjects();
-
-            google.script.run
-                .withSuccessHandler(d => { allClients = d || []; setBadge('clients', allClients.length); cDone = true; check(); })
-                .withFailureHandler(() => toast('クライアントデータ取得エラー', 'error'))
-                .getClients();
+            const [users, logs] = await Promise.all([
+                serverCall('getUsers'),
+                serverCall('getAuditLogs')
+            ]);
+            allUsers = users || [];
+            auditLogs = logs || [];
         }
 
-        function reload() {
-            google.script.run
-                .withSuccessHandler(d => { allProjects = d || []; setBadge('projects', allProjects.length); refreshCurrent(); })
-                .withFailureHandler(() => {})
-                .getProjects();
-            google.script.run
-                .withSuccessHandler(d => { allClients = d || []; setBadge('clients', allClients.length); refreshCurrent(); })
-                .withFailureHandler(() => {})
-                .getClients();
+        async function loadAll() {
+            const tasks = [
+                serverCall('getProjects'),
+                serverCall('getClients')
+            ];
+            if (canManageUsers()) tasks.push(loadAdminData());
+
+            const [projects, clients] = await Promise.all(tasks);
+            allProjects = projects || [];
+            allClients = clients || [];
+            setBadge('projects', allProjects.length);
+            setBadge('clients', allClients.length);
+            loaded = true;
+            refreshCurrent();
+        }
+
+        async function reload() {
+            try {
+                await loadAll();
+            } catch (err) {
+                toast(err.message || 'データの再読み込みに失敗しました。', 'error');
+            }
         }
 
         function refreshCurrent() {
             if (currentView === 'dashboard') renderDashboard();
             if (currentView === 'projects') renderProjects();
             if (currentView === 'clients') renderClients();
+            if (currentView === 'users') renderUsers();
         }
 
         function setBadge(view, n) {
@@ -2762,6 +3590,7 @@
             const effectiveBase = baseList || projectViewBaseList || allProjects;
             const effectiveCaption = caption || projectViewLabel || '';
             const f = getFiltered(effectiveBase);
+            const canEditProjects = canEdit();
             const scopeInfo = document.getElementById('projectScopeInfo');
             if (scopeInfo) {
                 scopeInfo.innerHTML = effectiveCaption
@@ -2772,11 +3601,17 @@
             const ce = document.getElementById('projCards');
             if (ce) {
                 if (f.length === 0) {
-                    ce.innerHTML = emptyState('案件がありません', '下の + ボタンから追加できます');
+                    ce.innerHTML = emptyState('案件がありません', canEditProjects ? '右上の追加ボタンから登録できます。' : '編集権限を持つユーザーが登録するとここに表示されます。');
                 } else {
                     ce.innerHTML = f.map(p => {
                         const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
                         const m = s > 0 ? Math.round(pr / s * 100) : 100;
+                        const actions = canEditProjects
+                            ? `<div class="pc-actions">
+                                    <button class="btn btn-outline btn-sm" onclick="openProjEdit(${p['_row']})">編集</button>
+                                    <button class="btn btn-danger btn-sm" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+                               </div>`
+                            : '';
                         return `<div class="proj-card">
                             <div class="proj-card-stripe" style="background:${SC[p['ステータス']] || 'var(--txt3)'}"></div>
                             <div class="proj-card-inner">
@@ -2802,10 +3637,7 @@
                                         <div class="pc-metric-val">${m}%</div>
                                     </div>
                                 </div>
-                                <div class="pc-actions">
-                                    <button class="btn btn-outline btn-sm" onclick="openProjEdit(${p['_row']})">編集</button>
-                                    <button class="btn btn-danger btn-sm" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
-                                </div>
+                                ${actions}
                             </div>
                         </div>`;
                     }).join('');
@@ -2817,7 +3649,7 @@
             if (cnte) cnte.textContent = effectiveCaption ? `${f.length}件 / ${effectiveCaption}` : `${f.length}件`;
             if (te) {
                 if (f.length === 0) {
-                    te.innerHTML = emptyState('案件がありません', '右上の「案件を追加」から登録できます');
+                    te.innerHTML = emptyState('案件がありません', canEditProjects ? '右上の「案件を追加」から登録できます。' : '案件が登録されるとここに表示されます。');
                 } else {
                     te.innerHTML = `<table>
                         <thead><tr>
@@ -2831,6 +3663,12 @@
                             const s = Number(p['売上']) || 0, pr = Number(p['利益']) || 0;
                             const m = s > 0 ? Math.round(pr / s * 100) : 100;
                             const mc = m >= 50 ? 'var(--green)' : m >= 30 ? 'var(--amber)' : 'var(--red)';
+                            const actions = canEditProjects
+                                ? `<div class="td-act">
+                                        <button class="btn btn-outline btn-xs" onclick="openProjEdit(${p['_row']})">編集</button>
+                                        <button class="btn btn-danger btn-xs" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
+                                   </div>`
+                                : '';
                             return `<tr>
                                 <td style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['案件名'])}</td>
                                 <td style="color:var(--txt2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p['クライアント名']) || '—'}</td>
@@ -2839,10 +3677,7 @@
                                 <td class="td-mono" style="text-align:right">${fmt(pr)}</td>
                                 <td class="td-mono" style="text-align:right;color:${mc}">${m}%</td>
                                 <td style="color:var(--txt2);font-size:13px">${p['完了日'] || '—'}</td>
-                                <td><div class="td-act">
-                                    <button class="btn btn-outline btn-xs" onclick="openProjEdit(${p['_row']})">編集</button>
-                                    <button class="btn btn-danger btn-xs" onclick="delProj(${p['_row']},'${esc(p['案件名'])}')">削除</button>
-                                </div></td>
+                                <td>${actions}</td>
                             </tr>`;
                         }).join('')}</tbody>
                     </table>`;
@@ -2854,6 +3689,7 @@
             if (!loaded) return;
             const el = document.getElementById('clientsGrid');
             if (!el) return;
+            const canEditClientData = canEdit();
 
             const stats = {};
             allProjects.forEach(p => {
@@ -2865,13 +3701,19 @@
             });
 
             if (allClients.length === 0) {
-                el.innerHTML = emptyState('クライアントがいません', '右上の「クライアントを追加」から登録できます');
+                el.innerHTML = emptyState('クライアントがいません', canEditClientData ? '右上の「クライアントを追加」から登録できます。' : '編集権限を持つユーザーが登録するとここに表示されます。');
                 return;
             }
 
             el.innerHTML = allClients.map(c => {
                 const st = stats[c['ID']] || { sales: 0, count: 0 };
                 const init = (c['クライアント名'] || '?')[0];
+                const actions = canEditClientData
+                    ? `<div style="display:flex;gap:6px">
+                            <button class="btn btn-outline btn-sm" onclick="openCliEdit(${c['_row']})">編集</button>
+                            <button class="btn btn-danger btn-sm" onclick="delCli(${c['_row']},'${esc(c['クライアント名'])}')">削除</button>
+                       </div>`
+                    : '';
                 return `<div class="cli-card">
                     <div class="cli-top">
                         <div class="cli-avatar">${esc(init)}</div>
@@ -2887,13 +3729,225 @@
                             <div class="cli-stat-item"><div class="cli-stat-lbl">案件数</div><div class="cli-stat-val">${st.count}件</div></div>
                             <div class="cli-stat-item"><div class="cli-stat-lbl">累計売上</div><div class="cli-stat-val">${fmt(st.sales)}</div></div>
                         </div>
-                        <div style="display:flex;gap:6px">
-                            <button class="btn btn-outline btn-sm" onclick="openCliEdit(${c['_row']})">編集</button>
-                            <button class="btn btn-danger btn-sm" onclick="delCli(${c['_row']},'${esc(c['クライアント名'])}')">削除</button>
-                        </div>
+                        ${actions}
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        function parseUiDate(value) {
+            if (!value) return null;
+            const d = new Date(String(value).replace(/\//g, '-'));
+            return isNaN(d) ? null : d;
+        }
+
+        function isUserLocked(user) {
+            const lockedUntil = parseUiDate(user.lockedUntil);
+            return Boolean(lockedUntil && lockedUntil.getTime() > Date.now());
+        }
+
+        function getUserStateMeta(user) {
+            if (isUserLocked(user)) return { cls: 'locked', label: 'ロック中' };
+            if (user.status === 'disabled') return { cls: 'disabled', label: '無効' };
+            return { cls: 'active', label: '有効' };
+        }
+
+        function renderUsers() {
+            if (!loaded) return;
+
+            const userTable = document.getElementById('userTable');
+            const auditList = document.getElementById('auditList');
+            if (!userTable || !auditList) return;
+
+            if (!canManageUsers()) {
+                userTable.innerHTML = emptyState('権限がありません', 'この画面は管理者のみ利用できます。');
+                auditList.innerHTML = '';
+                return;
+            }
+
+            const lockedCount = allUsers.filter(isUserLocked).length;
+            document.getElementById('userCount').textContent = String(allUsers.length);
+            document.getElementById('lockedUserCount').textContent = String(lockedCount);
+            document.getElementById('auditCount').textContent = String(auditLogs.length);
+
+            if (allUsers.length === 0) {
+                userTable.innerHTML = emptyState('ユーザーがいません', '右上の「ユーザーを追加」から登録できます。');
+            } else {
+                userTable.innerHTML = `<table>
+                    <thead><tr>
+                        <th>ユーザー</th>
+                        <th>ロール</th>
+                        <th>状態</th>
+                        <th>最終ログイン</th>
+                        <th>失敗回数</th>
+                        <th></th>
+                    </tr></thead>
+                    <tbody>${allUsers.map(user => {
+                        const state = getUserStateMeta(user);
+                        const lockInfo = user.lockedUntil ? `<div style="font-size:11px;color:var(--txt3);margin-top:4px">解除予定: ${esc(user.lockedUntil)}</div>` : '';
+                        const unlockBtn = isUserLocked(user)
+                            ? `<button class="btn btn-outline btn-xs" onclick="unlockUserAccount('${user.id}')">ロック解除</button>`
+                            : '';
+
+                        return `<tr>
+                            <td>
+                                <div style="font-weight:700">${esc(user.name)}</div>
+                                <div style="font-size:12px;color:var(--txt2)">${esc(user.email)}</div>
+                                ${lockInfo}
+                            </td>
+                            <td>${esc(user.roleLabel)}</td>
+                            <td><span class="status-pill ${state.cls}">${state.label}</span></td>
+                            <td style="font-size:12px;color:var(--txt2)">${user.lastLoginAt || '未ログイン'}</td>
+                            <td class="td-mono">${user.failedCount}</td>
+                            <td>
+                                <div class="td-act">
+                                    <button class="btn btn-outline btn-xs" onclick="openUserEdit('${user.id}')">編集</button>
+                                    ${unlockBtn}
+                                </div>
+                            </td>
+                        </tr>`;
+                    }).join('')}</tbody>
+                </table>`;
+            }
+
+            if (auditLogs.length === 0) {
+                auditList.innerHTML = emptyState('監査ログがありません', 'ログインや権限拒否が発生するとここに記録されます。');
+                return;
+            }
+
+            auditList.innerHTML = `<div class="audit-list">${auditLogs.map(log => {
+                const cls = ['SUCCESS'].includes(log.result) ? 'active' : ['DENY', 'FAIL', 'LOCKED'].includes(log.result) ? 'locked' : 'disabled';
+                return `<div class="audit-item">
+                    <div class="audit-top">
+                        <div class="audit-event">${esc(log.event)}</div>
+                        <span class="status-pill ${cls}">${esc(log.result)}</span>
+                    </div>
+                    <div class="audit-meta-row">
+                        <span>${esc(log.timestamp)}</span>
+                        <span>${esc(log.name || '匿名')}</span>
+                        <span>${esc(log.email || 'メール不明')}</span>
+                    </div>
+                    <div class="audit-detail">${esc(log.detail || '詳細なし')}</div>
+                </div>`;
+            }).join('')}</div>`;
+        }
+
+        function openUserModal() {
+            if (!canManageUsers()) return;
+            document.getElementById('userModalTitle').textContent = 'ユーザーを追加';
+            document.getElementById('u_id').value = '';
+            document.getElementById('u_name').value = '';
+            document.getElementById('u_email').value = '';
+            document.getElementById('u_role').value = 'editor';
+            document.getElementById('u_status').value = 'active';
+            document.getElementById('u_password').value = '';
+            document.getElementById('u_unlock').checked = false;
+            document.getElementById('u_passwordLabel').textContent = '初期パスワード *';
+            document.getElementById('userModal').classList.add('show');
+            setTimeout(() => document.getElementById('u_name').focus(), 100);
+        }
+
+        function openUserEdit(userId) {
+            if (!canManageUsers()) return;
+            const user = allUsers.find(item => item.id === userId);
+            if (!user) return;
+
+            document.getElementById('userModalTitle').textContent = 'ユーザーを編集';
+            document.getElementById('u_id').value = user.id;
+            document.getElementById('u_name').value = user.name || '';
+            document.getElementById('u_email').value = user.email || '';
+            document.getElementById('u_role').value = user.role || 'viewer';
+            document.getElementById('u_status').value = user.status || 'active';
+            document.getElementById('u_password').value = '';
+            document.getElementById('u_unlock').checked = false;
+            document.getElementById('u_passwordLabel').textContent = '新しいパスワード';
+            document.getElementById('userModal').classList.add('show');
+            setTimeout(() => document.getElementById('u_name').focus(), 100);
+        }
+
+        async function saveUserAccount() {
+            if (!canManageUsers()) return;
+
+            const id = document.getElementById('u_id').value;
+            const name = document.getElementById('u_name').value.trim();
+            const email = document.getElementById('u_email').value.trim();
+            const role = document.getElementById('u_role').value;
+            const status = document.getElementById('u_status').value;
+            const password = document.getElementById('u_password').value;
+            const unlock = document.getElementById('u_unlock').checked;
+
+            if (!name || !email) {
+                toast('氏名とメールアドレスを入力してください。', 'error');
+                return;
+            }
+            if (!id && !password) {
+                toast('新規ユーザーには初期パスワードが必要です。', 'error');
+                return;
+            }
+
+            setButtonBusy('userSaveBtn', true, '保存中...', '保存する');
+            try {
+                await serverCall('saveUser', [{
+                    id,
+                    name,
+                    email,
+                    role,
+                    status,
+                    password,
+                    unlock,
+                }]);
+                closeModal('userModal');
+                toast('ユーザー情報を保存しました。', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || 'ユーザー保存に失敗しました。', 'error');
+            } finally {
+                setButtonBusy('userSaveBtn', false, '保存中...', '保存する');
+            }
+        }
+
+        async function unlockUserAccount(userId) {
+            if (!canManageUsers()) return;
+            try {
+                await serverCall('unlockUser', [userId]);
+                toast('ロック状態を解除しました。', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || 'ロック解除に失敗しました。', 'error');
+            }
+        }
+
+        function openPasswordModal() {
+            if (!isAuthenticated()) return;
+            ['pw_current', 'pw_next', 'pw_confirm'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('passwordModal').classList.add('show');
+            setTimeout(() => document.getElementById('pw_current').focus(), 100);
+        }
+
+        async function saveMyPassword() {
+            const current = document.getElementById('pw_current').value;
+            const next = document.getElementById('pw_next').value;
+            const confirm = document.getElementById('pw_confirm').value;
+
+            if (!current || !next || !confirm) {
+                toast('すべての項目を入力してください。', 'error');
+                return;
+            }
+            if (next !== confirm) {
+                toast('新しいパスワード確認が一致しません。', 'error');
+                return;
+            }
+
+            setButtonBusy('passwordSaveBtn', true, '更新中...', '更新する');
+            try {
+                await serverCall('changeMyPassword', [current, next]);
+                closeModal('passwordModal');
+                toast('パスワードを更新しました。', 'success');
+            } catch (err) {
+                toast(err.message || 'パスワード変更に失敗しました。', 'error');
+            } finally {
+                setButtonBusy('passwordSaveBtn', false, '更新中...', '更新する');
+            }
         }
 
         function populateCliSel(selectedId) {
@@ -2912,6 +3966,7 @@
         function onCliSelectChange() {}
 
         function toggleCliInline() {
+            if (!canEdit()) return;
             const form = document.getElementById('cliInlineForm');
             const show = !form.classList.contains('show');
             form.classList.toggle('show', show);
@@ -2921,13 +3976,13 @@
             }
         }
 
-        function saveInlineClient() {
+        async function saveInlineClient() {
+            if (!canEdit()) return;
             const name = document.getElementById('ci_name').value.trim();
             if (!name) { document.getElementById('ci_name').classList.add('err'); toast('クライアント名を入力してください', 'error'); return; }
             document.getElementById('ci_name').classList.remove('err');
 
-            const btn = document.getElementById('ciSaveBtn');
-            btn.disabled = true; btn.textContent = '登録中...';
+            setButtonBusy('ciSaveBtn', true, '登録中...', '登録して選択');
 
             const cli = {
                 'クライアント名': name,
@@ -2936,27 +3991,24 @@
                 '電話': '', '備考': '', '登録日': '',
             };
 
-            google.script.run
-                .withSuccessHandler(res => {
-                    btn.disabled = false; btn.textContent = '登録して選択';
-                    google.script.run
-                        .withSuccessHandler(data => {
-                            allClients = data || [];
-                            setBadge('clients', allClients.length);
-                            populateCliSel(res.id);
-                            const sel = document.getElementById('p_client');
-                            sel.value = res.id;
-                            toggleCliInline();
-                            toast(`「${name}」を登録しました`, 'success');
-                        })
-                        .withFailureHandler(() => {})
-                        .getClients();
-                })
-                .withFailureHandler(() => { btn.disabled = false; btn.textContent = '登録して選択'; toast('登録に失敗しました', 'error'); })
-                .addClient(cli);
+            try {
+                const res = await serverCall('addClient', [cli]);
+                allClients = await serverCall('getClients');
+                setBadge('clients', allClients.length);
+                populateCliSel(res.id);
+                const sel = document.getElementById('p_client');
+                sel.value = res.id;
+                toggleCliInline();
+                toast(`「${name}」を登録しました`, 'success');
+            } catch (err) {
+                toast(err.message || '登録に失敗しました', 'error');
+            } finally {
+                setButtonBusy('ciSaveBtn', false, '登録中...', '登録して選択');
+            }
         }
 
         function openProjModal() {
+            if (!canEdit()) return;
             document.getElementById('projModalTitle').textContent = '案件を追加';
             ['p_row', 'p_id', 'p_regdate'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('p_completeDate').value = new Date().toISOString().split('T')[0];
@@ -2970,6 +4022,7 @@
         }
 
         function openProjEdit(row) {
+            if (!canEdit()) return;
             const p = allProjects.find(x => x['_row'] === row);
             if (!p) return;
             document.getElementById('projModalTitle').textContent = '案件を編集';
@@ -3003,13 +4056,13 @@
             }
         }
 
-        function saveProject() {
+        async function saveProject() {
+            if (!canEdit()) return;
             const name = document.getElementById('p_name').value.trim();
             if (!name) { document.getElementById('p_name').classList.add('err'); toast('案件名を入力してください', 'error'); return; }
             document.getElementById('p_name').classList.remove('err');
 
-            const btn = document.getElementById('projSaveBtn');
-            btn.disabled = true; btn.textContent = '保存中...';
+            setButtonBusy('projSaveBtn', true, '保存中...', '保存する');
 
             const sel = document.getElementById('p_client');
             const selOpt = sel.options[sel.selectedIndex];
@@ -3031,22 +4084,33 @@
                 '_row': row ? Number(row) : undefined,
             };
 
-            const ok = () => { btn.disabled = false; btn.textContent = '保存する'; closeModal('projModal'); toast('保存しました', 'success'); reload(); };
-            const ng = () => { btn.disabled = false; btn.textContent = '保存する'; toast('保存に失敗しました', 'error'); };
-
-            if (row) google.script.run.withSuccessHandler(ok).withFailureHandler(ng).updateProject(proj);
-            else google.script.run.withSuccessHandler(ok).withFailureHandler(ng).addProject(proj);
+            try {
+                if (row) await serverCall('updateProject', [proj]);
+                else await serverCall('addProject', [proj]);
+                closeModal('projModal');
+                toast('保存しました', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || '保存に失敗しました', 'error');
+            } finally {
+                setButtonBusy('projSaveBtn', false, '保存中...', '保存する');
+            }
         }
 
-        function delProj(row, name) {
+        async function delProj(row, name) {
+            if (!canEdit()) return;
             if (!confirm(`「${name}」を削除しますか？`)) return;
-            google.script.run
-                .withSuccessHandler(() => { toast('削除しました', 'success'); reload(); })
-                .withFailureHandler(() => toast('削除に失敗しました', 'error'))
-                .deleteProject(row);
+            try {
+                await serverCall('deleteProject', [row]);
+                toast('削除しました', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || '削除に失敗しました', 'error');
+            }
         }
 
         function openCliModal() {
+            if (!canEdit()) return;
             document.getElementById('cliModalTitle').textContent = 'クライアントを追加';
             ['c_row', 'c_id', 'c_regdate'].forEach(id => document.getElementById(id).value = '');
             ['c_name', 'c_contact', 'c_email', 'c_phone', 'c_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
@@ -3055,6 +4119,7 @@
         }
 
         function openCliEdit(row) {
+            if (!canEdit()) return;
             const c = allClients.find(x => x['_row'] === row);
             if (!c) return;
             document.getElementById('cliModalTitle').textContent = 'クライアントを編集';
@@ -3069,13 +4134,13 @@
             document.getElementById('cliModal').classList.add('show');
         }
 
-        function saveClient() {
+        async function saveClient() {
+            if (!canEdit()) return;
             const name = document.getElementById('c_name').value.trim();
             if (!name) { document.getElementById('c_name').classList.add('err'); toast('クライアント名を入力してください', 'error'); return; }
             document.getElementById('c_name').classList.remove('err');
 
-            const btn = document.getElementById('cliSaveBtn');
-            btn.disabled = true; btn.textContent = '保存中...';
+            setButtonBusy('cliSaveBtn', true, '保存中...', '保存する');
             const row = document.getElementById('c_row').value;
             const cli = {
                 'ID': document.getElementById('c_id').value,
@@ -3088,24 +4153,34 @@
                 '_row': row ? Number(row) : undefined,
             };
 
-            const ok = () => { btn.disabled = false; btn.textContent = '保存する'; closeModal('cliModal'); toast('保存しました', 'success'); reload(); };
-            const ng = () => { btn.disabled = false; btn.textContent = '保存する'; toast('保存に失敗しました', 'error'); };
-
-            if (row) google.script.run.withSuccessHandler(ok).withFailureHandler(ng).updateClient(cli);
-            else google.script.run.withSuccessHandler(ok).withFailureHandler(ng).addClient(cli);
+            try {
+                if (row) await serverCall('updateClient', [cli]);
+                else await serverCall('addClient', [cli]);
+                closeModal('cliModal');
+                toast('保存しました', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || '保存に失敗しました', 'error');
+            } finally {
+                setButtonBusy('cliSaveBtn', false, '保存中...', '保存する');
+            }
         }
 
-        function delCli(row, name) {
+        async function delCli(row, name) {
+            if (!canEdit()) return;
             if (!confirm(`「${name}」を削除しますか？`)) return;
-            google.script.run
-                .withSuccessHandler(() => { toast('削除しました', 'success'); reload(); })
-                .withFailureHandler(() => toast('削除に失敗しました', 'error'))
-                .deleteClient(row);
+            try {
+                await serverCall('deleteClient', [row]);
+                toast('削除しました', 'success');
+                await reload();
+            } catch (err) {
+                toast(err.message || '削除に失敗しました', 'error');
+            }
         }
 
         function closeModal(id) { document.getElementById(id).classList.remove('show'); }
         function onOvClick(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
-        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal('projModal'); closeModal('cliModal'); } });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { ['projModal', 'cliModal', 'userModal', 'passwordModal'].forEach(closeModal); } });
 
         function toast(msg, type = 'success') {
             const w = document.getElementById('toastWrap');
@@ -3134,7 +4209,7 @@
                 document.getElementsByTagName('head')[0].appendChild(meta);
             }
             showView('dashboard');
-            loadAll();
+            bootAuth();
         });
     </script>
 </body>

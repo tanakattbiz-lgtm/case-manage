@@ -1,8 +1,10 @@
-function getClients() {
+function getClients(sessionToken) {
+  requireReadAccess_(sessionToken);
   return sheetToObjects(clientSheet());
 }
 
-function addClient(c) {
+function addClient(sessionToken, c) {
+  requireEditAccess_(sessionToken);
   const id = genId('CLI');
 
   clientSheet().appendRow([
@@ -18,7 +20,8 @@ function addClient(c) {
   return { success: true, id };
 }
 
-function updateClient(c) {
+function updateClient(sessionToken, c) {
+  requireEditAccess_(sessionToken);
   const row = Number(c['_row']);
   if (!row) return { success: false };
 
@@ -35,7 +38,8 @@ function updateClient(c) {
   return { success: true };
 }
 
-function deleteClient(row) {
+function deleteClient(sessionToken, row) {
+  requireEditAccess_(sessionToken);
   clientSheet().deleteRow(Number(row));
   return { success: true };
 }

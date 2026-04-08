@@ -1,4 +1,5 @@
-function getDashboard() {
+function getDashboard(sessionToken) {
+  requireReadAccess_(sessionToken);
   const projects = sheetToObjects(projSheet());
   let totalSales = 0;
   let totalProfit = 0;

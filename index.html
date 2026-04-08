@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Embed Test</title>
+
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: rgba(255, 255, 255, 0.82);
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: rgba(15, 23, 42, 0.08);
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family:
+        Inter,
+        "Noto Sans JP",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    .app-shell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.08), transparent 30%),
+        var(--bg);
+    }
+
+    .app-frame {
+      display: block;
+      width: 100%;
+      height: 100vh;
+      border: 0;
+      opacity: 0;
+      transition: opacity 320ms ease;
+    }
+
+    .app-frame.is-ready {
+      opacity: 1;
+    }
+
+    .loader-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(248, 250, 252, 0.98));
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 320ms ease,
+        visibility 320ms ease;
+    }
+
+    .loader-overlay.is-hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-card {
+      width: min(92vw, 360px);
+      padding: 28px 24px 24px;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .loader-title {
+      margin: 14px 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .loader-text {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .loader-progress {
+      margin-top: 18px;
+      height: 6px;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.14);
+    }
+
+    .loader-progress-bar {
+      width: 40%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #3b82f6, #6366f1);
+      animation: progressSlide 1.2s ease-in-out infinite;
+      transform-origin: left center;
+    }
+
+    @keyframes progressSlide {
+      0% {
+        transform: translateX(-120%);
+      }
+      100% {
+        transform: translateX(320%);
+      }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+
+  <!-- LDRS: lightweight loaders for plain HTML -->
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/npm/ldrs/dist/auto/quantum.js'
+  </script>
+</head>
+<body>
+  <div class="app-shell">
+    <div id="loader" class="loader-overlay" aria-live="polite" aria-busy="true">
+      <div class="loader-card" role="status">
+        <l-quantum size="68" speed="1.75" color="#334155"></l-quantum>
+        <h1 class="loader-title">読み込み中</h1>
+        <p class="loader-text">
+          画面を準備しています。<br>
+          数秒お待ちください。
+        </p>
+        <div class="loader-progress" aria-hidden="true">
+          <div class="loader-progress-bar"></div>
+        </div>
+        <span class="sr-only">アプリケーションを読み込んでいます</span>
+      </div>
+    </div>
+
+    <iframe
+      id="appFrame"
+      class="app-frame"
+      src="https://script.google.com/macros/s/AKfycbxLZmU071p4Npg6lRGX4KPi0gfI56Icm3-5KO9uuTcnZPb-U0Ga0bHUbxsAGz47-0N9/exec"
+      referrerpolicy="strict-origin-when-cross-origin"
+      title="Embedded GAS App">
+    </iframe>
+  </div>
+
+  <script>
+    const frame = document.getElementById('appFrame');
+    const loader = document.getElementById('loader');
+
+    let settled = false;
+
+    function finishLoading() {
+      if (settled) return;
+      settled = true;
+
+      frame.classList.add('is-ready');
+      loader.classList.add('is-hidden');
+
+      loader.setAttribute('aria-busy', 'false');
+
+      window.setTimeout(() => {
+        loader.remove();
+      }, 380);
+    }
+
+    frame.addEventListener('load', () => {
+      // フェードの見た目を安定させるために少しだけ余韻を入れる
+      window.setTimeout(finishLoading, 180);
+    });
+
+    // 失敗時の最低限フォールバック
+    window.setTimeout(() => {
+      if (!settled) {
+        const text = loader.querySelector('.loader-text');
+        if (text) {
+          text.innerHTML = '読み込みに時間がかかっています。<br>通信状況をご確認ください。';
+        }
+      }
+    }, 6000);
+  </script>
+</body>
+</html>
