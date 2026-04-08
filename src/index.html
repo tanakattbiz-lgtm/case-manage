@@ -187,22 +187,24 @@
         }
 
         .topbar {
-            height: var(--th);
+            min-height: var(--th);
             background: var(--white);
             border-bottom: 1px solid var(--border);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: 10px 12px;
             flex-shrink: 0;
             box-shadow: var(--sh);
-            gap: 12px
+            gap: 10px;
+            flex-wrap: wrap
         }
 
         .topbar-title {
             font-size: 17px;
             font-weight: 700;
-            flex: 1;
+            flex: 1 1 100%;
+            min-width: 0;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis
@@ -1361,6 +1363,8 @@
         }
 
         input[type=text],
+        input[type=email],
+        input[type=password],
         input[type=number],
         input[type=date],
         select,
@@ -1677,10 +1681,17 @@
 
         .topbar-actions {
             display: flex;
-            align-items: center;
-            justify-content: flex-end;
+            align-items: stretch;
+            justify-content: flex-start;
             gap: 8px;
             flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .topbar-actions .btn,
+        .topbar-actions .user-chip {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
         }
 
         .user-chip {
@@ -1693,19 +1704,27 @@
             border-radius: 12px;
             border: 1px solid var(--border);
             background: var(--white);
-            min-width: 150px;
+            min-width: 0;
         }
 
         .user-chip-name {
             font-size: 13px;
             font-weight: 700;
             line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .user-chip-role {
             font-size: 11px;
             color: var(--txt2);
             line-height: 1.2;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
 
         .security-grid {
@@ -1848,6 +1867,29 @@
         .modal-sheet { width: 100%; border-radius: 20px 20px 0 0; margin-top: auto; }
 
         @media(min-width:850px) {
+            .topbar {
+                height: var(--th);
+                min-height: 0;
+                padding: 0 20px;
+                align-items: center;
+                flex-wrap: nowrap;
+                gap: 12px;
+            }
+            .topbar-title {
+                flex: 1 1 auto;
+            }
+            .topbar-actions {
+                align-items: center;
+                justify-content: flex-end;
+                width: auto;
+            }
+            .topbar-actions .btn,
+            .topbar-actions .user-chip {
+                flex: 0 0 auto;
+            }
+            .user-chip {
+                min-width: 150px;
+            }
             .sidebar { display: flex !important; width: 240px; }
             .bottom-nav { display: none !important; }
             .fab { display: none !important; }
