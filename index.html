@@ -3,55 +3,83 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Embed Test</title>
+  <meta
+    name="description"
+    content="Google Apps Script と Google スプレッドシートで動く案件管理システム。案件一覧、クライアント管理、収益ダッシュボードをひとつにまとめて運用できます。">
+  <meta name="application-name" content="案件管理システム">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="案件管理システム">
+  <meta name="theme-color" content="#f5f6f8">
+  <meta name="color-scheme" content="light">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:site_name" content="案件管理システム">
+  <meta property="og:title" content="案件管理システム">
+  <meta
+    property="og:description"
+    content="案件一覧、クライアント管理、ダッシュボード分析をひとつにまとめた Google Apps Script ベースの業務アプリです。">
+  <meta name="twitter:card" content="summary">
+  <title>案件管理システム</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <style>
     :root {
-      --bg: #f8fafc;
-      --panel: rgba(255, 255, 255, 0.82);
-      --text: #0f172a;
-      --muted: #64748b;
-      --border: rgba(15, 23, 42, 0.08);
-      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --bg: #f5f6f8;
+      --white: #ffffff;
+      --surface: #f0f2f5;
+      --border: #d1d5db;
+      --border-strong: #9ca3af;
+      --txt: #111827;
+      --txt2: #6b7280;
+      --txt3: #9ca3af;
+      --acc: #111827;
+      --acc2: #1f2937;
+      --green: #059669;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 18px 44px rgba(17, 24, 39, 0.12);
+      --radius: 24px;
+      --radius-sm: 10px;
+      --sans: "Noto Sans JP", sans-serif;
+      --mono: "JetBrains Mono", monospace;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html, body {
-      margin: 0;
+    html,
+    body {
+      width: 100%;
       height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family:
-        Inter,
-        "Noto Sans JP",
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+      margin: 0;
     }
 
     body {
       overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(17, 24, 39, 0.06), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(5, 150, 105, 0.08), transparent 28%),
+        linear-gradient(180deg, #f7f8fa 0%, var(--bg) 100%);
+      color: var(--txt);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     .app-shell {
       position: relative;
       width: 100%;
       height: 100%;
-      background:
-        radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.08), transparent 30%),
-        var(--bg);
     }
 
     .app-frame {
       display: block;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       border: 0;
       opacity: 0;
       transition: opacity 320ms ease;
@@ -64,17 +92,12 @@
     .loader-overlay {
       position: fixed;
       inset: 0;
-      z-index: 9999;
+      z-index: 1000;
       display: grid;
       place-items: center;
       padding: 24px;
-      background:
-        linear-gradient(180deg, rgba(248, 250, 252, 0.94), rgba(248, 250, 252, 0.98));
-      opacity: 1;
-      visibility: visible;
-      transition:
-        opacity 320ms ease,
-        visibility 320ms ease;
+      background: linear-gradient(180deg, rgba(247, 248, 250, 0.94), rgba(245, 246, 248, 0.98));
+      transition: opacity 320ms ease, visibility 320ms ease;
     }
 
     .loader-overlay.is-hidden {
@@ -84,55 +107,143 @@
     }
 
     .loader-card {
-      width: min(92vw, 360px);
-      padding: 28px 24px 24px;
+      width: min(100%, 420px);
+      padding: 28px;
       border: 1px solid var(--border);
-      border-radius: 24px;
-      background: var(--panel);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow-lg);
       backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--white);
+      color: var(--txt3);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
     }
 
     .loader-title {
-      margin: 14px 0 8px;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
+      margin: 18px 0 8px;
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: -0.03em;
     }
 
     .loader-text {
       margin: 0;
+      color: var(--txt2);
       font-size: 14px;
-      line-height: 1.6;
-      color: var(--muted);
+      line-height: 1.75;
     }
 
-    .loader-progress {
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
       margin-top: 18px;
-      height: 6px;
+    }
+
+    .status-label {
+      color: var(--txt3);
+      font-size: 12px;
+    }
+
+    .status-code {
+      color: var(--txt3);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .progress-track {
+      position: relative;
       width: 100%;
-      overflow: hidden;
+      height: 10px;
+      margin-top: 10px;
       border-radius: 999px;
-      background: rgba(100, 116, 139, 0.14);
+      overflow: hidden;
+      background: rgba(156, 163, 175, 0.18);
     }
 
-    .loader-progress-bar {
-      width: 40%;
-      height: 100%;
+    .progress-track::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 38%;
       border-radius: inherit;
-      background: linear-gradient(90deg, #3b82f6, #6366f1);
-      animation: progressSlide 1.2s ease-in-out infinite;
-      transform-origin: left center;
+      background: linear-gradient(90deg, var(--acc), var(--green));
+      animation: slide-progress 1.25s ease-in-out infinite;
     }
 
-    @keyframes progressSlide {
-      0% {
-        transform: translateX(-120%);
-      }
-      100% {
-        transform: translateX(320%);
-      }
+    .loader-hint {
+      margin-top: 14px;
+      color: var(--txt3);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+
+    .support-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, color 140ms ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .action-btn-primary {
+      background: var(--acc);
+      border-color: var(--acc);
+      color: var(--white);
+    }
+
+    .action-btn-primary:hover {
+      background: var(--acc2);
+      border-color: var(--acc2);
+    }
+
+    .action-btn-secondary {
+      background: var(--white);
+      border-color: var(--border-strong);
+      color: var(--txt);
+    }
+
+    .action-btn-secondary:hover {
+      background: var(--surface);
     }
 
     .sr-only {
@@ -146,26 +257,76 @@
       white-space: nowrap;
       border: 0;
     }
+
+    @keyframes slide-progress {
+      0% {
+        transform: translateX(-120%);
+      }
+
+      100% {
+        transform: translateX(320%);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .loader-overlay {
+        padding: 16px;
+      }
+
+      .loader-card {
+        padding: 22px;
+      }
+
+      .loader-title {
+        font-size: 24px;
+      }
+    }
   </style>
 
-  <!-- LDRS: lightweight loaders for plain HTML -->
-  <script type="module">
-    import 'https://cdn.jsdelivr.net/npm/ldrs/dist/auto/quantum.js'
-  </script>
+  <noscript>
+    <style>
+      .loader-overlay {
+        display: none;
+      }
+
+      .app-frame {
+        opacity: 1;
+      }
+    </style>
+  </noscript>
 </head>
 <body>
   <div class="app-shell">
     <div id="loader" class="loader-overlay" aria-live="polite" aria-busy="true">
       <div class="loader-card" role="status">
-        <l-quantum size="68" speed="1.75" color="#334155"></l-quantum>
-        <h1 class="loader-title">読み込み中</h1>
-        <p class="loader-text">
+        <div class="badge">Case Manage</div>
+        <h1 class="loader-title">案件管理システム</h1>
+        <p id="loaderText" class="loader-text">
           画面を準備しています。<br>
           数秒お待ちください。
         </p>
-        <div class="loader-progress" aria-hidden="true">
-          <div class="loader-progress-bar"></div>
+
+        <div class="status-row" aria-hidden="true">
+          <div class="status-label">アプリ起動中</div>
+          <div id="progressLabel" class="status-code">booting</div>
         </div>
+        <div class="progress-track" aria-hidden="true"></div>
+
+        <div id="loaderHint" class="loader-hint">
+          初回アクセス時や Apps Script の再起動直後は、表示まで少し時間がかかることがあります。
+        </div>
+
+        <div id="supportActions" class="support-actions" hidden>
+          <a
+            class="action-btn action-btn-primary"
+            href="https://script.google.com/macros/s/AKfycbxLZmU071p4Npg6lRGX4KPi0gfI56Icm3-5KO9uuTcnZPb-U0Ga0bHUbxsAGz47-0N9/exec"
+            target="_blank"
+            rel="noreferrer">
+            アプリを直接開く
+          </a>
+          <button id="retryButton" class="action-btn action-btn-secondary" type="button">再読み込み</button>
+        </div>
+
         <span class="sr-only">アプリケーションを読み込んでいます</span>
       </div>
     </div>
@@ -175,13 +336,18 @@
       class="app-frame"
       src="https://script.google.com/macros/s/AKfycbxLZmU071p4Npg6lRGX4KPi0gfI56Icm3-5KO9uuTcnZPb-U0Ga0bHUbxsAGz47-0N9/exec"
       referrerpolicy="strict-origin-when-cross-origin"
-      title="Embedded GAS App">
+      title="案件管理システム">
     </iframe>
   </div>
 
   <script>
-    const frame = document.getElementById('appFrame');
-    const loader = document.getElementById('loader');
+    const frame = document.getElementById("appFrame");
+    const loader = document.getElementById("loader");
+    const loaderText = document.getElementById("loaderText");
+    const loaderHint = document.getElementById("loaderHint");
+    const progressLabel = document.getElementById("progressLabel");
+    const supportActions = document.getElementById("supportActions");
+    const retryButton = document.getElementById("retryButton");
 
     let settled = false;
 
@@ -189,30 +355,32 @@
       if (settled) return;
       settled = true;
 
-      frame.classList.add('is-ready');
-      loader.classList.add('is-hidden');
-
-      loader.setAttribute('aria-busy', 'false');
+      frame.classList.add("is-ready");
+      loader.classList.add("is-hidden");
+      loader.setAttribute("aria-busy", "false");
 
       window.setTimeout(() => {
         loader.remove();
-      }, 380);
+      }, 360);
     }
 
-    frame.addEventListener('load', () => {
-      // フェードの見た目を安定させるために少しだけ余韻を入れる
+    function showSlowState() {
+      if (settled) return;
+
+      progressLabel.textContent = "waiting";
+      loaderText.innerHTML = "読み込みに少し時間がかかっています。<br>通信状況をご確認いただくか、直接アプリを開いてください。";
+      loaderHint.textContent = "Google Apps Script の応答待ちや認証状態によって、表示まで時間が延びる場合があります。";
+      supportActions.hidden = false;
+    }
+
+    frame.addEventListener("load", () => {
       window.setTimeout(finishLoading, 180);
     });
 
-    // 失敗時の最低限フォールバック
-    window.setTimeout(() => {
-      if (!settled) {
-        const text = loader.querySelector('.loader-text');
-        if (text) {
-          text.innerHTML = '読み込みに時間がかかっています。<br>通信状況をご確認ください。';
-        }
-      }
-    }, 6000);
+    frame.addEventListener("error", showSlowState);
+    retryButton.addEventListener("click", () => window.location.reload());
+
+    window.setTimeout(showSlowState, 6500);
   </script>
 </body>
 </html>
