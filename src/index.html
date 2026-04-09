@@ -3973,8 +3973,21 @@
 
         function parseUiDate(value) {
             if (!value) return null;
-            const d = new Date(String(value).replace(/\//g, '-'));
-            return isNaN(d) ? null : d;
+            const normalized = String(value).trim();
+            const matched = normalized.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+            if (matched) {
+                const d = new Date(
+                    Number(matched[1]),
+                    Number(matched[2]) - 1,
+                    Number(matched[3]),
+                    Number(matched[4] || 0),
+                    Number(matched[5] || 0),
+                    Number(matched[6] || 0)
+                );
+                return Number.isNaN(d.getTime()) ? null : d;
+            }
+            const d = new Date(normalized.replace(/\//g, '-'));
+            return Number.isNaN(d.getTime()) ? null : d;
         }
 
         function isUserLocked(user) {

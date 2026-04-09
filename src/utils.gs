@@ -18,9 +18,20 @@ function sheetToObjects(sh) {
   return data.slice(1).map((row, i) => {
     const obj = { _row: i + 2 };
     headers.forEach((h, j) => {
-      obj[h] = (row[j] instanceof Date)
-        ? Utilities.formatDate(row[j], 'Asia/Tokyo', 'yyyy/MM/dd')
-        : row[j];
+      if (row[j] instanceof Date) {
+        const dateValue = row[j];
+        const hasTime = dateValue.getHours() !== 0
+          || dateValue.getMinutes() !== 0
+          || dateValue.getSeconds() !== 0
+          || dateValue.getMilliseconds() !== 0;
+        obj[h] = Utilities.formatDate(
+          dateValue,
+          'Asia/Tokyo',
+          hasTime ? 'yyyy/MM/dd HH:mm:ss' : 'yyyy/MM/dd'
+        );
+        return;
+      }
+      obj[h] = row[j];
     });
     return obj;
   });

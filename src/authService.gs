@@ -702,7 +702,7 @@ function sha256Hex_(value) {
 
 function parseDateValue_(value) {
   if (!value) return null;
-  if (value instanceof Date) return value;
+  if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
   if (typeof value === 'number') {
     const numericDate = new Date(value);
     return isNaN(numericDate.getTime()) ? null : numericDate;
@@ -710,6 +710,21 @@ function parseDateValue_(value) {
 
   const normalized = String(value).trim();
   if (!normalized) return null;
+
+  const matched = normalized.match(
+    /^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/
+  );
+  if (matched) {
+    const parsedManual = new Date(
+      Number(matched[1]),
+      Number(matched[2]) - 1,
+      Number(matched[3]),
+      Number(matched[4] || 0),
+      Number(matched[5] || 0),
+      Number(matched[6] || 0)
+    );
+    return isNaN(parsedManual.getTime()) ? null : parsedManual;
+  }
 
   const parsed = new Date(normalized.replace(/\//g, '-'));
   return isNaN(parsed.getTime()) ? null : parsed;
