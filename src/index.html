@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#ffffff">
     <title>案件管理</title>
@@ -60,7 +60,8 @@
 
         html {
             overflow: hidden;
-            height: 100%
+            height: 100%;
+            min-height: 100dvh
         }
 
         body {
@@ -69,7 +70,9 @@
             font-family: var(--sans);
             font-size: 15px;
             height: 100%;
+            min-height: 100dvh;
             overflow: hidden;
+            overscroll-behavior-x: none;
             -webkit-font-smoothing: antialiased
         }
 
@@ -88,11 +91,13 @@
             overflow-x: hidden;
             width: 100%;
             height: 100%;
+            min-height: 100dvh;
         }
 
         .app {
             display: flex;
             height: 100%;
+            min-height: 100dvh;
             width: 100%;
             overflow: hidden;
             background: var(--bg)
@@ -191,19 +196,18 @@
             background: var(--white);
             border-bottom: 1px solid var(--border);
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
             padding: 10px 12px;
             flex-shrink: 0;
             box-shadow: var(--sh);
             gap: 10px;
-            flex-wrap: wrap
         }
 
         .topbar-title {
             font-size: 17px;
             font-weight: 700;
-            flex: 1 1 100%;
             min-width: 0;
             overflow: hidden;
             white-space: nowrap;
@@ -216,6 +220,7 @@
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             padding: 20px;
+            padding-bottom: calc(92px + env(safe-area-inset-bottom));
             background: var(--bg)
         }
 
@@ -1015,6 +1020,16 @@
             border-collapse: collapse
         }
 
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-scroll table {
+            min-width: 720px;
+        }
+
         th {
             text-align: left;
             padding: 10px 14px;
@@ -1050,7 +1065,8 @@
         .td-act {
             display: flex;
             gap: 6px;
-            align-items: center
+            align-items: center;
+            flex-wrap: wrap
         }
 
         .proj-cards {
@@ -1680,17 +1696,22 @@
         }
 
         .topbar-actions {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             align-items: stretch;
-            justify-content: flex-start;
             gap: 8px;
-            flex-wrap: wrap;
             width: 100%;
         }
 
-        .topbar-actions .btn,
+        .topbar-actions .btn {
+            width: 100%;
+            min-width: 0;
+            padding: 0 12px;
+            font-size: 13px;
+        }
+
         .topbar-actions .user-chip {
-            flex: 1 1 calc(50% - 4px);
+            grid-column: 1 / -1;
             min-width: 0;
         }
 
@@ -1843,6 +1864,27 @@
             word-break: break-word;
         }
 
+        .chart-card,
+        .insight-card,
+        .ranking-card,
+        .recent-card,
+        .proj-card,
+        .cli-card,
+        .security-card,
+        .audit-item,
+        .table-card,
+        .topbar,
+        .topbar-actions,
+        .tc-hdr,
+        .pc-top,
+        .cli-footer,
+        .recent-row,
+        .ranking-row,
+        .audit-top,
+        .audit-meta-row {
+            min-width: 0;
+        }
+
         .sidebar { display: none !important; }
         .bottom-nav { display: flex !important; }
         .topbar-actions .btn-primary { display: none !important; }
@@ -1851,7 +1893,7 @@
 
         .content-area { 
             padding: 12px; 
-            padding-bottom: 80px;
+            padding-bottom: calc(92px + env(safe-area-inset-bottom));
             overflow-x: hidden;
         }
 
@@ -1866,25 +1908,136 @@
         .mini-kpi-grid { grid-template-columns: 1fr 1fr; }
         .modal-sheet { width: 100%; border-radius: 20px 20px 0 0; margin-top: auto; }
 
+        @media(max-width:640px) {
+            .auth-shell {
+                min-height: 100dvh;
+                align-items: stretch;
+                padding: 16px;
+            }
+
+            .auth-card {
+                width: 100%;
+                margin: auto 0;
+                padding: 22px 18px;
+                border-radius: 18px;
+            }
+
+            .auth-title {
+                font-size: 24px;
+            }
+
+            .topbar-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar-actions .user-chip {
+                grid-column: auto;
+            }
+
+            .content-area {
+                padding: 12px;
+                padding-bottom: calc(96px + env(safe-area-inset-bottom));
+            }
+
+            .kpi-grid,
+            .status-row,
+            .mini-kpi-grid,
+            .pc-metrics,
+            .form-actions,
+            .security-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-card {
+                padding: 14px;
+            }
+
+            .chart-hdr,
+            .tc-hdr,
+            .pc-top,
+            .cli-footer,
+            .cli-inline-actions,
+            .recent-row,
+            .ranking-row {
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+
+            .chart-legend {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .pc-client span,
+            .rr-name,
+            .rr-client,
+            .rank-name,
+            .cli-name-text,
+            .cli-meta-val,
+            .user-chip-role {
+                white-space: normal !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+                word-break: break-word;
+            }
+
+            .rank-val,
+            .rank-mg {
+                width: auto;
+            }
+
+            .rr-right {
+                width: 100%;
+                margin-left: 17px;
+                text-align: left;
+            }
+
+            .cli-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .cli-inline-actions {
+                flex-direction: column;
+            }
+
+            .cli-inline-actions .btn,
+            .form-actions .btn {
+                width: 100%;
+            }
+
+            .modal-sheet {
+                max-height: 100dvh;
+            }
+        }
+
         @media(min-width:850px) {
             .topbar {
                 height: var(--th);
                 min-height: 0;
                 padding: 0 20px;
+                flex-direction: row;
                 align-items: center;
-                flex-wrap: nowrap;
+                justify-content: space-between;
                 gap: 12px;
             }
             .topbar-title {
                 flex: 1 1 auto;
             }
             .topbar-actions {
+                display: flex;
                 align-items: center;
                 justify-content: flex-end;
                 width: auto;
             }
-            .topbar-actions .btn,
+            .topbar-actions .btn {
+                width: auto;
+                flex: 0 0 auto;
+                padding: 0 18px;
+                font-size: 14px;
+            }
             .topbar-actions .user-chip {
+                grid-column: auto;
                 flex: 0 0 auto;
             }
             .user-chip {
@@ -2514,6 +2667,8 @@
         let currentView = 'dashboard';
         let dashboardFilter = getDefaultDashboardFilter();
         let dashboardCharts = [];
+        let authRevision = 0;
+        let loadRevision = 0;
         let projectViewBaseList = null;
         let projectViewLabel = '';
 
@@ -2522,6 +2677,22 @@
         const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
         const input2date = v => v ? v.replace(/-/g, '/') : '';
+
+        function bumpAuthRevision() {
+            authRevision += 1;
+            return authRevision;
+        }
+
+        function invalidateLoads() {
+            loadRevision += 1;
+            return loadRevision;
+        }
+
+        function isCurrentAuthSnapshot(snapshot) {
+            return Boolean(snapshot)
+                && snapshot.revision === authRevision
+                && snapshot.token === authState.token;
+        }
 
         function cloneAuthSettings(settings) {
             return {
@@ -2643,12 +2814,16 @@
                 session: null,
                 settings: cloneAuthSettings(authState.settings),
             };
+            bumpAuthRevision();
+            invalidateLoads();
             setStoredToken('');
             allProjects = [];
             allClients = [];
             allUsers = [];
             auditLogs = [];
             loaded = false;
+            projectViewBaseList = null;
+            projectViewLabel = '';
             updateAuthUi();
         }
 
@@ -2690,6 +2865,8 @@
                 session: payload.session || null,
                 settings: cloneAuthSettings(payload.settings),
             };
+            bumpAuthRevision();
+            invalidateLoads();
             setStoredToken(authState.token);
             renderAuthMeta();
             updateAuthUi();
@@ -2697,6 +2874,9 @@
         }
 
         function handleAuthLoss(message, type = 'error') {
+            destroyDashboardCharts();
+            document.querySelectorAll('.modal-ov.show').forEach(el => el.classList.remove('show'));
+            currentView = 'dashboard';
             resetAuthState();
             showAuthShell();
             setAuthMode('login');
@@ -2716,14 +2896,19 @@
                 silentAuth: false,
                 ...options
             };
-            const finalArgs = opts.secure ? [authState.token, ...args] : args;
+            const requestToken = opts.secure ? authState.token : '';
+            const authSnapshot = opts.secure ? { revision: authRevision, token: requestToken } : null;
+            const finalArgs = opts.secure ? [requestToken, ...args] : args;
 
             return new Promise((resolve, reject) => {
                 const runner = google.script.run
                     .withSuccessHandler(resolve)
                     .withFailureHandler(err => {
                         const normalized = normalizeServerError(err);
-                        if (opts.secure && !opts.silentAuth && ['AUTH_REQUIRED', 'AUTH_EXPIRED'].includes(normalized.code)) {
+                        if (opts.secure
+                            && !opts.silentAuth
+                            && ['AUTH_REQUIRED', 'AUTH_EXPIRED'].includes(normalized.code)
+                            && isCurrentAuthSnapshot(authSnapshot)) {
                             handleAuthLoss(normalized.message);
                         }
                         reject(normalized);
@@ -2761,8 +2946,10 @@
 
                 applyAuthPayload(state);
                 try {
-                    await loadAll();
-                    showView(currentView === 'users' && canManageUsers() ? 'users' : 'dashboard');
+                    const loadedNow = await loadAll();
+                    if (loadedNow !== false) {
+                        showView(currentView === 'users' && canManageUsers() ? 'users' : 'dashboard');
+                    }
                 } catch (err) {
                     showView('dashboard');
                     toast(err.message || 'データ読込に失敗しました。', 'error');
@@ -2921,33 +3108,40 @@
 
         async function loadAdminData() {
             if (!canManageUsers()) {
-                allUsers = [];
-                auditLogs = [];
-                return;
+                return { users: [], logs: [] };
             }
 
             const [users, logs] = await Promise.all([
                 serverCall('getUsers'),
                 serverCall('getAuditLogs')
             ]);
-            allUsers = users || [];
-            auditLogs = logs || [];
+            return {
+                users: users || [],
+                logs: logs || [],
+            };
         }
 
         async function loadAll() {
+            const requestRevision = invalidateLoads();
             const tasks = [
                 serverCall('getProjects'),
-                serverCall('getClients')
+                serverCall('getClients'),
+                canManageUsers() ? loadAdminData() : Promise.resolve({ users: [], logs: [] })
             ];
-            if (canManageUsers()) tasks.push(loadAdminData());
 
-            const [projects, clients] = await Promise.all(tasks);
+            const [projects, clients, adminData] = await Promise.all(tasks);
+            if (requestRevision !== loadRevision || !isAuthenticated()) {
+                return false;
+            }
             allProjects = projects || [];
             allClients = clients || [];
+            allUsers = (adminData && adminData.users) || [];
+            auditLogs = (adminData && adminData.logs) || [];
             setBadge('projects', allProjects.length);
             setBadge('clients', allClients.length);
             loaded = true;
             refreshCurrent();
+            return true;
         }
 
         async function reload() {
@@ -3815,7 +4009,7 @@
             if (allUsers.length === 0) {
                 userTable.innerHTML = emptyState('ユーザーがいません', '右上の「ユーザーを追加」から登録できます。');
             } else {
-                userTable.innerHTML = `<table>
+                userTable.innerHTML = `<div class="table-scroll"><table>
                     <thead><tr>
                         <th>ユーザー</th>
                         <th>ロール</th>
@@ -3849,7 +4043,7 @@
                             </td>
                         </tr>`;
                     }).join('')}</tbody>
-                </table>`;
+                </table></div>`;
             }
 
             if (auditLogs.length === 0) {
@@ -4244,12 +4438,13 @@
         }
 
         window.addEventListener('load', () => {
-            if (!document.querySelector('meta[name="viewport"]')) {
-                const meta = document.createElement('meta');
+            let meta = document.querySelector('meta[name="viewport"]');
+            if (!meta) {
+                meta = document.createElement('meta');
                 meta.name = "viewport";
-                meta.content = "width=device-width, initial-scale=1.0";
                 document.getElementsByTagName('head')[0].appendChild(meta);
             }
+            meta.content = "width=device-width, initial-scale=1.0, viewport-fit=cover";
             showView('dashboard');
             bootAuth();
         });
