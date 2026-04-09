@@ -54,6 +54,7 @@
             --sh: 0 1px 3px rgba(0, 0, 0, .07), 0 1px 2px rgba(0, 0, 0, .04);
             --sh2: 0 4px 16px rgba(0, 0, 0, .1);
             --nh: 60px;
+            --bnah: 52px;
             --th: 54px;
             --sb: 228px;
         }
@@ -220,7 +221,7 @@
             overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
             padding: 20px;
-            padding-bottom: calc(92px + env(safe-area-inset-bottom));
+            padding-bottom: calc(var(--nh) + var(--bnah) + 20px + env(safe-area-inset-bottom));
             background: var(--bg)
         }
 
@@ -345,12 +346,68 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: calc(var(--nh) + env(safe-area-inset-bottom));
+            height: calc(var(--nh) + var(--bnah) + env(safe-area-inset-bottom));
             padding-bottom: env(safe-area-inset-bottom);
             background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
-            z-index: 500
+            z-index: 500;
+            flex-direction: column;
+            justify-content: flex-end
+        }
+
+        .bn-actions {
+            display: flex;
+            gap: 8px;
+            min-height: var(--bnah);
+            padding: 8px 10px 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mobile-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 4px 2px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: var(--white);
+            color: var(--txt2);
+            font-family: var(--sans);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            line-height: 1.1;
+            transition: all .15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-action-btn:active {
+            transform: scale(.97);
+        }
+
+        .mobile-action-btn svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .mobile-action-btn span {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mobile-action-btn.primary {
+            background: var(--acc);
+            border-color: var(--acc);
+            color: #fff;
         }
 
         .bn-inner {
@@ -1891,9 +1948,26 @@
         .desk-table { display: none !important; }
         .mob-only { display: block !important; }
 
+        .topbar {
+            min-height: 52px;
+            padding: 0 14px;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0;
+        }
+
+        .topbar-actions {
+            display: none !important;
+        }
+
+        .topbar-title {
+            font-size: 16px;
+        }
+
         .content-area { 
             padding: 12px; 
-            padding-bottom: calc(92px + env(safe-area-inset-bottom));
+            padding-bottom: calc(var(--nh) + var(--bnah) + 18px + env(safe-area-inset-bottom));
             overflow-x: hidden;
         }
 
@@ -1926,17 +2000,9 @@
                 font-size: 24px;
             }
 
-            .topbar-actions {
-                grid-template-columns: 1fr;
-            }
-
-            .topbar-actions .user-chip {
-                grid-column: auto;
-            }
-
             .content-area {
                 padding: 12px;
-                padding-bottom: calc(96px + env(safe-area-inset-bottom));
+                padding-bottom: calc(var(--nh) + var(--bnah) + 16px + env(safe-area-inset-bottom));
             }
 
             .kpi-grid,
@@ -2022,10 +2088,11 @@
                 gap: 12px;
             }
             .topbar-title {
+                font-size: 17px;
                 flex: 1 1 auto;
             }
             .topbar-actions {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 justify-content: flex-end;
                 width: auto;
@@ -2351,6 +2418,39 @@
         </div>
 
         <nav class="bottom-nav">
+            <div class="bn-actions">
+                <button class="mobile-action-btn primary" id="mobileAddBtn" onclick="onTopAdd()" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    <span id="mobileAddLabel">追加</span>
+                </button>
+                <button class="mobile-action-btn" id="mobileSecurityBtn" onclick="showView('users')" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    <span>認証</span>
+                </button>
+                <button class="mobile-action-btn" id="mobilePasswordBtn" onclick="openPasswordModal()" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    <span>PW</span>
+                </button>
+                <button class="mobile-action-btn" id="mobileLogoutBtn" onclick="logoutApp()" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    <span>ログアウト</span>
+                </button>
+            </div>
             <div class="bn-inner">
                 <button class="bnav-btn active" id="bnav-dashboard" onclick="showView('dashboard')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2832,6 +2932,9 @@
             const passwordBtn = document.getElementById('passwordBtn');
             const logoutBtn = document.getElementById('logoutBtn');
             const securityBtn = document.getElementById('securityBtn');
+            const mobilePasswordBtn = document.getElementById('mobilePasswordBtn');
+            const mobileLogoutBtn = document.getElementById('mobileLogoutBtn');
+            const mobileSecurityBtn = document.getElementById('mobileSecurityBtn');
             const userNav = document.getElementById('sbnav-users');
             const userName = document.getElementById('userChipName');
             const userRole = document.getElementById('userChipRole');
@@ -2841,6 +2944,9 @@
             passwordBtn.hidden = !loggedIn;
             logoutBtn.hidden = !loggedIn;
             securityBtn.hidden = !canManageUsers();
+            mobilePasswordBtn.hidden = !loggedIn;
+            mobileLogoutBtn.hidden = !loggedIn;
+            mobileSecurityBtn.hidden = !canManageUsers();
             userNav.hidden = !canManageUsers();
 
             if (loggedIn) {
@@ -3079,7 +3185,9 @@
         function updateTopbarActions() {
             const topBtn = document.getElementById('topAddBtn');
             const topLbl = document.getElementById('topAddLabel');
-            if (!topBtn || !topLbl) return;
+            const mobileAddBtn = document.getElementById('mobileAddBtn');
+            const mobileAddLabel = document.getElementById('mobileAddLabel');
+            if (!topBtn || !topLbl || !mobileAddBtn || !mobileAddLabel) return;
 
             if (currentView === 'projects' && canEdit()) {
                 topBtn.style.display = '';
@@ -3104,6 +3212,39 @@
             if (currentView === 'projects' && canEdit()) openProjModal();
             else if (currentView === 'clients' && canEdit()) openCliModal();
             else if (currentView === 'users' && canManageUsers()) openUserModal();
+        }
+
+        function updateTopbarActions() {
+            const topBtn = document.getElementById('topAddBtn');
+            const topLbl = document.getElementById('topAddLabel');
+            const mobileAddBtn = document.getElementById('mobileAddBtn');
+            const mobileAddLabel = document.getElementById('mobileAddLabel');
+            if (!topBtn || !topLbl || !mobileAddBtn || !mobileAddLabel) return;
+
+            let desktopLabel = '';
+            let mobileLabel = '';
+
+            if (currentView === 'projects' && canEdit()) {
+                desktopLabel = '案件追加';
+                mobileLabel = '案件+';
+            } else if (currentView === 'clients' && canEdit()) {
+                desktopLabel = 'クライアントを追加';
+                mobileLabel = '顧客+';
+            } else if (currentView === 'users' && canManageUsers()) {
+                desktopLabel = 'ユーザーを追加';
+                mobileLabel = 'ユーザー+';
+            }
+
+            if (desktopLabel) {
+                topBtn.style.display = '';
+                topLbl.textContent = desktopLabel;
+                mobileAddBtn.hidden = false;
+                mobileAddLabel.textContent = mobileLabel;
+                return;
+            }
+
+            topBtn.style.display = 'none';
+            mobileAddBtn.hidden = true;
         }
 
         async function loadAdminData() {
