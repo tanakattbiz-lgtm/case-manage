@@ -11,6 +11,15 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('case-manage.auth.token')) {
+                    document.documentElement.classList.add('resume-session');
+                }
+            } catch (e) {}
+        })();
+    </script>
     <style>
         *,
         *::before,
@@ -1658,6 +1667,14 @@
             display: none !important;
         }
 
+        html.resume-session #authShell {
+            display: none !important;
+        }
+
+        html.resume-session #appShell[hidden] {
+            display: flex !important;
+        }
+
         .auth-shell {
             min-height: 100%;
             display: flex;
@@ -3068,12 +3085,19 @@
         }
 
         async function bootAuth() {
-            showAuthShell();
+            const storedToken = getStoredToken();
+            const hasStoredToken = Boolean(storedToken);
             renderAuthMeta();
-            setAuthMode('loading');
+            if (hasStoredToken) {
+                showAppShell();
+            } else {
+                showAuthShell();
+                setAuthMode('loading');
+            }
+            document.documentElement.classList.remove('resume-session');
 
             try {
-                const state = await serverCall('getAuthState', [getStoredToken()], { secure: false, silentAuth: true });
+                const state = await serverCall('getAuthState', [storedToken], { secure: false, silentAuth: true });
                 authState.settings = cloneAuthSettings(state.settings);
                 renderAuthMeta();
 
@@ -4657,7 +4681,7 @@
             </div>`;
         }
 
-        window.addEventListener('load', () => {
+        window.addEventListener('DOMContentLoaded', () => {
             let meta = document.querySelector('meta[name="viewport"]');
             if (!meta) {
                 meta = document.createElement('meta');
