@@ -73,7 +73,8 @@ Apps Script を Web アプリとしてデプロイし、ブラウザから案件
 ## GitHub Actions で自動デプロイ
 
 `src/` 配下だけを Google Apps Script へ反映するように、GitHub Actions から `clasp` でデプロイできます。  
-このリポジトリでは workflow 実行時に `.clasp.json` を生成し、`rootDir` を `src` に固定しているため、GAS に push されるのは `src/` 配下のみです。
+このリポジトリでは workflow 実行時に `.clasp.json` を生成し、`rootDir` を `src` に固定しているため、GAS に push されるのは `src/` 配下のみです。  
+Apps Script では manifest ファイル `appsscript.json` が必須のため、`src/appsscript.json` も一緒にデプロイされます。
 
 ### 追加したもの
 
