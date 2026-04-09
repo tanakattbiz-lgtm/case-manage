@@ -1,0 +1,12 @@
+{
+  "name": "case-manage",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "gas:status": "clasp show-file-status",
+    "gas:push": "clasp push --force"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}

@@ -1,0 +1,67 @@
+name: Deploy GAS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - ".github/workflows/deploy-gas.yml"
+      - "package.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-gas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          test -n "${{ secrets.GAS_SCRIPT_ID }}" || { echo "GAS_SCRIPT_ID is not set."; exit 1; }
+          test -n "${{ secrets.GAS_DEPLOYMENT_ID }}" || { echo "GAS_DEPLOYMENT_ID is not set."; exit 1; }
+          test -n "${{ secrets.GAS_CLASPRC_JSON }}" || { echo "GAS_CLASPRC_JSON is not set."; exit 1; }
+
+      - name: Install clasp
+        run: npm install
+
+      - name: Write clasp credentials
+        shell: bash
+        run: |
+          cat > "$HOME/.clasprc.json" <<'EOF'
+          ${{ secrets.GAS_CLASPRC_JSON }}
+          EOF
+
+      - name: Write clasp project config
+        shell: bash
+        run: |
+          cat > .clasp.json <<EOF
+          {
+            "scriptId": "${{ secrets.GAS_SCRIPT_ID }}",
+            "rootDir": "src"
+          }
+          EOF
+
+      - name: Show Apps Script file status
+        run: npx clasp show-file-status
+
+      - name: Push src to Apps Script
+        run: npx clasp push --force
+
+      - name: Update web app deployment
+        run: npx clasp update-deployment "${{ secrets.GAS_DEPLOYMENT_ID }}" --description "GitHub Actions ${GITHUB_SHA}"

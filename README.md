@@ -70,6 +70,62 @@ Apps Script を Web アプリとしてデプロイし、ブラウザから案件
 - Fonts: Google Fonts (`Noto Sans JP`, `JetBrains Mono`)
 - Build: なし
 
+## GitHub Actions で自動デプロイ
+
+`src/` 配下だけを Google Apps Script へ反映するように、GitHub Actions から `clasp` でデプロイできます。  
+このリポジトリでは workflow 実行時に `.clasp.json` を生成し、`rootDir` を `src` に固定しているため、GAS に push されるのは `src/` 配下のみです。
+
+### 追加したもの
+
+- `.github/workflows/deploy-gas.yml`
+  - `main` ブランチへの push、または手動実行でデプロイ
+  - `src/**` の変更時だけ自動実行
+- `package.json`
+  - GitHub Actions で `@google/clasp` を利用
+- `.gitignore`
+  - `.clasp.json` と `.clasprc.json` を Git 管理外に設定
+
+### 事前準備
+
+1. 対象の Google スプレッドシートに紐づく Apps Script を 1 回だけ Web アプリとして手動デプロイします。
+2. Apps Script 側で以下を控えます。
+   - `Script ID`
+   - 既存 Web アプリの `Deployment ID`
+3. GitHub の `Settings > Secrets and variables > Actions` に以下の Secrets を登録します。
+   - `GAS_SCRIPT_ID`
+     - Apps Script プロジェクト設定の `スクリプト ID`
+   - `GAS_DEPLOYMENT_ID`
+     - `デプロイを管理` で確認できる既存 Web アプリの deployment ID
+   - `GAS_CLASPRC_JSON`
+     - ローカルで `clasp login` 済みの認証情報 JSON
+
+### `GAS_CLASPRC_JSON` の作り方
+
+1. ローカルで依存関係を入れます。
+
+   ```bash
+   npm install
+   ```
+
+2. Google アカウントで `clasp` にログインします。
+
+   ```bash
+   npx clasp login
+   ```
+
+3. 生成された `~/.clasprc.json` の中身を、GitHub Secret `GAS_CLASPRC_JSON` にそのまま貼り付けます。
+
+Windows では通常 `C:\Users\<ユーザー名>\.clasprc.json`、macOS / Linux では `~/.clasprc.json` に保存されます。
+
+### デプロイの流れ
+
+- `main` に push
+- GitHub Actions が `.clasp.json` を生成
+- `rootDir: "src"` で `src/` 配下のみ `clasp push --force`
+- 既存の `GAS_DEPLOYMENT_ID` に対して `clasp update-deployment` を実行
+
+これで Web アプリの URL を変えずに更新できます。
+
 ## ディレクトリ構成
 
 ```text
