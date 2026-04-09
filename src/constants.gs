@@ -23,6 +23,7 @@ const PROJ_COLS = [
 const CLI_COLS = [
   'ID',
   'クライアント名',
+  '既定利益率',
   '担当者',
   'メール',
   '電話',

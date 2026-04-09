@@ -12,10 +12,19 @@ function getProjects(sessionToken) {
   return rows;
 }
 
+function resolveProjectProfit_(p, sales) {
+  if (p['利益'] !== '' && p['利益'] != null) return Number(p['利益']) || 0;
+
+  const defaultProfitRate = getClientDefaultProfitRate_(p['クライアントID'], p['クライアント名']);
+  if (defaultProfitRate === '' || defaultProfitRate == null) return sales;
+
+  return Math.round(sales * Number(defaultProfitRate) / 100);
+}
+
 function addProject(sessionToken, p) {
   requireEditAccess_(sessionToken);
   const sales = Number(p['売上']) || 0;
-  const profit = (p['利益'] !== '' && p['利益'] != null) ? Number(p['利益']) : sales;
+  const profit = resolveProjectProfit_(p, sales);
   const id = genId('PRJ');
   const n = nowStr();
   const cd = p['完了日'] || '';
@@ -44,7 +53,7 @@ function updateProject(sessionToken, p) {
   if (!row) return { success: false };
 
   const sales = Number(p['売上']) || 0;
-  const profit = (p['利益'] !== '' && p['利益'] != null) ? Number(p['利益']) : sales;
+  const profit = resolveProjectProfit_(p, sales);
   let cd = p['完了日'] || '';
 
   // ステータスが完了で日付が未入力の場合のみ、今日の日付を補完する

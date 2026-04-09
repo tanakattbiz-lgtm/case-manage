@@ -2576,6 +2576,10 @@
                                     <label>メール</label>
                                     <input type="text" id="ci_email" placeholder="">
                                 </div>
+                                <div class="fg">
+                                    <label>既定利益率（%）</label>
+                                    <input type="number" id="ci_profitRate" placeholder="30" min="0" step="0.1">
+                                </div>
                             </div>
                             <div class="cli-inline-actions">
                                 <button class="btn btn-ghost btn-xs" onclick="toggleCliInline()"
@@ -2606,13 +2610,13 @@
                     <div class="form-2col">
                         <div class="fg">
                             <label>売上（円）</label>
-                            <input type="number" id="p_sales" placeholder="300000" min="0" oninput="updateProfitHint()">
+                            <input type="number" id="p_sales" placeholder="300000" min="0" oninput="onProjectSalesInput()">
                         </div>
                         <div class="fg">
                             <label>利益（円）</label>
-                            <input type="number" id="p_profit" placeholder="未入力=利益率100%" min="0"
-                                oninput="updateProfitHint()">
-                            <div class="hint">空欄の場合、売上と同額で計算</div>
+                            <input type="number" id="p_profit" placeholder="未入力=自動設定" min="0"
+                                oninput="onProjectProfitInput()">
+                            <div class="hint">空欄の場合、クライアント既定利益率を優先し、未設定なら売上と同額で計算</div>
                         </div>
                     </div>
 
@@ -2671,6 +2675,10 @@
                         <div class="fg">
                             <label>電話番号</label>
                             <input type="text" id="c_phone" placeholder="03-xxxx-xxxx">
+                        </div>
+                        <div class="fg">
+                            <label>既定利益率（%）</label>
+                            <input type="number" id="c_profitRate" placeholder="30" min="0" step="0.1">
                         </div>
                     </div>
                     <div class="fg">
@@ -2820,12 +2828,40 @@
         let loadRevision = 0;
         let projectViewBaseList = null;
         let projectViewLabel = '';
+        let projectProfitManuallyEdited = false;
 
         const fmt = n => '¥' + Math.round(Number(n) || 0).toLocaleString('ja-JP');
         const pct = n => Math.round(Number(n) || 0) + '%';
         const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         const date2input = d => d ? d.split(' ')[0].replace(/\//g, '-') : '';
         const input2date = v => v ? v.replace(/-/g, '/') : '';
+
+        function parseProfitRateValue(value) {
+            if (value === '' || value == null) return null;
+            const rate = Number(value);
+            return Number.isFinite(rate) && rate >= 0 ? rate : null;
+        }
+
+        function formatProfitRate(rate) {
+            const parsed = parseProfitRateValue(rate);
+            if (parsed == null) return '';
+            return `${String(Math.round(parsed * 100) / 100).replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1')}%`;
+        }
+
+        function findClientById(clientId) {
+            return allClients.find(client => client['ID'] === clientId) || null;
+        }
+
+        function getClientDefaultProfitRate(clientId) {
+            return parseProfitRateValue(findClientById(clientId)?.['既定利益率']);
+        }
+
+        function calcAutoProfitValue(sales, clientId) {
+            const normalizedSales = Number(sales) || 0;
+            const rate = getClientDefaultProfitRate(clientId);
+            if (normalizedSales <= 0 || rate == null) return null;
+            return Math.round(normalizedSales * rate / 100);
+        }
 
         function bumpAuthRevision() {
             authRevision += 1;
@@ -4164,6 +4200,7 @@
                         <div class="cli-name-text">${esc(c['クライアント名'])}</div>
                     </div>
                     <div class="cli-meta">
+                        ${parseProfitRateValue(c['既定利益率']) != null ? `<div class="cli-meta-row"><span class="cli-meta-lbl">既定利益率</span><span class="cli-meta-val">${esc(formatProfitRate(c['既定利益率']))}</span></div>` : ''}
                         ${c['担当者'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">担当者</span><span class="cli-meta-val">${esc(c['担当者'])}</span></div>` : ''}
                         ${c['メール'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">メール</span><span class="cli-meta-val">${esc(c['メール'])}</span></div>` : ''}
                         ${c['電話'] ? `<div class="cli-meta-row"><span class="cli-meta-lbl">電話</span><span class="cli-meta-val">${esc(c['電話'])}</span></div>` : ''}
@@ -4437,13 +4474,20 @@
                 const opt = document.createElement('option');
                 opt.value = c['ID'];
                 opt.dataset.name = c['クライアント名'];
+                opt.dataset.profitRate = c['既定利益率'] ?? '';
                 opt.textContent = c['クライアント名'];
                 if (c['ID'] === selectedId) opt.selected = true;
                 sel.appendChild(opt);
             });
         }
 
-        function onCliSelectChange() {}
+        function onCliSelectChange() {
+            if (!projectProfitManuallyEdited || document.getElementById('p_profit').value === '') {
+                syncProjectProfitAuto(true);
+                return;
+            }
+            updateProfitHint();
+        }
 
         function toggleCliInline() {
             if (!canEdit()) return;
@@ -4451,7 +4495,7 @@
             const show = !form.classList.contains('show');
             form.classList.toggle('show', show);
             if (show) {
-                ['ci_name', 'ci_contact', 'ci_email'].forEach(id => document.getElementById(id).value = '');
+                ['ci_name', 'ci_contact', 'ci_email', 'ci_profitRate'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('ci_name').focus();
             }
         }
@@ -4466,6 +4510,7 @@
 
             const cli = {
                 'クライアント名': name,
+                '既定利益率': document.getElementById('ci_profitRate').value,
                 '担当者': document.getElementById('ci_contact').value,
                 'メール': document.getElementById('ci_email').value,
                 '電話': '', '備考': '', '登録日': '',
@@ -4479,6 +4524,7 @@
                 const sel = document.getElementById('p_client');
                 sel.value = res.id;
                 toggleCliInline();
+                onCliSelectChange();
                 toast(`「${name}」を登録しました`, 'success');
             } catch (err) {
                 toast(err.message || '登録に失敗しました', 'error');
@@ -4494,9 +4540,10 @@
             document.getElementById('p_completeDate').value = new Date().toISOString().split('T')[0];
             ['p_name', 'p_sales', 'p_profit', 'p_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
             document.getElementById('p_status').value = '商談中';
-            document.getElementById('profitPreview').style.display = 'none';
+            projectProfitManuallyEdited = false;
             const f = document.getElementById('cliInlineForm'); f.classList.remove('show');
             populateCliSel('');
+            syncProjectProfitAuto(true);
             document.getElementById('projModal').classList.add('show');
             setTimeout(() => document.getElementById('p_name').focus(), 150);
         }
@@ -4511,25 +4558,71 @@
             document.getElementById('p_regdate').value = p['登録日'] || '';
             document.getElementById('p_completeDate').value = date2input(p['完了日']);
             document.getElementById('p_name').value = p['案件名'] || '';
+            const sales = Number(p['売上']) || 0;
+            const clientId = p['クライアントID'] || '';
+            const autoProfit = calcAutoProfitValue(sales, clientId);
+            const sameAsS = Number(p['利益']) === sales;
+            const usesClientDefault = autoProfit != null && Number(p['利益']) === autoProfit;
             document.getElementById('p_sales').value = p['売上'] || '';
-            const sameAsS = Number(p['利益']) === Number(p['売上']);
-            document.getElementById('p_profit').value = sameAsS ? '' : (p['利益'] || '');
+            document.getElementById('p_profit').value = (usesClientDefault || (autoProfit == null && sameAsS)) ? '' : (p['利益'] || '');
             document.getElementById('p_status').value = p['ステータス'] || '商談中';
             document.getElementById('p_memo').value = p['備考'] || '';
             document.getElementById('cliInlineForm').classList.remove('show');
-            populateCliSel(p['クライアントID'] || '');
-            updateProfitHint();
+            populateCliSel(clientId);
+            projectProfitManuallyEdited = document.getElementById('p_profit').value !== '';
+            if (projectProfitManuallyEdited) updateProfitHint();
+            else syncProjectProfitAuto(true);
             document.getElementById('projModal').classList.add('show');
+        }
+
+        function onProjectSalesInput() {
+            if (!projectProfitManuallyEdited) {
+                syncProjectProfitAuto(true);
+                return;
+            }
+            updateProfitHint();
+        }
+
+        function onProjectProfitInput() {
+            const profitInput = document.getElementById('p_profit');
+            projectProfitManuallyEdited = profitInput.value !== '';
+            if (!projectProfitManuallyEdited) {
+                syncProjectProfitAuto(true);
+                return;
+            }
+            updateProfitHint();
+        }
+
+        function syncProjectProfitAuto(force = false) {
+            const profitInput = document.getElementById('p_profit');
+            if (!profitInput) return;
+            if (projectProfitManuallyEdited && !force) {
+                updateProfitHint();
+                return;
+            }
+
+            const sales = Number(document.getElementById('p_sales').value) || 0;
+            const clientId = document.getElementById('p_client').value || '';
+            const autoProfit = calcAutoProfitValue(sales, clientId);
+            profitInput.value = autoProfit == null ? '' : autoProfit;
+            updateProfitHint();
         }
 
         function updateProfitHint() {
             const s = Number(document.getElementById('p_sales').value) || 0;
-            const pv = document.getElementById('p_profit').value;
             const prev = document.getElementById('profitPreview');
             if (s > 0) {
-                const p = pv === '' || pv === null ? s : Number(pv) || 0;
+                const clientId = document.getElementById('p_client').value || '';
+                const defaultRate = getClientDefaultProfitRate(clientId);
+                const pv = document.getElementById('p_profit').value;
+                const p = projectProfitManuallyEdited
+                    ? (Number(pv) || 0)
+                    : (calcAutoProfitValue(s, clientId) ?? s);
                 const m = Math.round(p / s * 100);
-                document.getElementById('profitPreviewTxt').textContent = `売上 ${fmt(s)} / 利益 ${fmt(p)} → 利益率 ${m}%`;
+                const sourceLabel = projectProfitManuallyEdited
+                    ? '手入力値を適用'
+                    : (defaultRate == null ? '未入力のため利益率100%で計算' : `クライアント既定 ${formatProfitRate(defaultRate)} を適用`);
+                document.getElementById('profitPreviewTxt').textContent = `売上 ${fmt(s)} / 利益 ${fmt(p)} → 利益率 ${m}% (${sourceLabel})`;
                 prev.style.display = 'flex';
             } else {
                 prev.style.display = 'none';
@@ -4593,7 +4686,7 @@
             if (!canEdit()) return;
             document.getElementById('cliModalTitle').textContent = 'クライアントを追加';
             ['c_row', 'c_id', 'c_regdate'].forEach(id => document.getElementById(id).value = '');
-            ['c_name', 'c_contact', 'c_email', 'c_phone', 'c_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
+            ['c_name', 'c_contact', 'c_email', 'c_phone', 'c_profitRate', 'c_memo'].forEach(id => { const el = document.getElementById(id); el.value = ''; el.classList.remove('err'); });
             document.getElementById('cliModal').classList.add('show');
             setTimeout(() => document.getElementById('c_name').focus(), 150);
         }
@@ -4610,6 +4703,7 @@
             document.getElementById('c_contact').value = c['担当者'] || '';
             document.getElementById('c_email').value = c['メール'] || '';
             document.getElementById('c_phone').value = c['電話'] || '';
+            document.getElementById('c_profitRate').value = c['既定利益率'] || '';
             document.getElementById('c_memo').value = c['備考'] || '';
             document.getElementById('cliModal').classList.add('show');
         }
@@ -4625,6 +4719,7 @@
             const cli = {
                 'ID': document.getElementById('c_id').value,
                 'クライアント名': name,
+                '既定利益率': document.getElementById('c_profitRate').value,
                 '担当者': document.getElementById('c_contact').value,
                 'メール': document.getElementById('c_email').value,
                 '電話': document.getElementById('c_phone').value,
