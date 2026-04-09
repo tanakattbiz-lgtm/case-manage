@@ -1882,6 +1882,25 @@
             gap: 10px;
         }
 
+        .audit-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .audit-toolbar-note {
+            font-size: 12px;
+            color: var(--txt2);
+            white-space: nowrap;
+        }
+
+        .audit-toolbar .filter-sel {
+            min-width: 96px;
+            flex: 0 0 auto;
+        }
+
         .audit-item {
             background: var(--white);
             border: 1px solid var(--border);
@@ -2382,7 +2401,7 @@
                             <div class="security-card">
                                 <div class="security-label">最新監査イベント</div>
                                 <div class="security-value" id="auditCount">0</div>
-                                <div class="security-help">直近の認証監査ログ件数</div>
+                                <div class="security-help">表示中の認証監査ログ件数</div>
                             </div>
                         </div>
 
@@ -2401,8 +2420,19 @@
 
                         <div class="table-card">
                             <div class="tc-hdr">
-                                <div class="tc-title">監査ログ</div>
-                                <div style="font-size:12px;color:var(--txt2)">認証、ロック、権限拒否を記録</div>
+                                <div>
+                                    <div class="tc-title">監査ログ</div>
+                                    <div style="font-size:12px;color:var(--txt2)">認証、ロック、権限拒否を記録</div>
+                                </div>
+                                <div class="audit-toolbar">
+                                    <div class="audit-toolbar-note" id="auditListMeta">表示件数を選択</div>
+                                    <select class="filter-sel" id="auditDisplayCount" onchange="changeAuditLogDisplayCount(this.value)">
+                                        <option value="20">20件</option>
+                                        <option value="50">50件</option>
+                                        <option value="100">100件</option>
+                                        <option value="120">120件</option>
+                                    </select>
+                                </div>
                             </div>
                             <div id="auditList">
                                 <div style="padding:20px;display:flex;flex-direction:column;gap:10px">
@@ -2763,6 +2793,8 @@
         let allClients = [];
         let allUsers = [];
         let auditLogs = [];
+        const AUDIT_LOG_DISPLAY_OPTIONS = [20, 50, 100, 120];
+        let auditLogDisplayCount = AUDIT_LOG_DISPLAY_OPTIONS[0];
         let loaded = false;
         let currentView = 'dashboard';
         let dashboardFilter = getDefaultDashboardFilter();
@@ -2803,6 +2835,17 @@
                     ...((settings && settings.roles) || {})
                 }
             };
+        }
+
+        function normalizeAuditLogDisplayCount(value) {
+            const normalized = Number(value);
+            return AUDIT_LOG_DISPLAY_OPTIONS.includes(normalized)
+                ? normalized
+                : AUDIT_LOG_DISPLAY_OPTIONS[0];
+        }
+
+        function getVisibleAuditLogs() {
+            return auditLogs.slice(0, normalizeAuditLogDisplayCount(auditLogDisplayCount));
         }
 
         function getStoredToken() {
@@ -4147,18 +4190,33 @@
 
             const userTable = document.getElementById('userTable');
             const auditList = document.getElementById('auditList');
+            const auditDisplaySelect = document.getElementById('auditDisplayCount');
+            const auditListMeta = document.getElementById('auditListMeta');
             if (!userTable || !auditList) return;
 
+            if (auditDisplaySelect) {
+                auditDisplaySelect.value = String(normalizeAuditLogDisplayCount(auditLogDisplayCount));
+                auditDisplaySelect.disabled = !canManageUsers();
+            }
+
             if (!canManageUsers()) {
+                document.getElementById('auditCount').textContent = '0';
+                if (auditListMeta) auditListMeta.textContent = '';
                 userTable.innerHTML = emptyState('権限がありません', 'この画面は管理者のみ利用できます。');
                 auditList.innerHTML = '';
                 return;
             }
 
             const lockedCount = allUsers.filter(isUserLocked).length;
+            const visibleAuditLogs = getVisibleAuditLogs();
             document.getElementById('userCount').textContent = String(allUsers.length);
             document.getElementById('lockedUserCount').textContent = String(lockedCount);
-            document.getElementById('auditCount').textContent = String(auditLogs.length);
+            document.getElementById('auditCount').textContent = String(visibleAuditLogs.length);
+            if (auditListMeta) {
+                auditListMeta.textContent = auditLogs.length > visibleAuditLogs.length
+                    ? `直近${auditLogs.length}件中 ${visibleAuditLogs.length}件を表示`
+                    : `直近${visibleAuditLogs.length}件を表示`;
+            }
 
             if (allUsers.length === 0) {
                 userTable.innerHTML = emptyState('ユーザーがいません', '右上の「ユーザーを追加」から登録できます。');
@@ -4201,11 +4259,12 @@
             }
 
             if (auditLogs.length === 0) {
+                if (auditListMeta) auditListMeta.textContent = '監査ログはまだありません';
                 auditList.innerHTML = emptyState('監査ログがありません', 'ログインや権限拒否が発生するとここに記録されます。');
                 return;
             }
 
-            auditList.innerHTML = `<div class="audit-list">${auditLogs.map(log => {
+            auditList.innerHTML = `<div class="audit-list">${visibleAuditLogs.map(log => {
                 const cls = ['SUCCESS'].includes(log.result) ? 'active' : ['DENY', 'FAIL', 'LOCKED'].includes(log.result) ? 'locked' : 'disabled';
                 return `<div class="audit-item">
                     <div class="audit-top">
@@ -4220,6 +4279,13 @@
                     <div class="audit-detail">${esc(log.detail || '詳細なし')}</div>
                 </div>`;
             }).join('')}</div>`;
+        }
+
+        function changeAuditLogDisplayCount(value) {
+            auditLogDisplayCount = normalizeAuditLogDisplayCount(value);
+            if (loaded && currentView === 'users') {
+                renderUsers();
+            }
         }
 
         function openUserModal() {
