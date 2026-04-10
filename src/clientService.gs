@@ -1,69 +1,86 @@
 function getClients(sessionToken) {
   requireReadAccess_(sessionToken);
-  return sheetToObjects(clientSheet());
+  return listClientRecords_()
+    .sort(function (a, b) {
+      return String(a['クライアント名'] || '').localeCompare(String(b['クライアント名'] || ''), 'ja');
+    })
+    .map(clientRecordToDto_);
+}
+
+function addClient(sessionToken, payload) {
+  return runWithScriptLock_(function () {
+    requireEditAccess_(sessionToken);
+    const clientRecord = clientPayloadToRecord_(payload, {
+      id: genId('CLI'),
+      createdAt: nowDateTimeStr_(),
+    });
+    appendClientRecord_(clientRecord);
+    return { success: true, id: clientRecord.ID };
+  });
+}
+
+function updateClient(sessionToken, payload) {
+  return runWithScriptLock_(function () {
+    requireEditAccess_(sessionToken);
+    const input = payload || {};
+    const existing = findClientRecordById_(String(input.id || ''));
+    if (!existing) {
+      throwAppError_('CLIENT_NOT_FOUND', 'クライアントが見つかりません。');
+    }
+    const clientRecord = clientPayloadToRecord_(input, {
+      id: existing.ID,
+      createdAt: existing['登録日'] || nowDateTimeStr_(),
+    });
+    updateClientRecordById_(existing.ID, clientRecord);
+    return { success: true };
+  });
+}
+
+function deleteClient(sessionToken, clientId) {
+  return runWithScriptLock_(function () {
+    requireEditAccess_(sessionToken);
+    deleteClientRecordById_(String(clientId || ''));
+    return { success: true };
+  });
+}
+
+function clientPayloadToRecord_(payload, options) {
+  const input = payload || {};
+  const settings = options || {};
+  const name = normalizeString_(input.name);
+  if (!name) {
+    throwAppError_('CLIENT_NAME_REQUIRED', 'クライアント名を入力してください。');
+  }
+
+  return {
+    ID: settings.id,
+    'クライアント名': name,
+    '既定利益率': normalizeClientProfitRate_(input.defaultProfitRate),
+    '担当者': normalizeString_(input.contactName),
+    'メール': normalizeEmail_(input.email),
+    '電話': normalizeString_(input.phone),
+    '備考': normalizeTextArea_(input.note, 1000),
+    '登録日': settings.createdAt,
+  };
+}
+
+function clientRecordToDto_(record) {
+  return {
+    id: record.ID,
+    row: record._row,
+    name: record['クライアント名'] || '',
+    defaultProfitRate: normalizeClientProfitRate_(record['既定利益率']),
+    contactName: record['担当者'] || '',
+    email: record['メール'] || '',
+    phone: record['電話'] || '',
+    note: record['備考'] || '',
+    createdAt: record['登録日'] || '',
+  };
 }
 
 function normalizeClientProfitRate_(value) {
   if (value === '' || value == null) return '';
-
-  const rate = Number(value);
-  if (!isFinite(rate) || rate < 0) return '';
-
-  return Math.round(rate * 100) / 100;
-}
-
-function getClientDefaultProfitRate_(clientId, clientName) {
-  if (!clientId && !clientName) return '';
-
-  const client = sheetToObjects(clientSheet()).find(row => {
-    if (clientId && row['ID'] === clientId) return true;
-    return !clientId && clientName && row['クライアント名'] === clientName;
-  });
-
-  return client ? normalizeClientProfitRate_(client['既定利益率']) : '';
-}
-
-function addClient(sessionToken, c) {
-  requireEditAccess_(sessionToken);
-  const id = genId('CLI');
-  const defaultProfitRate = normalizeClientProfitRate_(c['既定利益率']);
-
-  clientSheet().appendRow([
-    id,
-    c['クライアント名'] || '',
-    defaultProfitRate,
-    c['担当者'] || '',
-    c['メール'] || '',
-    c['電話'] || '',
-    c['備考'] || '',
-    nowStr(),
-  ]);
-
-  return { success: true, id };
-}
-
-function updateClient(sessionToken, c) {
-  requireEditAccess_(sessionToken);
-  const row = Number(c['_row']);
-  if (!row) return { success: false };
-  const defaultProfitRate = normalizeClientProfitRate_(c['既定利益率']);
-
-  clientSheet().getRange(row, 1, 1, CLI_COLS.length).setValues([[
-    c['ID'],
-    c['クライアント名'] || '',
-    defaultProfitRate,
-    c['担当者'] || '',
-    c['メール'] || '',
-    c['電話'] || '',
-    c['備考'] || '',
-    c['登録日'] || nowStr(),
-  ]]);
-
-  return { success: true };
-}
-
-function deleteClient(sessionToken, row) {
-  requireEditAccess_(sessionToken);
-  clientSheet().deleteRow(Number(row));
-  return { success: true };
+  const normalized = Number(value);
+  if (!isFinite(normalized) || normalized < 0) return '';
+  return Math.round(normalized * 100) / 100;
 }

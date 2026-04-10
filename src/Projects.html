@@ -1,0 +1,56 @@
+<section class="view" id="view-projects" data-view-panel="projects">
+  <div class="view-head">
+    <div>
+      <h2>案件一覧</h2>
+      <p>案件画面を開いたときだけ案件データとクライアント選択肢を取得します。</p>
+    </div>
+  </div>
+
+  <div class="panel filter-panel">
+    <div class="filter-grid">
+      <label class="field">
+        <span class="field-label">キーワード</span>
+        <input class="input" type="text" id="projectQuery" placeholder="案件名・クライアント・備考で検索">
+      </label>
+      <label class="field">
+        <span class="field-label">ステータス</span>
+        <select class="select" id="projectStatusFilter">
+          <option value="">すべて</option>
+          <option>商談中</option>
+          <option>進行中</option>
+          <option>完了</option>
+          <option>停止</option>
+          <option>保留</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">クライアント</span>
+        <select class="select" id="projectClientFilter"></select>
+      </label>
+      <label class="field">
+        <span class="field-label">対象日 From</span>
+        <input class="input" type="date" id="projectDateFrom">
+      </label>
+      <label class="field">
+        <span class="field-label">対象日 To</span>
+        <input class="input" type="date" id="projectDateTo">
+      </label>
+    </div>
+
+    <div class="toolbar-inline">
+      <div id="projectsScopeLabel" class="field-hint"></div>
+      <div class="dashboard-filters">
+        <button class="btn btn-secondary btn-small" type="button" data-action="reset-project-filters">条件クリア</button>
+        <button class="btn btn-secondary btn-small" type="button" data-action="reload-projects">再読込</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel dashboard-section">
+    <div class="section-title">
+      <h3>案件一覧</h3>
+      <span id="projectsSummary">読み込み中</span>
+    </div>
+    <div class="projects-list" id="projectsList"></div>
+  </div>
+</section>

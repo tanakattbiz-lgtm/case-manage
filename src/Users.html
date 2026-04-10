@@ -1,0 +1,61 @@
+<section class="view" id="view-users" data-view-panel="users">
+  <div class="view-head">
+    <div>
+      <h2>認証管理</h2>
+      <p>管理者のみアクセスできます。ユーザー一覧と監査ログを必要時にだけ読み込みます。</p>
+    </div>
+  </div>
+
+  <div class="users-summary">
+    <div class="panel summary-card">
+      <strong>登録ユーザー</strong>
+      <div class="metric" id="usersCount">0</div>
+      <span>ロール付きアカウント数</span>
+    </div>
+    <div class="panel summary-card">
+      <strong>ロック中</strong>
+      <div class="metric" id="usersLockedCount">0</div>
+      <span>ログイン失敗により一時停止中</span>
+    </div>
+    <div class="panel summary-card">
+      <strong>監査ログ件数</strong>
+      <div class="metric" id="auditCount">0</div>
+      <span>現在の表示件数</span>
+    </div>
+  </div>
+
+  <div class="panel dashboard-section">
+    <div class="section-title">
+      <h3>ユーザー一覧</h3>
+      <span>管理者のみ編集可能</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>氏名</th>
+            <th>ロール</th>
+            <th>メール</th>
+            <th>状態</th>
+            <th>最終ログイン</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel dashboard-section">
+    <div class="section-title">
+      <h3>監査ログ</h3>
+      <select class="select" id="auditLimit" style="max-width: 140px;">
+        <option value="20">20件</option>
+        <option value="50">50件</option>
+        <option value="100">100件</option>
+        <option value="120">120件</option>
+      </select>
+    </div>
+    <div class="audit-list" id="auditList"></div>
+  </div>
+</section>

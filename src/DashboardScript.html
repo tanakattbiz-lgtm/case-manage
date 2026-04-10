@@ -1,0 +1,154 @@
+<script>
+  App.dashboard = {
+    bindEvents: function () {
+      document.querySelectorAll('[data-dashboard-mode]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          App.state.dashboard.filter.mode = button.dataset.dashboardMode;
+          if (button.dataset.dashboardMode === 'year') {
+            App.state.dashboard.filter.month = '';
+          }
+          if (button.dataset.dashboardMode === 'all') {
+            App.state.dashboard.filter.year = '';
+            App.state.dashboard.filter.month = '';
+          }
+          App.state.dashboard.dirty = true;
+          App.navigate('dashboard', { force: true });
+        });
+      });
+
+      App.ui.byId('dashboardYear').addEventListener('change', function (event) {
+        App.state.dashboard.filter.year = event.target.value;
+        App.state.dashboard.filter.mode = event.target.value ? 'year' : 'all';
+        App.state.dashboard.dirty = true;
+        App.navigate('dashboard', { force: true });
+      });
+
+      App.ui.byId('dashboardMonth').addEventListener('change', function (event) {
+        App.state.dashboard.filter.month = event.target.value;
+        if (event.target.value) {
+          App.state.dashboard.filter.mode = 'month';
+          if (!App.state.dashboard.filter.year) {
+            App.state.dashboard.filter.year = String(new Date().getFullYear());
+          }
+        }
+        App.state.dashboard.dirty = true;
+        App.navigate('dashboard', { force: true });
+      });
+
+      App.ui.byId('dashboardStatusGrid').addEventListener('click', function (event) {
+        var card = event.target.closest('[data-status]');
+        if (!card) return;
+        App.projects.applyScope({
+          filter: Object.assign({}, App.state.dashboard.filter),
+          label: App.state.dashboard.data ? App.state.dashboard.data.filter.label : '',
+          status: card.dataset.status
+        });
+      });
+    },
+
+    ensureLoaded: async function (force) {
+      var key = JSON.stringify(App.state.dashboard.filter);
+      if (!force && !App.state.dashboard.dirty && App.state.dashboard.loadedKey === key && App.state.dashboard.data) {
+        return App.state.dashboard.data;
+      }
+
+      App.state.dashboard.data = await App.api.dashboard.get(App.state.dashboard.filter);
+      App.state.dashboard.loadedKey = key;
+      App.state.dashboard.dirty = false;
+      this.syncFilterControls();
+      return App.state.dashboard.data;
+    },
+
+    syncFilterControls: function () {
+      var yearSelect = App.ui.byId('dashboardYear');
+      var monthSelect = App.ui.byId('dashboardMonth');
+      var currentYear = new Date().getFullYear();
+      var years = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4];
+
+      yearSelect.innerHTML = '<option value="">すべての年</option>' + years.map(function (year) {
+        var selected = App.state.dashboard.filter.year === String(year) ? ' selected' : '';
+        return '<option value="' + year + '"' + selected + '>' + year + '年</option>';
+      }).join('');
+
+      monthSelect.innerHTML = '<option value="">すべての月</option>' + Array.from({ length: 12 }).map(function (_, index) {
+        var month = String(index + 1).padStart(2, '0');
+        var selected = App.state.dashboard.filter.month === month ? ' selected' : '';
+        return '<option value="' + month + '"' + selected + '>' + (index + 1) + '月</option>';
+      }).join('');
+    },
+
+    openProjectsFromDashboard: function () {
+      this.applyScope('');
+    },
+
+    applyScope: function (status) {
+      App.projects.applyScope({
+        filter: Object.assign({}, App.state.dashboard.filter),
+        label: App.state.dashboard.data ? App.state.dashboard.data.filter.label : '',
+        status: status || ''
+      });
+    },
+
+    render: function () {
+      var data = App.state.dashboard.data;
+      if (!data) return;
+
+      App.ui.byId('dashboardPeriodLabel').textContent = data.filter.label;
+      App.ui.byId('dashboardMetrics').innerHTML = [
+        this.metricCard('予測売上', App.helpers.currency(data.summary.forecastSales), '完了 + 進行中 + 商談中'),
+        this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ'),
+        this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ'),
+        this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '完了案件平均'),
+        this.metricCard('平均単価', App.helpers.currency(data.summary.avgDealSize), '完了 1 件あたり'),
+        this.metricCard('平均リード日数', data.summary.avgLeadDays ? String(data.summary.avgLeadDays) + '日' : '—', '登録から完了まで'),
+        this.metricCard('完了率', App.helpers.pct(data.summary.completionRate), '対象期間の全案件比'),
+        this.metricCard('稼働率', App.helpers.pct(data.summary.actionRate), '商談中 + 進行中')
+      ].join('');
+
+      App.ui.byId('dashboardStatusGrid').innerHTML = App.constants.projectStatuses.map(function (status) {
+        return ''
+          + '<button class="status-card btn-ghost" type="button" data-status="' + App.helpers.escape(status) + '">'
+          + '  <div>' + App.helpers.escape(status) + '</div>'
+          + '  <strong class="metric">' + String(data.statusCount[status] || 0) + '</strong>'
+          + '  <span>' + App.helpers.currency(data.statusSales[status] || 0) + '</span>'
+          + '</button>';
+      }).join('');
+
+      App.charts.renderTrend('dashboardTrend', data.monthly);
+      App.charts.renderBarRows('dashboardRanking', data.clientRanking, 'sales', function (item) {
+        return App.helpers.currency(item.sales) + ' / 利益率 ' + App.helpers.pct(item.margin);
+      });
+
+      App.ui.byId('dashboardRecent').innerHTML = data.recent.length
+        ? data.recent.map(function (project) {
+            return ''
+              + '<div class="recent-row">'
+              + '  <div class="project-meta">'
+              + '    <div><h3>' + App.helpers.escape(project.name) + '</h3><p>' + App.helpers.escape(project.clientName || '未設定') + '</p></div>'
+              + '    <span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span>'
+              + '  </div>'
+              + '  <div class="project-stats">'
+              + '    <span>売上 ' + App.helpers.currency(project.sales) + '</span>'
+              + '    <span>利益 ' + App.helpers.currency(project.profit) + '</span>'
+              + '    <span>完了日 ' + App.helpers.escape(App.helpers.dateLabel(project.completedAt)) + '</span>'
+              + '  </div>'
+              + '</div>';
+          }).join('')
+        : '<div class="empty-state"><strong>完了案件はまだありません。</strong><span>案件を完了にするとここへ表示されます。</span></div>';
+
+      App.ui.byId('dashboardInsights').innerHTML = data.insights.map(function (text) {
+        return '<div class="insight-item"><strong>•</strong><span>' + App.helpers.escape(text) + '</span></div>';
+      }).join('');
+      App.ui.updateBadges();
+    },
+
+    metricCard: function (title, value, caption) {
+      return ''
+        + '<div class="panel metric-card">'
+        + '  <strong>' + App.helpers.escape(title) + '</strong>'
+        + '  <div class="metric">' + App.helpers.escape(value) + '</div>'
+        + '  <span>' + App.helpers.escape(caption) + '</span>'
+        + '</div>';
+    }
+  };
+</script>

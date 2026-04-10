@@ -1,0 +1,106 @@
+<script>
+  App.api = (function () {
+    function normalizeError(error) {
+      var raw = String((error && error.message) || error || '不明なエラーが発生しました。');
+      var separator = raw.indexOf(':');
+      if (separator > 0) {
+        return {
+          code: raw.slice(0, separator).trim(),
+          message: raw.slice(separator + 1).trim() || raw
+        };
+      }
+      return { code: 'APP_ERROR', message: raw };
+    }
+
+    function call(method, args, options) {
+      var config = Object.assign({ secure: true }, options || {});
+      var finalArgs = (args || []).slice();
+      if (config.secure) {
+        finalArgs.unshift(App.state.auth.token);
+      }
+
+      return new Promise(function (resolve, reject) {
+        var runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(function (error) {
+            var normalized = normalizeError(error);
+            if (config.secure && (normalized.code === 'AUTH_REQUIRED' || normalized.code === 'AUTH_EXPIRED')) {
+              if (App.auth && typeof App.auth.handleSessionLoss === 'function') {
+                App.auth.handleSessionLoss(normalized.message);
+              }
+            }
+            reject(normalized);
+          });
+        runner[method].apply(runner, finalArgs);
+      });
+    }
+
+    return {
+      rpc: call,
+      auth: {
+        getAuthState: function (token) {
+          return call('getAuthState', [token], { secure: false });
+        },
+        login: function (payload) {
+          return call('login', [payload], { secure: false });
+        },
+        bootstrapAdmin: function (payload) {
+          return call('bootstrapAdmin', [payload], { secure: false });
+        },
+        logout: function () {
+          return call('logout', []);
+        },
+        changePassword: function (currentPassword, nextPassword) {
+          return call('changeMyPassword', [currentPassword, nextPassword]);
+        }
+      },
+      dashboard: {
+        get: function (filter) {
+          return call('getDashboard', [filter]);
+        }
+      },
+      projects: {
+        list: function () {
+          return call('getProjects', []);
+        },
+        create: function (payload) {
+          return call('addProject', [payload]);
+        },
+        update: function (payload) {
+          return call('updateProject', [payload]);
+        },
+        remove: function (projectId) {
+          return call('deleteProject', [projectId]);
+        }
+      },
+      clients: {
+        list: function () {
+          return call('getClients', []);
+        },
+        create: function (payload) {
+          return call('addClient', [payload]);
+        },
+        update: function (payload) {
+          return call('updateClient', [payload]);
+        },
+        remove: function (clientId) {
+          return call('deleteClient', [clientId]);
+        }
+      },
+      users: {
+        list: function () {
+          return call('getUsers', []);
+        },
+        save: function (payload) {
+          return call('saveUser', [payload]);
+        },
+        unlock: function (userId) {
+          return call('unlockUser', [userId]);
+        },
+        audits: function () {
+          return call('getAuditLogs', []);
+        }
+      }
+    };
+  })();
+</script>

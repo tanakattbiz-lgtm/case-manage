@@ -1,0 +1,270 @@
+<div class="app-frame">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <strong>案件管理</strong>
+      <span>GAS + HtmlService で運用する SPA。表示は shell-first、取得は view-first です。</span>
+    </div>
+
+    <nav class="nav-stack">
+      <button class="nav-btn is-active" data-view="dashboard">
+        <span class="nav-label">ダッシュボード</span>
+        <span class="nav-badge" id="badgeProjects">-</span>
+      </button>
+      <button class="nav-btn" data-view="projects">
+        <span class="nav-label">案件一覧</span>
+        <span class="nav-badge" id="badgeProjectsSidebar">-</span>
+      </button>
+      <button class="nav-btn" data-view="clients">
+        <span class="nav-label">クライアント</span>
+        <span class="nav-badge" id="badgeClients">-</span>
+      </button>
+      <button class="nav-btn" data-view="users" id="usersNavBtn" hidden>
+        <span class="nav-label">認証管理</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      SPREADSHEET_ID を Script Properties に保持し、openById() で接続します。認可は UI だけで完結させず、すべての API で検証します。
+    </div>
+  </aside>
+
+  <div class="main-column">
+    <header class="topbar panel">
+      <div>
+        <div class="page-eyebrow" id="pageEyebrow">Dashboard</div>
+        <h1 class="page-title" id="pageTitle">ダッシュボード</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-chip" id="userChip" hidden>
+          <strong id="userChipName">-</strong>
+          <span id="userChipRole">-</span>
+        </div>
+        <button class="btn btn-secondary" type="button" data-action="open-password" id="passwordAction" hidden>パスワード変更</button>
+        <button class="btn btn-secondary" type="button" data-action="go-users" id="securityAction" hidden>認証管理</button>
+        <button class="btn btn-secondary" type="button" data-action="logout" id="logoutAction" hidden>ログアウト</button>
+        <button class="btn btn-primary" type="button" data-action="open-primary" id="primaryAction" hidden>追加</button>
+      </div>
+    </header>
+
+    <main class="content-area">
+      <?!= include('Dashboard'); ?>
+      <?!= include('Projects'); ?>
+      <?!= include('Clients'); ?>
+      <?!= include('Users'); ?>
+    </main>
+  </div>
+</div>
+
+<nav class="mobile-nav panel">
+  <button class="nav-btn is-active" data-view="dashboard">
+    <span class="nav-label">ダッシュ</span>
+  </button>
+  <button class="nav-btn" data-view="projects">
+    <span class="nav-label">案件</span>
+  </button>
+  <button class="nav-btn" data-view="clients">
+    <span class="nav-label">顧客</span>
+  </button>
+  <button class="nav-btn" data-view="users" id="usersNavMobile" hidden>
+    <span class="nav-label">認証</span>
+  </button>
+</nav>
+
+<div class="modal-shell" id="projectModal" hidden>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h3 id="projectModalTitle">案件を追加</h3>
+        <p>保存時に必要項目だけ API へ送信します。利益は空欄のままでも server 側で補完されます。</p>
+      </div>
+      <button class="btn btn-ghost" type="button" data-close-modal="projectModal">閉じる</button>
+    </div>
+
+    <form class="modal-form" id="projectForm">
+      <input type="hidden" id="projectId">
+      <label class="field">
+        <span class="field-label">案件名</span>
+        <input class="input" type="text" id="projectName" placeholder="例: LP 制作">
+      </label>
+
+      <div class="modal-grid">
+        <label class="field">
+          <span class="field-label">クライアント</span>
+          <select class="select" id="projectClientId"></select>
+          <span class="field-hint">未登録の場合はクライアント画面で先に追加してください。</span>
+        </label>
+        <label class="field">
+          <span class="field-label">ステータス</span>
+          <select class="select" id="projectStatus">
+            <option>商談中</option>
+            <option>進行中</option>
+            <option>完了</option>
+            <option>停止</option>
+            <option>保留</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">完了日</span>
+          <input class="input" type="date" id="projectCompletedAt">
+        </label>
+        <label class="field">
+          <span class="field-label">売上</span>
+          <input class="input" type="number" min="0" id="projectSales" placeholder="300000">
+        </label>
+        <label class="field">
+          <span class="field-label">利益</span>
+          <input class="input" type="number" min="0" id="projectProfit" placeholder="空欄なら自動計算">
+          <span class="field-hint" id="projectProfitHint">クライアント既定利益率があれば server 側で自動適用します。</span>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">備考</span>
+        <textarea class="textarea" id="projectNote" placeholder="URL、メモ、次回アクションなど"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close-modal="projectModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="projectSubmit">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-shell" id="clientModal" hidden>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h3 id="clientModalTitle">クライアントを追加</h3>
+        <p>案件フォームから参照するため、表示名と既定利益率を明確にしておく構成です。</p>
+      </div>
+      <button class="btn btn-ghost" type="button" data-close-modal="clientModal">閉じる</button>
+    </div>
+
+    <form class="modal-form" id="clientForm">
+      <input type="hidden" id="clientId">
+      <label class="field">
+        <span class="field-label">クライアント名</span>
+        <input class="input" type="text" id="clientName" placeholder="株式会社サンプル">
+      </label>
+
+      <div class="modal-grid">
+        <label class="field">
+          <span class="field-label">担当者</span>
+          <input class="input" type="text" id="clientContactName" placeholder="田中 太郎">
+        </label>
+        <label class="field">
+          <span class="field-label">メール</span>
+          <input class="input" type="email" id="clientEmail" placeholder="info@example.com">
+        </label>
+        <label class="field">
+          <span class="field-label">電話</span>
+          <input class="input" type="text" id="clientPhone" placeholder="03-0000-0000">
+        </label>
+        <label class="field">
+          <span class="field-label">既定利益率 (%)</span>
+          <input class="input" type="number" min="0" step="0.1" id="clientDefaultProfitRate" placeholder="30">
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">備考</span>
+        <textarea class="textarea" id="clientNote" placeholder="運用メモや請求条件など"></textarea>
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close-modal="clientModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="clientSubmit">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-shell" id="userModal" hidden>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h3 id="userModalTitle">ユーザーを追加</h3>
+        <p>ユーザー関連は管理者のみ操作可能です。無効化やパスワード再設定時は server 側でセッションも失効させます。</p>
+      </div>
+      <button class="btn btn-ghost" type="button" data-close-modal="userModal">閉じる</button>
+    </div>
+
+    <form class="modal-form" id="userForm">
+      <input type="hidden" id="userId">
+      <label class="field">
+        <span class="field-label">氏名</span>
+        <input class="input" type="text" id="userName" placeholder="田中 太郎">
+      </label>
+      <label class="field">
+        <span class="field-label">メールアドレス</span>
+        <input class="input" type="email" id="userEmail" placeholder="member@example.com">
+      </label>
+
+      <div class="modal-grid">
+        <label class="field">
+          <span class="field-label">ロール</span>
+          <select class="select" id="userRole">
+            <option value="admin">管理者</option>
+            <option value="editor">編集者</option>
+            <option value="viewer">閲覧者</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field-label">状態</span>
+          <select class="select" id="userStatus">
+            <option value="active">有効</option>
+            <option value="disabled">無効</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label" id="userPasswordLabel">初期パスワード</span>
+        <input class="input" type="password" id="userPassword" placeholder="編集時は空欄で据え置き">
+      </label>
+
+      <label class="field">
+        <span class="field-label">追加オプション</span>
+        <label><input type="checkbox" id="userUnlock"> ロック状態と失敗回数を解除する</label>
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close-modal="userModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="userSubmit">保存する</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-shell" id="passwordModal" hidden>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h3>パスワード変更</h3>
+        <p>変更後は他セッションを失効させ、再ログインを促します。</p>
+      </div>
+      <button class="btn btn-ghost" type="button" data-close-modal="passwordModal">閉じる</button>
+    </div>
+
+    <form class="modal-form" id="passwordForm">
+      <label class="field">
+        <span class="field-label">現在のパスワード</span>
+        <input class="input" type="password" id="passwordCurrent" autocomplete="current-password">
+      </label>
+      <label class="field">
+        <span class="field-label">新しいパスワード</span>
+        <input class="input" type="password" id="passwordNext" autocomplete="new-password" placeholder="英字と数字を含む 10 文字以上">
+      </label>
+      <label class="field">
+        <span class="field-label">確認用パスワード</span>
+        <input class="input" type="password" id="passwordConfirm" autocomplete="new-password">
+      </label>
+
+      <div class="modal-actions">
+        <button class="btn btn-secondary" type="button" data-close-modal="passwordModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="passwordSubmit">更新する</button>
+      </div>
+    </form>
+  </div>
+</div>

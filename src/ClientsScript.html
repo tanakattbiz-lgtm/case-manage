@@ -1,0 +1,139 @@
+<script>
+  App.clients = {
+    bindEvents: function () {
+      var self = this;
+      App.ui.byId('clientsGrid').addEventListener('click', function (event) {
+        var action = event.target.closest('[data-client-action]');
+        if (!action) return;
+        var clientId = action.dataset.clientId;
+        if (action.dataset.clientAction === 'edit') {
+          self.openModal(self.findById(clientId));
+        }
+        if (action.dataset.clientAction === 'delete') {
+          self.remove(clientId);
+        }
+      });
+
+      App.ui.byId('clientForm').addEventListener('submit', this.submit.bind(this));
+    },
+
+    findById: function (clientId) {
+      return App.state.clients.items.find(function (client) {
+        return client.id === clientId;
+      }) || null;
+    },
+
+    ensureLoaded: async function (force) {
+      if (!force && !App.state.clients.dirty && App.state.clients.loaded) {
+        return App.state.clients.items;
+      }
+      App.state.clients.items = await App.api.clients.list();
+      App.state.clients.loaded = true;
+      App.state.clients.dirty = false;
+      if (App.projects && typeof App.projects.syncClientOptions === 'function') {
+        App.projects.syncClientOptions();
+      }
+      App.ui.updateBadges();
+      return App.state.clients.items;
+    },
+
+    render: function () {
+      if (!App.state.clients.loaded) return;
+      App.ui.byId('clientsSummary').textContent = App.state.clients.items.length + '件';
+      if (!App.state.clients.items.length) {
+        App.ui.renderEmpty(App.ui.byId('clientsGrid'), 'クライアントが未登録です。', '案件登録の前にクライアントを追加してください。');
+        return;
+      }
+
+      App.ui.byId('clientsGrid').innerHTML = App.state.clients.items.map(function (client) {
+        return ''
+          + '<article class="panel client-card">'
+          + '  <div>'
+          + '    <h3>' + App.helpers.escape(client.name) + '</h3>'
+          + '    <div class="field-hint">' + App.helpers.escape(client.note || '備考なし') + '</div>'
+          + '  </div>'
+          + '  <dl>'
+          + '    <div><dt>担当者</dt><dd>' + App.helpers.escape(client.contactName || '—') + '</dd></div>'
+          + '    <div><dt>メール</dt><dd>' + App.helpers.escape(client.email || '—') + '</dd></div>'
+          + '    <div><dt>電話</dt><dd>' + App.helpers.escape(client.phone || '—') + '</dd></div>'
+          + '    <div><dt>既定利益率</dt><dd>' + (client.defaultProfitRate === '' ? '未設定' : App.helpers.escape(String(client.defaultProfitRate) + '%')) + '</dd></div>'
+          + '  </dl>'
+          + '  <div class="client-actions">'
+          + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-client-action="edit" data-client-id="' + App.helpers.escape(client.id) + '">編集</button>' : '')
+          + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-client-action="delete" data-client-id="' + App.helpers.escape(client.id) + '">削除</button>' : '')
+          + '  </div>'
+          + '</article>';
+      }).join('');
+    },
+
+    openModal: function (client) {
+      App.ui.byId('clientModalTitle').textContent = client ? 'クライアントを編集' : 'クライアントを追加';
+      App.ui.byId('clientId').value = client ? client.id : '';
+      App.ui.byId('clientName').value = client ? client.name : '';
+      App.ui.byId('clientContactName').value = client ? client.contactName : '';
+      App.ui.byId('clientEmail').value = client ? client.email : '';
+      App.ui.byId('clientPhone').value = client ? client.phone : '';
+      App.ui.byId('clientDefaultProfitRate').value = client && client.defaultProfitRate !== '' ? String(client.defaultProfitRate) : '';
+      App.ui.byId('clientNote').value = client ? client.note : '';
+      App.ui.openModal('clientModal');
+    },
+
+    submit: async function (event) {
+      event.preventDefault();
+      var name = App.ui.byId('clientName').value.trim();
+      if (!name) {
+        App.ui.toast('クライアント名を入力してください。', 'error');
+        return;
+      }
+
+      var payload = {
+        id: App.ui.byId('clientId').value,
+        name: name,
+        contactName: App.ui.byId('clientContactName').value,
+        email: App.ui.byId('clientEmail').value,
+        phone: App.ui.byId('clientPhone').value,
+        defaultProfitRate: App.ui.byId('clientDefaultProfitRate').value === '' ? '' : Number(App.ui.byId('clientDefaultProfitRate').value),
+        note: App.ui.byId('clientNote').value
+      };
+
+      App.ui.setBusy('clientSubmit', true, '保存中...', '保存する');
+      try {
+        if (payload.id) {
+          await App.api.clients.update(payload);
+        } else {
+          await App.api.clients.create(payload);
+        }
+        App.ui.closeModal('clientModal');
+        App.ui.toast('クライアントを保存しました。', 'success');
+        App.markDirty(['clients', 'projects']);
+        await this.ensureLoaded(true);
+        this.render();
+        if (App.projects && App.state.projects.loaded) {
+          App.projects.syncClientOptions();
+          App.projects.updateProfitHint();
+          App.projects.render();
+        }
+      } catch (error) {
+        App.ui.toast(error.message || 'クライアントの保存に失敗しました。', 'error');
+      } finally {
+        App.ui.setBusy('clientSubmit', false, '保存中...', '保存する');
+      }
+    },
+
+    remove: async function (clientId) {
+      var client = this.findById(clientId);
+      if (!client) return;
+      if (!window.confirm('「' + client.name + '」を削除しますか？')) return;
+
+      try {
+        await App.api.clients.remove(clientId);
+        App.ui.toast('クライアントを削除しました。', 'success');
+        App.markDirty(['clients', 'projects']);
+        await this.ensureLoaded(true);
+        this.render();
+      } catch (error) {
+        App.ui.toast(error.message || 'クライアントの削除に失敗しました。', 'error');
+      }
+    }
+  };
+</script>

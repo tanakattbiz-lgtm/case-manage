@@ -1,0 +1,220 @@
+<script>
+  App.auth = {
+    loadStoredSession: function () {
+      try {
+        return JSON.parse(localStorage.getItem(App.constants.storageKey) || 'null');
+      } catch (error) {
+        return null;
+      }
+    },
+
+    storeSession: function (payload) {
+      try {
+        localStorage.setItem(App.constants.storageKey, JSON.stringify(payload));
+      } catch (error) {
+      }
+    },
+
+    clearStoredSession: function () {
+      try {
+        localStorage.removeItem(App.constants.storageKey);
+      } catch (error) {
+      }
+    },
+
+    renderMeta: function () {
+      var settings = App.state.auth.settings;
+      App.ui.byId('authMeta').innerHTML = [
+        '最小 ' + settings.passwordMinLength + ' 文字',
+        '失敗 ' + settings.maxFailedAttempts + ' 回で ' + settings.lockoutMinutes + ' 分ロック',
+        'セッション ' + Math.round(settings.sessionTtlMinutes / 60) + ' 時間'
+      ].map(function (text) {
+        return '<span>' + App.helpers.escape(text) + '</span>';
+      }).join('');
+    },
+
+    applyAuthPayload: function (payload) {
+      App.state.auth.token = payload.token || '';
+      App.state.auth.user = payload.user || null;
+      App.state.auth.permissions = payload.permissions || App.state.auth.permissions;
+      App.state.auth.session = payload.session || null;
+      App.state.auth.settings = Object.assign({}, App.state.auth.settings, payload.settings || {});
+      this.storeSession({
+        status: 'active',
+        token: App.state.auth.token,
+        expiresAt: App.state.auth.session ? App.state.auth.session.expiresAt : '',
+        reason: ''
+      });
+      this.renderMeta();
+      App.ui.showAppShell();
+      App.ui.updateShellAuth();
+      App.ui.updatePrimaryAction();
+    },
+
+    invalidateSession: function (reason, message) {
+      this.storeSession({
+        status: 'invalidated',
+        token: '',
+        expiresAt: '',
+        reason: reason || 'expired',
+        message: message || ''
+      });
+      App.state.auth.token = '';
+      App.state.auth.user = null;
+      App.state.auth.session = null;
+      App.state.auth.permissions = { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false };
+      App.resetDataState();
+      App.ui.updateShellAuth();
+      App.ui.updatePrimaryAction();
+    },
+
+    handleSessionLoss: function (message) {
+      this.invalidateSession('expired', message || 'セッションの有効期限が切れました。');
+      App.ui.closeAllModals();
+      App.ui.showAuthShell('login', message || 'セッションが失効しました。再度ログインしてください。', 'error');
+    },
+
+    boot: async function () {
+      var stored = this.loadStoredSession();
+      this.renderMeta();
+
+      if (stored && stored.status === 'invalidated') {
+        App.ui.showAuthShell('login', stored.message || '再度ログインしてください。', stored.reason === 'logout' ? 'success' : 'error');
+      } else {
+        App.ui.showAuthShell('login', '認証状態を確認しています。');
+      }
+
+      if (stored && stored.token && stored.expiresAt) {
+        var expiresAt = App.helpers.parseDate(stored.expiresAt);
+        if (expiresAt && expiresAt.getTime() <= Date.now()) {
+          this.invalidateSession('expired', 'セッションの有効期限が切れました。');
+          App.ui.showAuthShell('login', 'セッションの有効期限が切れました。再度ログインしてください。', 'error');
+          return;
+        }
+      }
+
+      try {
+        var state = await App.api.auth.getAuthState(stored && stored.token ? stored.token : '');
+        App.state.auth.settings = Object.assign({}, App.state.auth.settings, state.settings || {});
+        this.renderMeta();
+
+        if (state.requiresSetup) {
+          this.clearStoredSession();
+          App.ui.showAuthShell('setup', 'まだ管理者が存在しません。最初の管理者を作成してください。');
+          return;
+        }
+
+        if (!state.authenticated) {
+          this.clearStoredSession();
+          App.ui.showAuthShell('login', (stored && stored.message) || 'メールアドレスとパスワードを入力してください。', stored && stored.reason === 'logout' ? 'success' : '');
+          return;
+        }
+
+        this.applyAuthPayload(state);
+        await App.navigate(App.state.currentView || 'dashboard', { force: true });
+      } catch (error) {
+        this.clearStoredSession();
+        App.ui.showAuthShell('login', error.message || '認証状態の確認に失敗しました。', 'error');
+      }
+    },
+
+    login: async function (event) {
+      event.preventDefault();
+      App.ui.setBusy('loginSubmit', true, 'ログイン中...', 'ログイン');
+      try {
+        var state = await App.api.auth.login({
+          email: App.ui.byId('loginEmail').value.trim(),
+          password: App.ui.byId('loginPassword').value,
+          userAgent: navigator.userAgent || ''
+        });
+        this.applyAuthPayload(state);
+        App.ui.byId('loginPassword').value = '';
+        await App.navigate('dashboard', { force: true });
+      } catch (error) {
+        App.ui.showAuthShell('login', error.message || 'ログインに失敗しました。', 'error');
+      } finally {
+        App.ui.setBusy('loginSubmit', false, 'ログイン中...', 'ログイン');
+      }
+    },
+
+    bootstrap: async function (event) {
+      event.preventDefault();
+      var password = App.ui.byId('setupPassword').value;
+      var confirm = App.ui.byId('setupPasswordConfirm').value;
+      if (password !== confirm) {
+        App.ui.showAuthShell('setup', '確認用パスワードが一致しません。', 'error');
+        return;
+      }
+
+      App.ui.setBusy('setupSubmit', true, '作成中...', '管理者アカウントを作成');
+      try {
+        var state = await App.api.auth.bootstrapAdmin({
+          name: App.ui.byId('setupName').value.trim(),
+          email: App.ui.byId('setupEmail').value.trim(),
+          password: password,
+          userAgent: navigator.userAgent || ''
+        });
+        this.applyAuthPayload(state);
+        await App.navigate('dashboard', { force: true });
+      } catch (error) {
+        App.ui.showAuthShell('setup', error.message || '初回セットアップに失敗しました。', 'error');
+      } finally {
+        App.ui.setBusy('setupSubmit', false, '作成中...', '管理者アカウントを作成');
+      }
+    },
+
+    logout: async function (message) {
+      try {
+        if (App.isAuthenticated()) {
+          await App.api.auth.logout();
+        }
+      } catch (error) {
+      }
+      this.invalidateSession('logout', message || 'ログアウトしました。');
+      App.ui.closeAllModals();
+      App.ui.showAuthShell('login', message || 'ログアウトしました。', 'success');
+    },
+
+    openPasswordModal: function () {
+      if (!App.isAuthenticated()) return;
+      ['passwordCurrent', 'passwordNext', 'passwordConfirm'].forEach(function (id) {
+        App.ui.byId(id).value = '';
+      });
+      App.ui.openModal('passwordModal');
+    },
+
+    changePassword: async function (event) {
+      event.preventDefault();
+      var currentPassword = App.ui.byId('passwordCurrent').value;
+      var nextPassword = App.ui.byId('passwordNext').value;
+      var confirm = App.ui.byId('passwordConfirm').value;
+
+      if (!currentPassword || !nextPassword || !confirm) {
+        App.ui.toast('すべての項目を入力してください。', 'error');
+        return;
+      }
+      if (nextPassword !== confirm) {
+        App.ui.toast('確認用パスワードが一致しません。', 'error');
+        return;
+      }
+
+      App.ui.setBusy('passwordSubmit', true, '更新中...', '更新する');
+      try {
+        await App.api.auth.changePassword(currentPassword, nextPassword);
+        App.ui.closeModal('passwordModal');
+        App.ui.toast('パスワードを更新しました。再ログインしてください。', 'success');
+        await this.logout('パスワードを更新しました。再ログインしてください。');
+      } catch (error) {
+        App.ui.toast(error.message || 'パスワード変更に失敗しました。', 'error');
+      } finally {
+        App.ui.setBusy('passwordSubmit', false, '更新中...', '更新する');
+      }
+    },
+
+    bindEvents: function () {
+      App.ui.byId('loginForm').addEventListener('submit', this.login.bind(this));
+      App.ui.byId('setupForm').addEventListener('submit', this.bootstrap.bind(this));
+      App.ui.byId('passwordForm').addEventListener('submit', this.changePassword.bind(this));
+    }
+  };
+</script>

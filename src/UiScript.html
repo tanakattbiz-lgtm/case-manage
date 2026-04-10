@@ -1,0 +1,240 @@
+<script>
+  App.ui = {
+    byId: function (id) {
+      return document.getElementById(id);
+    },
+
+    showAuthShell: function (mode, message, type) {
+      this.byId('authShell').hidden = false;
+      this.byId('appShell').hidden = true;
+
+      var loginForm = this.byId('loginForm');
+      var setupForm = this.byId('setupForm');
+      var eyebrow = this.byId('authEyebrow');
+      var title = this.byId('authTitle');
+      var subtitle = this.byId('authSubtitle');
+      var notice = this.byId('authNotice');
+
+      notice.className = 'auth-note' + (type ? ' ' + type : '');
+      notice.textContent = message || '認証状態を確認しています。';
+
+      loginForm.hidden = mode !== 'login';
+      setupForm.hidden = mode !== 'setup';
+
+      if (mode === 'setup') {
+        eyebrow.textContent = 'Setup';
+        title.textContent = '初回セットアップ';
+        subtitle.textContent = '最初の管理者アカウントを作成してください。';
+        return;
+      }
+
+      eyebrow.textContent = 'Authentication';
+      title.textContent = 'ログイン';
+      subtitle.textContent = 'メールアドレスとパスワードでログインしてください。';
+    },
+
+    showAppShell: function () {
+      this.byId('authShell').hidden = true;
+      this.byId('appShell').hidden = false;
+    },
+
+    toast: function (message, type) {
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + (type || 'info');
+      toast.textContent = message;
+      this.byId('toastStack').appendChild(toast);
+      window.setTimeout(function () {
+        toast.remove();
+      }, 3400);
+    },
+
+    setBusy: function (buttonId, busy, busyLabel, idleLabel) {
+      var button = this.byId(buttonId);
+      if (!button) return;
+      if (!button.dataset.idleLabel) {
+        button.dataset.idleLabel = idleLabel || button.textContent;
+      }
+      button.disabled = busy;
+      button.textContent = busy ? busyLabel : (idleLabel || button.dataset.idleLabel);
+    },
+
+    openModal: function (modalId) {
+      this.byId(modalId).hidden = false;
+    },
+
+    closeModal: function (modalId) {
+      this.byId(modalId).hidden = true;
+    },
+
+    closeAllModals: function () {
+      document.querySelectorAll('.modal-shell').forEach(function (modal) {
+        modal.hidden = true;
+      });
+    },
+
+    activateView: function (view) {
+      document.querySelectorAll('[data-view-panel]').forEach(function (panel) {
+        panel.classList.toggle('is-active', panel.dataset.viewPanel === view);
+      });
+
+      document.querySelectorAll('[data-view]').forEach(function (button) {
+        button.classList.toggle('is-active', button.dataset.view === view);
+      });
+
+      var title = App.viewTitles[view] || App.viewTitles.dashboard;
+      this.byId('pageEyebrow').textContent = title.eyebrow;
+      this.byId('pageTitle').textContent = title.title;
+    },
+
+    updateShellAuth: function () {
+      var auth = App.state.auth;
+      var userChip = this.byId('userChip');
+      var userName = this.byId('userChipName');
+      var userRole = this.byId('userChipRole');
+      var passwordAction = this.byId('passwordAction');
+      var logoutAction = this.byId('logoutAction');
+      var securityAction = this.byId('securityAction');
+      var usersNavBtn = this.byId('usersNavBtn');
+      var usersNavMobile = this.byId('usersNavMobile');
+
+      var loggedIn = App.isAuthenticated();
+      userChip.hidden = !loggedIn;
+      passwordAction.hidden = !loggedIn;
+      logoutAction.hidden = !loggedIn;
+      securityAction.hidden = !App.canManageUsers();
+      usersNavBtn.hidden = !App.canManageUsers();
+      usersNavMobile.hidden = !App.canManageUsers();
+
+      if (loggedIn) {
+        userName.textContent = auth.user.name;
+        userRole.textContent = auth.permissions.roleLabel + ' / ' + auth.user.email;
+      }
+    },
+
+    updatePrimaryAction: function () {
+      var button = this.byId('primaryAction');
+      var view = App.state.currentView;
+      var label = '';
+
+      if (view === 'projects' && App.canEdit()) label = '案件を追加';
+      if (view === 'clients' && App.canEdit()) label = 'クライアントを追加';
+      if (view === 'users' && App.canManageUsers()) label = 'ユーザーを追加';
+
+      button.hidden = !label;
+      button.textContent = label || '追加';
+    },
+
+    updateBadges: function () {
+      var projectCount = App.state.projects.loaded
+        ? App.state.projects.items.length
+        : (App.state.dashboard.data ? App.state.dashboard.data.summary.totalCount : '-');
+      var clientCount = App.state.clients.loaded ? App.state.clients.items.length : '-';
+
+      this.byId('badgeProjects').textContent = String(projectCount);
+      this.byId('badgeProjectsSidebar').textContent = String(projectCount);
+      this.byId('badgeClients').textContent = String(clientCount);
+    },
+
+    renderEmpty: function (target, title, message) {
+      target.innerHTML = '<div class="empty-state"><strong>' + App.helpers.escape(title) + '</strong><span>' + App.helpers.escape(message) + '</span></div>';
+    },
+
+    bindGlobalEvents: function () {
+      var self = this;
+
+      document.querySelectorAll('[data-view]').forEach(function (button) {
+        button.addEventListener('click', function () {
+          App.navigate(button.dataset.view);
+        });
+      });
+
+      document.addEventListener('click', function (event) {
+        var closeButton = event.target.closest('[data-close-modal]');
+        if (closeButton) {
+          self.closeModal(closeButton.dataset.closeModal);
+          return;
+        }
+
+        var actionButton = event.target.closest('[data-action]');
+        if (!actionButton) return;
+        var action = actionButton.dataset.action;
+
+        if (action === 'open-password') App.auth.openPasswordModal();
+        if (action === 'go-users') App.navigate('users');
+        if (action === 'logout') App.auth.logout();
+        if (action === 'open-primary') {
+          if (App.state.currentView === 'projects') App.projects.openModal();
+          if (App.state.currentView === 'clients') App.clients.openModal();
+          if (App.state.currentView === 'users') App.users.openModal();
+        }
+        if (action === 'dashboard-open-projects') App.dashboard.openProjectsFromDashboard();
+        if (action === 'reset-project-filters') App.projects.resetFilters();
+        if (action === 'reload-projects') App.navigate('projects', { force: true });
+      });
+
+      document.querySelectorAll('.modal-shell').forEach(function (modal) {
+        modal.addEventListener('click', function (event) {
+          if (event.target === modal) {
+            modal.hidden = true;
+          }
+        });
+      });
+
+      window.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          self.closeAllModals();
+        }
+      });
+    }
+  };
+
+  App.loadCurrentView = async function (options) {
+    var view = App.state.currentView;
+    var config = options || {};
+    if (view === 'dashboard') {
+      await App.dashboard.ensureLoaded(config.force);
+      App.dashboard.render();
+    }
+    if (view === 'projects') {
+      await App.projects.ensureLoaded(config.force);
+      App.projects.render();
+    }
+    if (view === 'clients') {
+      await App.clients.ensureLoaded(config.force);
+      App.clients.render();
+    }
+    if (view === 'users') {
+      await App.users.ensureLoaded(config.force);
+      App.users.render();
+    }
+    App.ui.updateBadges();
+  };
+
+  App.navigate = async function (view, options) {
+    var nextView = view;
+    if (nextView === 'users' && !App.canManageUsers()) {
+      nextView = 'dashboard';
+    }
+    App.state.currentView = nextView;
+    App.ui.activateView(nextView);
+    App.ui.updatePrimaryAction();
+    if (!App.isAuthenticated()) return;
+    try {
+      await App.loadCurrentView(options);
+    } catch (error) {
+      App.ui.toast(error.message || 'データの読込に失敗しました。', 'error');
+    }
+  };
+
+  App.init = function () {
+    App.ui.bindGlobalEvents();
+    App.auth.bindEvents();
+    App.dashboard.bindEvents();
+    App.projects.bindEvents();
+    App.clients.bindEvents();
+    App.users.bindEvents();
+    App.ui.activateView('dashboard');
+    App.ui.updatePrimaryAction();
+    App.auth.boot();
+  };
+</script>
