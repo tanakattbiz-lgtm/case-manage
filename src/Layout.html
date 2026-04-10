@@ -2,7 +2,7 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <strong>案件管理</strong>
-      <span>GAS + HtmlService で運用する SPA。表示は shell-first、取得は view-first です。</span>
+      <span>案件、クライアント、売上の状況をまとめて確認できます。</span>
     </div>
 
     <nav class="nav-stack">
@@ -24,7 +24,7 @@
     </nav>
 
     <div class="sidebar-foot">
-      SPREADSHEET_ID を Script Properties に保持し、openById() で接続します。認可は UI だけで完結させず、すべての API で検証します。
+      入力した内容は一覧や集計に反映されます。必要に応じて管理者へお問い合わせください。
     </div>
   </aside>
 
@@ -75,7 +75,7 @@
     <div class="modal-head">
       <div>
         <h3 id="projectModalTitle">案件を追加</h3>
-        <p>保存時に必要項目だけ API へ送信します。利益は空欄のままでも server 側で補完されます。</p>
+        <p>必要な項目を入力して保存してください。利益が未入力の場合は自動で計算されます。</p>
       </div>
       <button class="btn btn-ghost" type="button" data-close-modal="projectModal">閉じる</button>
     </div>
@@ -114,7 +114,7 @@
         <label class="field">
           <span class="field-label">利益</span>
           <input class="input" type="number" min="0" id="projectProfit" placeholder="空欄なら自動計算">
-          <span class="field-hint" id="projectProfitHint">クライアント既定利益率があれば server 側で自動適用します。</span>
+          <span class="field-hint" id="projectProfitHint">クライアントの既定利益率がある場合は自動で反映されます。</span>
         </label>
       </div>
 
@@ -136,7 +136,7 @@
     <div class="modal-head">
       <div>
         <h3 id="clientModalTitle">クライアントを追加</h3>
-        <p>案件フォームから参照するため、表示名と既定利益率を明確にしておく構成です。</p>
+        <p>案件で参照しやすいよう、表示名や連絡先、既定利益率を登録できます。</p>
       </div>
       <button class="btn btn-ghost" type="button" data-close-modal="clientModal">閉じる</button>
     </div>
@@ -185,7 +185,7 @@
     <div class="modal-head">
       <div>
         <h3 id="userModalTitle">ユーザーを追加</h3>
-        <p>ユーザー関連は管理者のみ操作可能です。無効化やパスワード再設定時は server 側でセッションも失効させます。</p>
+        <p>ユーザーの追加や権限変更は管理者のみ行えます。必要に応じて利用停止やパスワード再設定も行えます。</p>
       </div>
       <button class="btn btn-ghost" type="button" data-close-modal="userModal">閉じる</button>
     </div>

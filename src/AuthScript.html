@@ -81,7 +81,7 @@
       if (stored && stored.status === 'invalidated') {
         App.ui.showAuthShell('login', stored.message || '再度ログインしてください。', stored.reason === 'logout' ? 'success' : 'error');
       } else {
-        App.ui.showAuthShell('login', '認証状態を確認しています。');
+        App.ui.showAuthShell('login', 'ログイン状態を確認しています。');
       }
 
       if (stored && stored.token && stored.expiresAt) {
@@ -114,7 +114,7 @@
         await App.navigate(App.state.currentView || 'dashboard', { force: true });
       } catch (error) {
         this.clearStoredSession();
-        App.ui.showAuthShell('login', error.message || '認証状態の確認に失敗しました。', 'error');
+        App.ui.showAuthShell('login', error.message || 'ログイン状態の確認に失敗しました。', 'error');
       }
     },
 

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta
     name="description"
-    content="Google Apps Script と Google スプレッドシートで動く案件管理システム。案件一覧、クライアント管理、収益ダッシュボードをひとつにまとめて運用できます。">
+    content="案件一覧、クライアント管理、収益ダッシュボードをひとつにまとめて運用できる案件管理システムです。">
   <meta name="application-name" content="案件管理システム">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="案件管理システム">
@@ -17,7 +17,7 @@
   <meta property="og:title" content="案件管理システム">
   <meta
     property="og:description"
-    content="案件一覧、クライアント管理、ダッシュボード分析をひとつにまとめた Google Apps Script ベースの業務アプリです。">
+    content="案件一覧、クライアント管理、ダッシュボード分析をひとつにまとめた案件管理システムです。">
   <meta name="twitter:card" content="summary">
   <title>案件管理システム</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -313,7 +313,7 @@
         <div class="progress-track" aria-hidden="true"></div>
 
         <div id="loaderHint" class="loader-hint">
-          初回アクセス時や Apps Script の再起動直後は、表示まで少し時間がかかることがあります。
+          初回アクセス時は、表示まで少し時間がかかることがあります。
         </div>
 
         <div id="supportActions" class="support-actions" hidden>
@@ -369,7 +369,7 @@
 
       progressLabel.textContent = "waiting";
       loaderText.innerHTML = "読み込みに少し時間がかかっています。<br>通信状況をご確認いただくか、直接アプリを開いてください。";
-      loaderHint.textContent = "Google Apps Script の応答待ちや認証状態によって、表示まで時間が延びる場合があります。";
+      loaderHint.textContent = "通信状況やログイン確認の状況によって、表示まで時間がかかることがあります。";
       supportActions.hidden = false;
     }
 

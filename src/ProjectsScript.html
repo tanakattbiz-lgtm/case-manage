@@ -199,7 +199,7 @@
       var sales = Number(App.ui.byId('projectSales').value) || 0;
       var clientId = App.ui.byId('projectClientId').value;
       var profit = App.ui.byId('projectProfit').value;
-      var hint = 'クライアント既定利益率があれば server 側で自動適用します。';
+      var hint = 'クライアントの既定利益率がある場合は自動で反映されます。';
       var client = App.state.clients.items.find(function (item) { return item.id === clientId; }) || null;
 
       if (profit !== '') {

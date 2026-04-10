@@ -16,19 +16,19 @@
       var notice = this.byId('authNotice');
 
       notice.className = 'auth-note' + (type ? ' ' + type : '');
-      notice.textContent = message || '認証状態を確認しています。';
+      notice.textContent = message || 'ログイン状態を確認しています。';
 
       loginForm.hidden = mode !== 'login';
       setupForm.hidden = mode !== 'setup';
 
       if (mode === 'setup') {
-        eyebrow.textContent = 'Setup';
+        eyebrow.textContent = '初回設定';
         title.textContent = '初回セットアップ';
         subtitle.textContent = '最初の管理者アカウントを作成してください。';
         return;
       }
 
-      eyebrow.textContent = 'Authentication';
+      eyebrow.textContent = 'ログイン';
       title.textContent = 'ログイン';
       subtitle.textContent = 'メールアドレスとパスワードでログインしてください。';
     },

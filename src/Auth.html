@@ -1,24 +1,24 @@
 <div class="auth-shell" id="authShell">
   <div class="auth-card panel">
     <section class="auth-copy">
-      <div class="page-eyebrow">Case Manage SPA</div>
-      <h1>保守しやすい案件管理を、GAS の制約内で。</h1>
-      <p>初期表示は shell のみ、必要な画面だけ非同期に読み込みます。認証・認可は必ずサーバー側でも検査し、スプレッドシート運用でも安全性と拡張性を落とさない構成へ揃えています。</p>
+      <div class="page-eyebrow">Case Manage</div>
+      <h1>案件と顧客情報を、ひとつの画面で管理。</h1>
+      <p>案件の進捗、クライアント情報、売上や利益の状況をまとめて確認できます。メールアドレスとパスワードを入力してログインしてください。</p>
       <div class="auth-points">
-        <div class="auth-point"><strong>01</strong><span>セッション有効期限と失効理由を localStorage に保持し、再ログイン導線を明確化</span></div>
-        <div class="auth-point"><strong>02</strong><span>ビュー単位ロードへ切り替え、全件一括取得を廃止。Dashboard 集計は server 側へ寄せて軽量化</span></div>
-        <div class="auth-point"><strong>03</strong><span>Repository / Service / API / state / ui を分離し、長期運用でも追いやすい構成へ</span></div>
+        <div class="auth-point"><strong>01</strong><span>案件の進捗と対応状況を一覧で確認</span></div>
+        <div class="auth-point"><strong>02</strong><span>クライアント情報と売上・利益をまとめて管理</span></div>
+        <div class="auth-point"><strong>03</strong><span>権限に応じて必要なメニューだけを表示</span></div>
       </div>
     </section>
 
     <section class="auth-form">
       <div>
-        <div class="page-eyebrow" id="authEyebrow">Authentication</div>
+        <div class="page-eyebrow" id="authEyebrow">ログイン</div>
         <h2 id="authTitle">ログイン</h2>
         <p id="authSubtitle">メールアドレスとパスワードでログインしてください。</p>
       </div>
 
-      <div class="auth-note" id="authNotice">認証状態を確認しています。</div>
+      <div class="auth-note" id="authNotice">ログイン状態を確認しています。</div>
 
       <form id="loginForm" class="modal-form">
         <label class="field">
