@@ -3,8 +3,10 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "gas:status": "clasp show-file-status",
-    "gas:push": "clasp push --force"
+    "gas:status": "node ./node_modules/@google/clasp/build/src/index.js show-file-status",
+    "gas:push": "node ./node_modules/@google/clasp/build/src/index.js push --force",
+    "gas:verify:webapp": "node ./scripts/verify-gas-webapp-deployment.mjs",
+    "gas:deploy:webapp": "node ./scripts/deploy-gas-webapp.mjs"
   },
   "devDependencies": {
     "@google/clasp": "^3.3.0"

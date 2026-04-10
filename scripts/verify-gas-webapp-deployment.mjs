@@ -18,6 +18,24 @@ function loadJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function normalizeDeploymentId(value) {
+  if (!value) {
+    return null;
+  }
+
+  const webAppUrlMatch = value.match(/\/s\/([^/]+)\/exec(?:[?#].*)?$/);
+  return webAppUrlMatch ? webAppUrlMatch[1] : value;
+}
+
+function readClaspProjectConfig() {
+  const projectConfigPath = path.resolve(process.cwd(), '.clasp.json');
+  if (!fs.existsSync(projectConfigPath)) {
+    return null;
+  }
+
+  return loadJson(projectConfigPath);
+}
+
 function loadStoredCredentials(filePath) {
   if (!fs.existsSync(filePath)) {
     fail(`clasp auth file was not found: ${filePath}`);
@@ -60,39 +78,38 @@ function loadStoredCredentials(filePath) {
   fail('No usable clasp credentials were found in .clasprc.json.');
 }
 
-function readManifestWarning() {
+function readManifestWebAppConfig() {
   const manifestPath = path.resolve(process.cwd(), 'src', 'appsscript.json');
   if (!fs.existsSync(manifestPath)) {
-    return;
+    fail(`Apps Script manifest was not found: ${manifestPath}`);
   }
 
   try {
     const manifest = loadJson(manifestPath);
     if (!manifest.webapp) {
-      console.warn(
-        'Warning: src/appsscript.json has no "webapp" block. Make the web app access and executeAs settings explicit in the manifest if you rely on CI redeployments.',
-      );
+      fail('src/appsscript.json must define a "webapp" block.');
     }
+
+    return manifest.webapp;
   } catch (error) {
-    console.warn(`Warning: failed to read src/appsscript.json: ${error.message}`);
+    fail(`Failed to read src/appsscript.json: ${error.message}`);
   }
 }
 
 async function main() {
-  const scriptId = process.env.GAS_SCRIPT_ID;
-  const deploymentId =
-    process.env.GAS_TARGET_DEPLOYMENT_ID ||
-    process.env.GAS_WEBAPP_DEPLOYMENT_ID ||
-    process.env.GAS_DEPLOYMENT_ID;
+  const projectConfig = readClaspProjectConfig();
+  const manifestWebAppConfig = readManifestWebAppConfig();
+  const scriptId = process.env.GAS_SCRIPT_ID || projectConfig?.scriptId;
+  const deploymentId = normalizeDeploymentId(process.env.GAS_WEBAPP_DEPLOYMENT_ID);
   const authFilePath =
     process.env.CLASP_AUTH_FILE || path.join(os.homedir(), '.clasprc.json');
 
   if (!scriptId) {
-    fail('GAS_SCRIPT_ID is not set.');
+    fail('GAS_SCRIPT_ID is not set and .clasp.json has no scriptId.');
   }
 
   if (!deploymentId) {
-    fail('A target deployment ID is not set.');
+    fail('GAS_WEBAPP_DEPLOYMENT_ID is not set.');
   }
 
   const storedCredentials = loadStoredCredentials(authFilePath);
@@ -124,6 +141,18 @@ async function main() {
 
   const config = webAppEntry.webApp.entryPointConfig || {};
 
+  if (config.access !== manifestWebAppConfig.access) {
+    fail(
+      `Deployment ${deploymentId} access is ${config.access || 'undefined'}, expected ${manifestWebAppConfig.access}.`,
+    );
+  }
+
+  if (config.executeAs !== manifestWebAppConfig.executeAs) {
+    fail(
+      `Deployment ${deploymentId} executeAs is ${config.executeAs || 'undefined'}, expected ${manifestWebAppConfig.executeAs}.`,
+    );
+  }
+
   console.log(`Verified Web App deployment: ${deploymentId}`);
   if (webAppEntry.webApp.url) {
     console.log(`Web App URL: ${webAppEntry.webApp.url}`);
@@ -134,8 +163,6 @@ async function main() {
   if (config.executeAs) {
     console.log(`ExecuteAs: ${config.executeAs}`);
   }
-
-  readManifestWarning();
 }
 
 main().catch((error) => {
