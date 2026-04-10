@@ -91,7 +91,8 @@ function login(payload) {
       throwAppError_('ACCOUNT_LOCKED', 'ログインに失敗したため一時的にロックされています。');
     }
 
-    if (hashPassword_(password, userRecord['ソルト']) !== userRecord['パスワードハッシュ']) {
+    const passwordVerification = verifyPassword_(password, userRecord);
+    if (!passwordVerification.matched) {
       registerFailedLogin_(userRecord, userAgent);
       throwAppError_('LOGIN_FAILED', genericMessage);
     }
@@ -101,6 +102,11 @@ function login(payload) {
     mutableUser['ロック期限'] = '';
     mutableUser['最終ログイン'] = nowDateTimeStr_();
     mutableUser['更新日'] = nowDateTimeStr_();
+    if (passwordVerification.legacy) {
+      const upgradeSalt = mutableUser['ソルト'] || createSecretChunk_();
+      mutableUser['ソルト'] = upgradeSalt;
+      mutableUser['パスワードハッシュ'] = hashPassword_(password, upgradeSalt);
+    }
     const updatedUser = updateUserRecordById_(mutableUser.ID, mutableUser);
     const createdSession = createSessionForUser_(updatedUser, userAgent);
     addAuditLogEntry_('login', 'SUCCESS', updatedUser, 'ログインしました。', userAgent);
@@ -139,7 +145,7 @@ function changeMyPassword(sessionToken, currentPassword, newPassword) {
 
     const current = String(currentPassword || '');
     const next = String(newPassword || '');
-    if (hashPassword_(current, userRecord['ソルト']) !== userRecord['パスワードハッシュ']) {
+    if (!verifyPassword_(current, userRecord).matched) {
       throwAppError_('PASSWORD_MISMATCH', '現在のパスワードが正しくありません。');
     }
     if (current === next) {
@@ -422,6 +428,29 @@ function createSecretChunk_() {
 
 function hashPassword_(password, salt) {
   return sha256Hex_([getAuthSecret_(), getAuthPepper_(), String(salt || ''), String(password || '')].join(':'));
+}
+
+function hashLegacyPassword_(password, salt) {
+  return sha256Hex_([getAuthSecret_(), String(salt || ''), String(password || '')].join(':'));
+}
+
+// Keep pre-pepper accounts valid and upgrade them on the next successful login.
+function verifyPassword_(password, userRecord) {
+  const salt = userRecord ? userRecord['ソルト'] : '';
+  const storedHash = userRecord ? String(userRecord['パスワードハッシュ'] || '') : '';
+  if (!storedHash) {
+    return { matched: false, legacy: false };
+  }
+
+  if (hashPassword_(password, salt) === storedHash) {
+    return { matched: true, legacy: false };
+  }
+
+  if (hashLegacyPassword_(password, salt) === storedHash) {
+    return { matched: true, legacy: true };
+  }
+
+  return { matched: false, legacy: false };
 }
 
 function hashToken_(token) {
