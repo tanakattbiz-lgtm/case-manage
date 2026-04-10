@@ -1,240 +1,556 @@
 <script>
-  App.ui = {
-    byId: function (id) {
-      return document.getElementById(id);
-    },
+  (function (App) {
+    function dirtyCheckers() {
+      return {
+        projectModal: App.projects && App.projects.isFormDirty,
+        clientModal: App.clients && App.clients.isFormDirty,
+        userModal: App.users && App.users.isFormDirty,
+        passwordModal: App.auth && App.auth.isPasswordDirty
+      };
+    }
 
-    showAuthShell: function (mode, message, type) {
-      this.byId('authShell').hidden = false;
-      this.byId('appShell').hidden = true;
+    App.ui = {
+      byId: function (id) {
+        return document.getElementById(id);
+      },
 
-      var loginForm = this.byId('loginForm');
-      var setupForm = this.byId('setupForm');
-      var eyebrow = this.byId('authEyebrow');
-      var title = this.byId('authTitle');
-      var subtitle = this.byId('authSubtitle');
-      var notice = this.byId('authNotice');
+      qq: function (selector, root) {
+        return Array.prototype.slice.call((root || document).querySelectorAll(selector));
+      },
 
-      notice.className = 'auth-note' + (type ? ' ' + type : '');
-      notice.textContent = message || 'ログイン状態を確認しています。';
+      setText: function (id, value) {
+        var node = this.byId(id);
+        if (node) node.textContent = value == null ? '' : String(value);
+      },
 
-      loginForm.hidden = mode !== 'login';
-      setupForm.hidden = mode !== 'setup';
+      showAuthShell: function (mode, message, type) {
+        this.byId('authShell').hidden = false;
+        this.byId('appShell').hidden = true;
+        this.byId('loginForm').hidden = mode !== 'login';
+        this.byId('setupForm').hidden = mode !== 'setup';
+        this.setText('authEyebrow', mode === 'setup' ? 'Setup' : 'ログイン');
+        this.setText('authTitle', mode === 'setup' ? '初期設定' : 'ログイン');
+        this.setText('authSubtitle', mode === 'setup'
+          ? '最初の管理者アカウントを作成してください。'
+          : 'メールアドレスとパスワードを入力してください。');
 
-      if (mode === 'setup') {
-        eyebrow.textContent = '初回設定';
-        title.textContent = '初回セットアップ';
-        subtitle.textContent = '最初の管理者アカウントを作成してください。';
-        return;
-      }
+        var notice = this.byId('authNotice');
+        notice.className = 'inline-notice ' + (type || 'info');
+        notice.innerHTML = App.helpers.icon(type === 'error' ? 'error' : (type === 'success' ? 'success' : 'info')) + '<span>' + App.helpers.escape(message || 'ログイン状態を確認しています。') + '</span>';
+      },
 
-      eyebrow.textContent = 'ログイン';
-      title.textContent = 'ログイン';
-      subtitle.textContent = 'メールアドレスとパスワードでログインしてください。';
-    },
+      showAppShell: function () {
+        this.byId('authShell').hidden = true;
+        this.byId('appShell').hidden = false;
+      },
 
-    showAppShell: function () {
-      this.byId('authShell').hidden = true;
-      this.byId('appShell').hidden = false;
-    },
-
-    toast: function (message, type) {
-      var toast = document.createElement('div');
-      toast.className = 'toast ' + (type || 'info');
-      toast.textContent = message;
-      this.byId('toastStack').appendChild(toast);
-      window.setTimeout(function () {
-        toast.remove();
-      }, 3400);
-    },
-
-    setBusy: function (buttonId, busy, busyLabel, idleLabel) {
-      var button = this.byId(buttonId);
-      if (!button) return;
-      if (!button.dataset.idleLabel) {
-        button.dataset.idleLabel = idleLabel || button.textContent;
-      }
-      button.disabled = busy;
-      button.textContent = busy ? busyLabel : (idleLabel || button.dataset.idleLabel);
-    },
-
-    openModal: function (modalId) {
-      this.byId(modalId).hidden = false;
-    },
-
-    closeModal: function (modalId) {
-      this.byId(modalId).hidden = true;
-    },
-
-    closeAllModals: function () {
-      document.querySelectorAll('.modal-shell').forEach(function (modal) {
-        modal.hidden = true;
-      });
-    },
-
-    activateView: function (view) {
-      document.querySelectorAll('[data-view-panel]').forEach(function (panel) {
-        panel.classList.toggle('is-active', panel.dataset.viewPanel === view);
-      });
-
-      document.querySelectorAll('[data-view]').forEach(function (button) {
-        button.classList.toggle('is-active', button.dataset.view === view);
-      });
-
-      var title = App.viewTitles[view] || App.viewTitles.dashboard;
-      this.byId('pageEyebrow').textContent = title.eyebrow;
-      this.byId('pageTitle').textContent = title.title;
-    },
-
-    updateShellAuth: function () {
-      var auth = App.state.auth;
-      var userChip = this.byId('userChip');
-      var userName = this.byId('userChipName');
-      var userRole = this.byId('userChipRole');
-      var passwordAction = this.byId('passwordAction');
-      var logoutAction = this.byId('logoutAction');
-      var securityAction = this.byId('securityAction');
-      var usersNavBtn = this.byId('usersNavBtn');
-      var usersNavMobile = this.byId('usersNavMobile');
-
-      var loggedIn = App.isAuthenticated();
-      userChip.hidden = !loggedIn;
-      passwordAction.hidden = !loggedIn;
-      logoutAction.hidden = !loggedIn;
-      securityAction.hidden = !App.canManageUsers();
-      usersNavBtn.hidden = !App.canManageUsers();
-      usersNavMobile.hidden = !App.canManageUsers();
-
-      if (loggedIn) {
-        userName.textContent = auth.user.name;
-        userRole.textContent = auth.permissions.roleLabel + ' / ' + auth.user.email;
-      }
-    },
-
-    updatePrimaryAction: function () {
-      var button = this.byId('primaryAction');
-      var view = App.state.currentView;
-      var label = '';
-
-      if (view === 'projects' && App.canEdit()) label = '案件を追加';
-      if (view === 'clients' && App.canEdit()) label = 'クライアントを追加';
-      if (view === 'users' && App.canManageUsers()) label = 'ユーザーを追加';
-
-      button.hidden = !label;
-      button.textContent = label || '追加';
-    },
-
-    updateBadges: function () {
-      var projectCount = App.state.projects.loaded
-        ? App.state.projects.items.length
-        : (App.state.dashboard.data ? App.state.dashboard.data.summary.totalCount : '-');
-      var clientCount = App.state.clients.loaded ? App.state.clients.items.length : '-';
-
-      this.byId('badgeProjects').textContent = String(projectCount);
-      this.byId('badgeProjectsSidebar').textContent = String(projectCount);
-      this.byId('badgeClients').textContent = String(clientCount);
-    },
-
-    renderEmpty: function (target, title, message) {
-      target.innerHTML = '<div class="empty-state"><strong>' + App.helpers.escape(title) + '</strong><span>' + App.helpers.escape(message) + '</span></div>';
-    },
-
-    bindGlobalEvents: function () {
-      var self = this;
-
-      document.querySelectorAll('[data-view]').forEach(function (button) {
-        button.addEventListener('click', function () {
-          App.navigate(button.dataset.view);
+      resetFieldErrors: function (scope) {
+        this.qq('[data-field-error]', scope || document).forEach(function (node) {
+          node.textContent = '';
         });
-      });
+      },
 
-      document.addEventListener('click', function (event) {
-        var closeButton = event.target.closest('[data-close-modal]');
-        if (closeButton) {
-          self.closeModal(closeButton.dataset.closeModal);
+      applyFieldErrors: function (errors) {
+        var self = this;
+        Object.keys(errors || {}).forEach(function (key) {
+          var node = document.querySelector('[data-field-error="' + key + '"]');
+          if (node) node.textContent = errors[key];
+        });
+      },
+
+      toast: function (message, type) {
+        var toast = document.createElement('div');
+        toast.className = 'toast ' + (type || 'info');
+        toast.innerHTML = App.helpers.icon(type === 'error' ? 'error' : (type === 'success' ? 'success' : (type === 'warning' ? 'warning' : 'info'))) + '<div>' + App.helpers.escape(message) + '</div>';
+        this.byId('toastStack').appendChild(toast);
+        window.setTimeout(function () {
+          toast.remove();
+        }, 3400);
+      },
+
+      setBusy: function (buttonId, busy, busyLabel, idleLabel) {
+        var button = typeof buttonId === 'string' ? this.byId(buttonId) : buttonId;
+        if (!button) return;
+        if (!button.dataset.idleLabel) {
+          button.dataset.idleLabel = idleLabel || button.textContent.trim();
+        }
+        button.disabled = busy;
+        var label = busy ? busyLabel : (idleLabel || button.dataset.idleLabel);
+        var span = button.querySelector('span');
+        if (span) {
+          span.textContent = label;
+        } else {
+          button.textContent = label;
+        }
+      },
+
+      setLoading: function (visible, title, text) {
+        if (visible) {
+          App.state.ui.loadingCount += 1;
+        } else {
+          App.state.ui.loadingCount = Math.max(0, App.state.ui.loadingCount - 1);
+        }
+        this.byId('globalLoader').hidden = App.state.ui.loadingCount === 0;
+        if (title) this.setText('globalLoaderTitle', title);
+        if (text) this.setText('globalLoaderText', text);
+      },
+
+      syncBodyLocks: function () {
+        document.body.classList.toggle('modal-open', Boolean(App.state.ui.activeModal));
+        document.body.classList.toggle('drawer-open', App.state.ui.drawerOpen);
+      },
+
+      focusModal: function (modalId) {
+        var modal = this.byId(modalId);
+        if (!modal) return;
+        var focusable = modal.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+      },
+
+      openModal: function (modalId, options) {
+        var modal = this.byId(modalId);
+        if (!modal) return;
+        App.state.ui.modalFocus = document.activeElement;
+        App.state.ui.activeModal = modalId;
+        App.state.ui.activeModalOptions = Object.assign({ backdropClose: true, escClose: true }, options || {});
+        modal.hidden = false;
+        this.syncBodyLocks();
+        var self = this;
+        window.setTimeout(function () {
+          self.focusModal(modalId);
+        }, 0);
+      },
+
+      closeModal: function (modalId, force) {
+        var modal = this.byId(modalId);
+        if (!modal) return Promise.resolve(true);
+        function finalizeClose(dismissValue) {
+          var confirmResolver = App.state.ui.confirmResolver;
+          var messageResolver = App.state.ui.messageResolver;
+          var isConfirm = modalId === 'confirmDialog';
+          var isMessage = modalId === 'messageDialog';
+          modal.hidden = true;
+          App.state.ui.activeModal = '';
+          App.state.ui.activeModalOptions = null;
+          App.state.ui.confirmResolver = null;
+          App.state.ui.messageResolver = null;
+          App.ui.syncBodyLocks();
+          if (App.state.ui.modalFocus && typeof App.state.ui.modalFocus.focus === 'function') {
+            App.state.ui.modalFocus.focus();
+          }
+          if (isConfirm && confirmResolver && dismissValue != null) confirmResolver(dismissValue);
+          if (isMessage && messageResolver && dismissValue != null) messageResolver(dismissValue);
+          return true;
+        }
+
+        if (!force) {
+          return this.guardDirtyModal(modalId).then(function (allowed) {
+            if (!allowed) return false;
+            return finalizeClose(false);
+          });
+        }
+
+        return Promise.resolve(finalizeClose(null));
+      },
+
+      guardDirtyModal: function (modalId) {
+        var checker = dirtyCheckers()[modalId];
+        if (!checker || !checker()) return Promise.resolve(true);
+        return this.confirm({
+          eyebrow: 'Unsaved Changes',
+          title: '保存していない変更があります。',
+          text: 'このまま閉じると入力内容は破棄されます。閉じてもよいですか。',
+          confirmText: '破棄して閉じる',
+          cancelText: '編集に戻る',
+          tone: 'danger'
+        });
+      },
+
+      confirm: function (options) {
+        var config = Object.assign({
+          eyebrow: '確認',
+          title: 'この操作を実行しますか。',
+          text: '',
+          confirmText: '実行する',
+          cancelText: 'キャンセル',
+          tone: 'primary'
+        }, options || {});
+
+        this.setText('confirmDialogEyebrow', config.eyebrow);
+        this.setText('confirmDialogTitle', config.title);
+        this.setText('confirmDialogText', config.text);
+        this.setText('confirmDialogCancel', config.cancelText);
+        this.setText('confirmDialogAccept', config.confirmText);
+        this.byId('confirmDialogAccept').className = 'btn ' + (config.tone === 'danger' ? 'btn-danger' : 'btn-primary');
+        this.openModal('confirmDialog', { backdropClose: true, escClose: true });
+
+        return new Promise(function (resolve) {
+          App.state.ui.confirmResolver = resolve;
+        });
+      },
+
+      message: function (options) {
+        var config = Object.assign({
+          eyebrow: 'お知らせ',
+          title: 'メッセージ',
+          text: '',
+          buttonText: '閉じる'
+        }, options || {});
+        this.setText('messageDialogEyebrow', config.eyebrow);
+        this.setText('messageDialogTitle', config.title);
+        this.setText('messageDialogText', config.text);
+        this.setText('messageDialogAccept', config.buttonText);
+        this.openModal('messageDialog', { backdropClose: true, escClose: true });
+        return new Promise(function (resolve) {
+          App.state.ui.messageResolver = resolve;
+        });
+      },
+
+      openAssist: function (contextKey) {
+        var content = App.constants.assistContent[contextKey] || App.constants.assistContent.install;
+        this.setText('assistModalEyebrow', content.eyebrow);
+        this.setText('assistModalTitle', content.title);
+        this.setText('assistModalText', content.description);
+        this.byId('assistModalContent').innerHTML = (content.sections || []).map(function (section) {
+          return '<article><strong>' + App.helpers.escape(section.title) + '</strong><p>' + App.helpers.escape(section.body) + '</p></article>';
+        }).join('');
+        this.openModal('assistModal', { backdropClose: true, escClose: true });
+      },
+
+      renderStateBlock: function (title, message, iconName, actionHtml) {
+        return ''
+          + '<div class="state-block">'
+          + App.helpers.icon(iconName || 'info', 'icon-24')
+          + '<strong>' + App.helpers.escape(title) + '</strong>'
+          + '<p>' + App.helpers.escape(message) + '</p>'
+          + (actionHtml || '')
+          + '</div>';
+      },
+
+      renderSkeletonList: function (count) {
+        var items = new Array(count || 3).fill(0).map(function () {
+          return '<div class="skeleton-card"><div class="skeleton-line mid"></div><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>';
+        });
+        return '<div class="skeleton">' + items.join('') + '</div>';
+      },
+
+      renderPager: function (containerId, pagination, prefix) {
+        var container = this.byId(containerId);
+        if (!container) return;
+        var meta = pagination || App.emptyPagination();
+        container.innerHTML = ''
+          + '<div class="pager-status">' + App.helpers.escape(meta.start + ' - ' + meta.end + ' / ' + meta.totalItems + '件') + '</div>'
+          + '<div class="pager-controls">'
+          + '<button class="btn btn-secondary btn-small" type="button" data-page-action="' + prefix + ':prev"' + (meta.hasPrev ? '' : ' disabled') + '>前へ</button>'
+          + '<span class="pager-status">' + meta.page + ' / ' + meta.totalPages + '</span>'
+          + '<button class="btn btn-secondary btn-small" type="button" data-page-action="' + prefix + ':next"' + (meta.hasNext ? '' : ' disabled') + '>次へ</button>'
+          + '</div>';
+      },
+
+      activateView: function (view) {
+        this.qq('[data-view-panel]').forEach(function (panel) {
+          panel.classList.toggle('is-active', panel.dataset.viewPanel === view);
+        });
+        this.qq('.nav-btn[data-view], .nav-tab[data-view]').forEach(function (button) {
+          button.classList.toggle('is-active', button.dataset.view === view);
+        });
+        var detailMaps = { projects: 'projectsSplitView', clients: 'clientsSplitView', users: 'usersSplitView' };
+        Object.keys(detailMaps).forEach(function (key) {
+          var node = App.ui.byId(detailMaps[key]);
+          if (node && key !== view) node.classList.remove('is-detail-open');
+        });
+        this.setPageMeta(view);
+      },
+
+      setPageMeta: function (view) {
+        var title = App.constants.viewTitles[view] || App.constants.viewTitles.dashboard;
+        this.setText('pageEyebrow', title.eyebrow);
+        this.setText('pageTitle', title.title);
+        this.setText('pageSubtitle', title.subtitle);
+        this.setText('pageEyebrowMobile', title.eyebrow);
+        this.setText('pageTitleMobile', title.title);
+      },
+
+      updateShellAuth: function () {
+        var auth = App.state.auth;
+        var loggedIn = App.isAuthenticated();
+        this.byId('userChip').hidden = !loggedIn;
+        this.byId('mobileUserChip').hidden = !loggedIn;
+        this.byId('passwordAction').hidden = !loggedIn;
+        this.byId('logoutAction').hidden = !loggedIn;
+        this.byId('securityAction').hidden = !App.canManageUsers();
+        this.byId('usersNavBtn').hidden = !App.canManageUsers();
+        this.byId('usersNavMobile').hidden = !App.canManageUsers();
+        this.byId('mobileTabUsers').hidden = !App.canManageUsers();
+        if (loggedIn) {
+          this.setText('userChipName', auth.user.name);
+          this.setText('userChipRole', auth.permissions.roleLabel + ' / ' + auth.user.email);
+          this.setText('mobileUserChipName', auth.user.name);
+          this.setText('mobileUserChipRole', auth.permissions.roleLabel + ' / ' + auth.user.email);
+        }
+      },
+
+      updatePrimaryAction: function () {
+        var label = '';
+        if (App.state.currentView === 'projects' && App.canEdit()) label = '案件を追加する';
+        if (App.state.currentView === 'clients' && App.canEdit()) label = 'クライアントを追加する';
+        if (App.state.currentView === 'users' && App.canManageUsers()) label = 'ユーザーを追加する';
+
+        var visible = Boolean(label);
+        this.byId('primaryAction').hidden = !visible;
+        this.byId('mobileHeaderPrimary').hidden = !visible;
+        this.byId('mobileActionBar').hidden = !(visible && App.helpers.isMobile());
+        this.byId('mobileActionBar').classList.toggle('is-visible', visible && App.helpers.isMobile());
+        if (visible) {
+          this.byId('primaryAction').querySelector('span').textContent = label;
+          this.byId('mobileActionButton').querySelector('span').textContent = label;
+        }
+      },
+
+      updateBadges: function () {
+        var projectCount = App.state.projects.summary
+          ? App.state.projects.summary.totalItems
+          : (App.state.dashboard.data ? App.state.dashboard.data.summary.totalCount : '-');
+        var clientCount = App.state.clients.summary ? App.state.clients.summary.totalItems : '-';
+        this.setText('badgeProjects', projectCount);
+        this.setText('badgeProjectsSidebar', projectCount);
+        this.setText('badgeClients', clientCount);
+      },
+
+      setLastSync: function (value) {
+        App.state.ui.lastSyncAt = value || '';
+        this.setText('syncMeta', value ? App.helpers.dateTimeLabel(value) : '未同期');
+      },
+
+      syncNetworkUi: function () {
+        var online = App.state.ui.online;
+        var reconnecting = App.state.ui.reconnecting;
+        var chipLabel = reconnecting ? '再接続中' : (online ? 'オンライン' : 'オフライン');
+        var chipClass = reconnecting ? 'offline' : (online ? 'online' : 'offline');
+
+        ['networkChip', 'sidebarNetworkChip'].forEach(function (id) {
+          var chip = App.ui.byId(id);
+          if (!chip) return;
+          chip.className = 'status-chip ' + chipClass;
+          chip.innerHTML = App.helpers.icon(reconnecting ? 'refresh' : (online ? 'wifi' : 'cloud-off')) + '<span>' + App.helpers.escape(chipLabel) + '</span>';
+        });
+
+        var banner = this.byId('networkBanner');
+        if (online && !reconnecting) {
+          banner.hidden = true;
           return;
         }
 
-        var actionButton = event.target.closest('[data-action]');
-        if (!actionButton) return;
-        var action = actionButton.dataset.action;
+        banner.hidden = false;
+        banner.className = 'status-banner ' + (reconnecting ? 'info' : 'warning');
+        this.setText('networkBannerTitle', reconnecting ? '接続を再確認しています。' : '現在オフラインです。');
+        this.setText('networkBannerText', reconnecting
+          ? '接続が戻り次第、現在の画面を再取得します。'
+          : 'キャッシュ済みデータがあれば表示し、更新系操作は一時停止します。');
+      },
 
-        if (action === 'open-password') App.auth.openPasswordModal();
-        if (action === 'go-users') App.navigate('users');
-        if (action === 'logout') App.auth.logout();
-        if (action === 'open-primary') {
-          if (App.state.currentView === 'projects') App.projects.openModal();
-          if (App.state.currentView === 'clients') App.clients.openModal();
-          if (App.state.currentView === 'users') App.users.openModal();
-        }
-        if (action === 'dashboard-open-projects') App.dashboard.openProjectsFromDashboard();
-        if (action === 'reset-project-filters') App.projects.resetFilters();
-        if (action === 'reload-projects') App.navigate('projects', { force: true });
-      });
+      openDrawer: function () {
+        App.state.ui.drawerOpen = true;
+        this.byId('mobileDrawer').hidden = false;
+        this.byId('drawerBackdrop').hidden = false;
+        this.syncBodyLocks();
+      },
 
-      document.querySelectorAll('.modal-shell').forEach(function (modal) {
-        modal.addEventListener('click', function (event) {
-          if (event.target === modal) {
-            modal.hidden = true;
+      closeDrawer: function () {
+        App.state.ui.drawerOpen = false;
+        this.byId('mobileDrawer').hidden = true;
+        this.byId('drawerBackdrop').hidden = true;
+        this.syncBodyLocks();
+      },
+
+      bindGlobalEvents: function () {
+        var self = this;
+
+        this.qq('[data-view]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            App.navigate(button.dataset.view);
+            self.closeDrawer();
+          });
+        });
+
+        document.addEventListener('click', function (event) {
+          var action = event.target.closest('[data-action]');
+          if (action) {
+            if (action.dataset.action === 'toggle-drawer') self.openDrawer();
+            if (action.dataset.action === 'close-drawer') self.closeDrawer();
+            if (action.dataset.action === 'open-password') App.auth.openPasswordModal();
+            if (action.dataset.action === 'go-users') App.navigate('users');
+            if (action.dataset.action === 'logout') App.auth.logout();
+            if (action.dataset.action === 'open-primary') {
+              if (App.state.currentView === 'projects') App.projects.openModal();
+              if (App.state.currentView === 'clients') App.clients.openModal();
+              if (App.state.currentView === 'users') App.users.openModal();
+            }
+            if (action.dataset.action === 'reload-projects') App.projects.reload();
+            if (action.dataset.action === 'reload-clients') App.clients.reload();
+            if (action.dataset.action === 'reload-users') App.users.reload();
+            if (action.dataset.action === 'refresh-dashboard') App.dashboard.reload();
+            if (action.dataset.action === 'retry-current') App.refreshCurrentView(true);
+            if (action.dataset.action === 'open-install-help') {
+              if (App.state.ui.deferredInstallPrompt) {
+                App.state.ui.deferredInstallPrompt.prompt();
+                App.state.ui.deferredInstallPrompt = null;
+              } else {
+                self.openAssist('install');
+              }
+            }
+            if (action.dataset.action === 'reset-project-filters') App.projects.resetFilters();
+            if (action.dataset.action === 'reset-client-filters') App.clients.resetFilters();
+            if (action.dataset.action === 'reset-user-filters') App.users.resetFilters();
+            if (action.dataset.action === 'reset-audit-filters') App.users.resetAuditFilters();
+          }
+
+          var collapse = event.target.closest('[data-collapse-target]');
+          if (collapse) {
+            var target = self.byId(collapse.dataset.collapseTarget);
+            if (target) target.classList.toggle('is-open');
+          }
+
+          var closeButton = event.target.closest('[data-modal-close]');
+          if (closeButton) {
+            self.closeModal(closeButton.dataset.modalClose);
+          }
+
+          var detailClose = event.target.closest('[data-detail-close]');
+          if (detailClose) {
+            var viewId = detailClose.dataset.detailClose;
+            var split = self.byId(viewId + 'SplitView');
+            if (split) split.classList.remove('is-detail-open');
+          }
+
+          var assistButton = event.target.closest('[data-assist-context]');
+          if (assistButton) {
+            self.openAssist(assistButton.dataset.assistContext);
           }
         });
+
+        this.byId('drawerBackdrop').addEventListener('click', function () {
+          self.closeDrawer();
+        });
+
+        this.qq('.modal-shell').forEach(function (modal) {
+          modal.addEventListener('click', function (event) {
+            if (event.target === modal && App.state.ui.activeModalOptions && App.state.ui.activeModalOptions.backdropClose) {
+              self.closeModal(modal.id);
+            }
+          });
+        });
+
+        this.byId('confirmDialogAccept').addEventListener('click', function () {
+          var resolve = App.state.ui.confirmResolver;
+          self.closeModal('confirmDialog', true);
+          if (resolve) resolve(true);
+        });
+
+        this.byId('confirmDialogCancel').addEventListener('click', function () {
+          var resolve = App.state.ui.confirmResolver;
+          self.closeModal('confirmDialog', true);
+          if (resolve) resolve(false);
+        });
+
+        this.byId('messageDialogAccept').addEventListener('click', function () {
+          var resolve = App.state.ui.messageResolver;
+          self.closeModal('messageDialog', true);
+          if (resolve) resolve(true);
+        });
+
+        window.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            if (App.state.ui.drawerOpen) self.closeDrawer();
+            else if (App.state.ui.activeModal && App.state.ui.activeModalOptions && App.state.ui.activeModalOptions.escClose) self.closeModal(App.state.ui.activeModal);
+          }
+        });
+
+        window.addEventListener('online', function () {
+          App.handleConnectivityChange(true);
+        });
+
+        window.addEventListener('offline', function () {
+          App.handleConnectivityChange(false);
+        });
+
+        window.addEventListener('resize', function () {
+          App.ui.updatePrimaryAction();
+        });
+
+        window.addEventListener('beforeinstallprompt', function (event) {
+          event.preventDefault();
+          App.state.ui.deferredInstallPrompt = event;
+        });
+      }
+    };
+
+    App.handleConnectivityChange = function (online) {
+      App.state.ui.online = online;
+      if (!online) {
+        App.state.ui.reconnecting = false;
+        App.ui.syncNetworkUi();
+        App.ui.toast('オフラインです。保存や更新は一時停止します。', 'warning');
+        return;
+      }
+
+      App.state.ui.reconnecting = true;
+      App.ui.syncNetworkUi();
+      App.refreshCurrentView(true).finally(function () {
+        App.state.ui.reconnecting = false;
+        App.ui.syncNetworkUi();
+        App.ui.toast('再接続しました。表示を更新しました。', 'success');
       });
+    };
 
-      window.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
-          self.closeAllModals();
-        }
-      });
-    }
-  };
+    App.loadCurrentView = async function (force) {
+      var view = App.state.currentView;
+      if (view === 'dashboard') return App.dashboard.ensureLoaded(force);
+      if (view === 'projects') return App.projects.ensureLoaded(force);
+      if (view === 'clients') return App.clients.ensureLoaded(force);
+      if (view === 'users') return App.users.ensureLoaded(force);
+      return null;
+    };
 
-  App.loadCurrentView = async function (options) {
-    var view = App.state.currentView;
-    var config = options || {};
-    if (view === 'dashboard') {
-      await App.dashboard.ensureLoaded(config.force);
-      App.dashboard.render();
-    }
-    if (view === 'projects') {
-      await App.projects.ensureLoaded(config.force);
-      App.projects.render();
-    }
-    if (view === 'clients') {
-      await App.clients.ensureLoaded(config.force);
-      App.clients.render();
-    }
-    if (view === 'users') {
-      await App.users.ensureLoaded(config.force);
-      App.users.render();
-    }
-    App.ui.updateBadges();
-  };
+    App.refreshCurrentView = async function (force) {
+      if (!App.isAuthenticated()) return;
+      try {
+        await App.loadCurrentView(force);
+      } catch (error) {
+        App.ui.toast(error.message || 'データの更新に失敗しました。', 'error');
+      }
+    };
 
-  App.navigate = async function (view, options) {
-    var nextView = view;
-    if (nextView === 'users' && !App.canManageUsers()) {
-      nextView = 'dashboard';
-    }
-    App.state.currentView = nextView;
-    App.ui.activateView(nextView);
-    App.ui.updatePrimaryAction();
-    if (!App.isAuthenticated()) return;
-    try {
-      await App.loadCurrentView(options);
-    } catch (error) {
-      App.ui.toast(error.message || 'データの読込に失敗しました。', 'error');
-    }
-  };
+    App.navigate = async function (view) {
+      var nextView = view === 'users' && !App.canManageUsers() ? 'dashboard' : view;
+      if (App.state.ui.activeModal) {
+        var closed = await App.ui.closeModal(App.state.ui.activeModal);
+        if (!closed) return;
+      }
 
-  App.init = function () {
-    App.ui.bindGlobalEvents();
-    App.auth.bindEvents();
-    App.dashboard.bindEvents();
-    App.projects.bindEvents();
-    App.clients.bindEvents();
-    App.users.bindEvents();
-    App.ui.activateView('dashboard');
-    App.ui.updatePrimaryAction();
-    App.auth.boot();
-  };
+      App.state.currentView = nextView;
+      App.ui.activateView(nextView);
+      App.ui.updatePrimaryAction();
+      if (!App.isAuthenticated()) return;
+
+      try {
+        await App.loadCurrentView(false);
+      } catch (error) {
+        App.ui.toast(error.message || '画面の読み込みに失敗しました。', 'error');
+      }
+    };
+
+    App.init = function () {
+      App.ui.bindGlobalEvents();
+      App.auth.bindEvents();
+      App.dashboard.bindEvents();
+      App.projects.bindEvents();
+      App.clients.bindEvents();
+      App.users.bindEvents();
+      App.ui.setPageMeta('dashboard');
+      App.ui.updatePrimaryAction();
+      App.ui.syncNetworkUi();
+      App.auth.boot();
+    };
+  })(window.App);
 </script>

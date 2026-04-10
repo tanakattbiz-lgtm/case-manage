@@ -1,106 +1,183 @@
 <script>
-  App.api = (function () {
-    function normalizeError(error) {
-      var raw = String((error && error.message) || error || '不明なエラーが発生しました。');
-      var separator = raw.indexOf(':');
-      if (separator > 0) {
-        return {
-          code: raw.slice(0, separator).trim(),
-          message: raw.slice(separator + 1).trim() || raw
+  (function (App) {
+    App.cache = {
+      loadStore: function () {
+        try {
+          return JSON.parse(localStorage.getItem(App.constants.cacheKey) || '{}');
+        } catch (error) {
+          return {};
+        }
+      },
+      saveStore: function (store) {
+        try {
+          localStorage.setItem(App.constants.cacheKey, JSON.stringify(store || {}));
+        } catch (error) {
+        }
+      },
+      read: function (key) {
+        if (!key) return null;
+        var store = this.loadStore();
+        return store[key] || null;
+      },
+      write: function (key, value) {
+        if (!key) return;
+        var store = this.loadStore();
+        store[key] = {
+          data: value,
+          savedAt: new Date().toISOString()
         };
-      }
-      return { code: 'APP_ERROR', message: raw };
-    }
-
-    function call(method, args, options) {
-      var config = Object.assign({ secure: true }, options || {});
-      var finalArgs = (args || []).slice();
-      if (config.secure) {
-        finalArgs.unshift(App.state.auth.token);
-      }
-
-      return new Promise(function (resolve, reject) {
-        var runner = google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(function (error) {
-            var normalized = normalizeError(error);
-            if (config.secure && (normalized.code === 'AUTH_REQUIRED' || normalized.code === 'AUTH_EXPIRED')) {
-              if (App.auth && typeof App.auth.handleSessionLoss === 'function') {
-                App.auth.handleSessionLoss(normalized.message);
-              }
-            }
-            reject(normalized);
-          });
-        runner[method].apply(runner, finalArgs);
-      });
-    }
-
-    return {
-      rpc: call,
-      auth: {
-        getAuthState: function (token) {
-          return call('getAuthState', [token], { secure: false });
-        },
-        login: function (payload) {
-          return call('login', [payload], { secure: false });
-        },
-        bootstrapAdmin: function (payload) {
-          return call('bootstrapAdmin', [payload], { secure: false });
-        },
-        logout: function () {
-          return call('logout', []);
-        },
-        changePassword: function (currentPassword, nextPassword) {
-          return call('changeMyPassword', [currentPassword, nextPassword]);
-        }
-      },
-      dashboard: {
-        get: function (filter) {
-          return call('getDashboard', [filter]);
-        }
-      },
-      projects: {
-        list: function () {
-          return call('getProjects', []);
-        },
-        create: function (payload) {
-          return call('addProject', [payload]);
-        },
-        update: function (payload) {
-          return call('updateProject', [payload]);
-        },
-        remove: function (projectId) {
-          return call('deleteProject', [projectId]);
-        }
-      },
-      clients: {
-        list: function () {
-          return call('getClients', []);
-        },
-        create: function (payload) {
-          return call('addClient', [payload]);
-        },
-        update: function (payload) {
-          return call('updateClient', [payload]);
-        },
-        remove: function (clientId) {
-          return call('deleteClient', [clientId]);
-        }
-      },
-      users: {
-        list: function () {
-          return call('getUsers', []);
-        },
-        save: function (payload) {
-          return call('saveUser', [payload]);
-        },
-        unlock: function (userId) {
-          return call('unlockUser', [userId]);
-        },
-        audits: function () {
-          return call('getAuditLogs', []);
-        }
+        this.saveStore(store);
       }
     };
-  })();
+
+    App.api = (function () {
+      function normalizeError(error) {
+        var raw = String((error && error.message) || error || 'エラーが発生しました。');
+        var separator = raw.indexOf(':');
+        if (separator > 0) {
+          return {
+            code: raw.slice(0, separator).trim(),
+            message: raw.slice(separator + 1).trim() || raw
+          };
+        }
+        return { code: 'APP_ERROR', message: raw };
+      }
+
+      function attachMeta(result, meta) {
+        if (result && typeof result === 'object') {
+          result.__meta = meta;
+        }
+        return result;
+      }
+
+      function call(method, args, options) {
+        var config = Object.assign({ secure: true }, options || {});
+        var finalArgs = (args || []).slice();
+        if (config.secure) {
+          finalArgs.unshift(App.state.auth.token);
+        }
+
+        return new Promise(function (resolve, reject) {
+          var runner = google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(function (error) {
+              var normalized = normalizeError(error);
+              if (config.secure && (normalized.code === 'AUTH_REQUIRED' || normalized.code === 'AUTH_EXPIRED')) {
+                if (App.auth && typeof App.auth.handleSessionLoss === 'function') {
+                  App.auth.handleSessionLoss(normalized.message);
+                }
+              }
+              reject(normalized);
+            });
+          runner[method].apply(runner, finalArgs);
+        });
+      }
+
+      async function read(method, args, options) {
+        var config = Object.assign({ secure: true, cacheKey: '', allowStale: true }, options || {});
+        var cached = config.cacheKey ? App.cache.read(config.cacheKey) : null;
+
+        if (!App.state.ui.online) {
+          if (cached && cached.data) {
+            return attachMeta(cached.data, { stale: true, savedAt: cached.savedAt, source: 'cache' });
+          }
+          throw { code: 'OFFLINE', message: 'オフラインのため通信できません。再接続後に再試行してください。' };
+        }
+
+        try {
+          var result = await call(method, args, config);
+          if (config.cacheKey) {
+            App.cache.write(config.cacheKey, result);
+          }
+          return attachMeta(result, { stale: false, savedAt: new Date().toISOString(), source: 'network' });
+        } catch (error) {
+          if (config.allowStale && cached && cached.data) {
+            return attachMeta(cached.data, { stale: true, savedAt: cached.savedAt, source: 'cache', fallback: true });
+          }
+          throw error;
+        }
+      }
+
+      return {
+        rpc: call,
+        read: read,
+        auth: {
+          getAuthState: function (token) {
+            return call('getAuthState', [token], { secure: false });
+          },
+          login: function (payload) {
+            return call('login', [payload], { secure: false });
+          },
+          bootstrapAdmin: function (payload) {
+            return call('bootstrapAdmin', [payload], { secure: false });
+          },
+          logout: function () {
+            return call('logout', []);
+          },
+          changePassword: function (currentPassword, nextPassword) {
+            return call('changeMyPassword', [currentPassword, nextPassword]);
+          }
+        },
+        dashboard: {
+          get: function (filter) {
+            return read('getDashboard', [filter], { cacheKey: 'dashboard:' + JSON.stringify(filter || {}) });
+          }
+        },
+        projects: {
+          list: function (query) {
+            return read('getProjects', [query || {}], { cacheKey: 'projects:list:' + JSON.stringify(query || {}) });
+          },
+          detail: function (projectId) {
+            return read('getProjectDetail', [projectId], { cacheKey: 'projects:detail:' + String(projectId || '') });
+          },
+          create: function (payload) {
+            return call('addProject', [payload]);
+          },
+          update: function (payload) {
+            return call('updateProject', [payload]);
+          },
+          remove: function (projectId) {
+            return call('deleteProject', [projectId]);
+          }
+        },
+        clients: {
+          list: function (query) {
+            return read('getClients', [query || {}], { cacheKey: 'clients:list:' + JSON.stringify(query || {}) });
+          },
+          options: function () {
+            return read('getClientOptions', [], { cacheKey: 'clients:options' });
+          },
+          detail: function (clientId) {
+            return read('getClientDetail', [clientId], { cacheKey: 'clients:detail:' + String(clientId || '') });
+          },
+          create: function (payload) {
+            return call('addClient', [payload]);
+          },
+          update: function (payload) {
+            return call('updateClient', [payload]);
+          },
+          remove: function (clientId) {
+            return call('deleteClient', [clientId]);
+          }
+        },
+        users: {
+          list: function (query) {
+            return read('getUsers', [query || {}], { cacheKey: 'users:list:' + JSON.stringify(query || {}) });
+          },
+          detail: function (userId) {
+            return read('getUserDetail', [userId], { cacheKey: 'users:detail:' + String(userId || '') });
+          },
+          save: function (payload) {
+            return call('saveUser', [payload]);
+          },
+          unlock: function (userId) {
+            return call('unlockUser', [userId]);
+          },
+          audits: function (query) {
+            return read('getAuditLogs', [query || {}], { cacheKey: 'users:audits:' + JSON.stringify(query || {}) });
+          }
+        }
+      };
+    })();
+  })(window.App);
 </script>

@@ -133,6 +133,12 @@ const FIXED_VALUES = Object.freeze({
     passwordMinLength: 10,
     auditLogLimit: 120,
   },
+  lists: {
+    defaultPageSize: 20,
+    maxPageSize: 50,
+    detailRelatedLimit: 5,
+    clientOptionLimit: 500,
+  },
   dashboard: {
     recentLimit: 5,
     topClientsLimit: 8,

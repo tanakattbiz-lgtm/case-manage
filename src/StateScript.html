@@ -1,159 +1,409 @@
 <script>
   window.App = window.App || {};
 
-  App.constants = {
-    storageKey: 'case-manage.auth.session',
-    auditLimits: [20, 50, 100, 120],
-    projectStatuses: ['商談中', '進行中', '完了', '停止', '保留'],
-  };
+  (function (App) {
+    function defaultPageSize() {
+      return window.matchMedia && window.matchMedia('(max-width: 920px)').matches ? 10 : 20;
+    }
 
-  App.defaultDashboardFilter = function () {
-    var now = new Date();
-    return {
-      mode: 'month',
-      year: String(now.getFullYear()),
-      month: String(now.getMonth() + 1).padStart(2, '0'),
-      label: ''
-    };
-  };
-
-  App.viewTitles = {
-    dashboard: { eyebrow: 'Dashboard', title: 'ダッシュボード' },
-    projects: { eyebrow: 'Projects', title: '案件一覧' },
-    clients: { eyebrow: 'Clients', title: 'クライアント' },
-    users: { eyebrow: 'Security', title: '認証管理' }
-  };
-
-  App.state = {
-    currentView: 'dashboard',
-    auth: {
-      token: '',
-      user: null,
-      permissions: { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false },
-      session: null,
-      settings: {
-        passwordMinLength: 10,
-        maxFailedAttempts: 5,
-        lockoutMinutes: 15,
-        sessionTtlMinutes: 480,
-        roles: { admin: '管理者', editor: '編集者', viewer: '閲覧者' }
-      }
-    },
-    dashboard: {
-      filter: App.defaultDashboardFilter(),
-      data: null,
-      dirty: true,
-      loadedKey: ''
-    },
-    projects: {
-      items: [],
-      dirty: true,
-      loaded: false,
-      filters: {
-        query: '',
-        status: '',
-        clientId: '',
-        dateFrom: '',
-        dateTo: ''
+    App.constants = {
+      storageKey: 'case-manage.auth.session',
+      cacheKey: 'case-manage.ui.cache.v2',
+      listPageSizes: [10, 20, 50],
+      projectStatuses: ['商談中', '進行中', '完了', '停止', '保留'],
+      viewTitles: {
+        dashboard: {
+          eyebrow: 'Dashboard',
+          title: 'ダッシュボード',
+          subtitle: '案件、クライアント、認証状態を一画面ずつ整理して確認できます。'
+        },
+        projects: {
+          eyebrow: 'Projects',
+          title: '案件一覧',
+          subtitle: '一覧、詳細、編集を 1 つの導線で扱えるようにしています。'
+        },
+        clients: {
+          eyebrow: 'Clients',
+          title: 'クライアント管理',
+          subtitle: '顧客情報と関連案件の状況を分けて確認できます。'
+        },
+        users: {
+          eyebrow: 'Security',
+          title: '認証管理',
+          subtitle: 'ユーザー権限、ロック状態、監査ログをまとめて確認できます。'
+        }
       },
-      scope: null
-    },
-    clients: {
-      items: [],
-      dirty: true,
-      loaded: false
-    },
-    users: {
-      items: [],
-      audits: [],
-      dirty: true,
-      loaded: false,
-      auditLimit: 20
-    }
-  };
-
-  App.helpers = {
-    currency: function (value) {
-      return '¥' + Math.round(Number(value) || 0).toLocaleString('ja-JP');
-    },
-    pct: function (value) {
-      return Math.round(Number(value) || 0) + '%';
-    },
-    escape: function (value) {
-      return String(value || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    },
-    parseDate: function (value) {
-      if (!value) return null;
-      var normalized = String(value).trim().replace(/\//g, '-');
-      var parsed = new Date(normalized);
-      return Number.isNaN(parsed.getTime()) ? null : parsed;
-    },
-    serverDateToInput: function (value) {
-      return value ? String(value).split(' ')[0].replace(/\//g, '-') : '';
-    },
-    inputToServerDate: function (value) {
-      return value ? String(value).replace(/-/g, '/') : '';
-    },
-    dateLabel: function (value) {
-      if (!value) return '—';
-      return String(value).replace(/\//g, '.');
-    },
-    projectStatusClass: function (status) {
-      if (status === '商談中') return 'lead';
-      if (status === '進行中') return 'active';
-      if (status === '完了') return 'completed';
-      if (status === '停止') return 'stopped';
-      return 'pending';
-    },
-    isUserLocked: function (user) {
-      if (!user || !user.lockedUntil) return false;
-      var date = App.helpers.parseDate(user.lockedUntil);
-      return Boolean(date && date.getTime() > Date.now());
-    }
-  };
-
-  App.isAuthenticated = function () {
-    return Boolean(App.state.auth.user && App.state.auth.token);
-  };
-
-  App.canEdit = function () {
-    return Boolean(App.state.auth.permissions && App.state.auth.permissions.canEdit);
-  };
-
-  App.canManageUsers = function () {
-    return Boolean(App.state.auth.permissions && App.state.auth.permissions.canManageUsers);
-  };
-
-  App.markDirty = function (keys) {
-    (keys || []).forEach(function (key) {
-      if (App.state[key]) {
-        App.state[key].dirty = true;
+      assistContent: {
+        install: {
+          eyebrow: 'PWA Guide',
+          title: 'ホーム画面追加とオフライン運用',
+          description: 'Google Apps Script の制約を踏まえ、実務で使いやすい導線を整理しています。',
+          sections: [
+            {
+              title: 'ホーム画面追加',
+              body: 'ブラウザメニューからホーム画面に追加すると、アプリ風の表示密度で利用しやすくなります。beforeinstallprompt が利用できる環境では、案内ボタンから起動します。'
+            },
+            {
+              title: 'オフライン時',
+              body: '最新の取得結果をキャッシュ表示し、更新系操作は停止します。接続が戻ると自動で再取得し、必要に応じて手動再試行もできます。'
+            },
+            {
+              title: 'GAS での完全 PWA',
+              body: 'manifest や service worker は HtmlService と配信制約を見ながら採否を判断します。この画面では、まずキャッシュ UI と再接続導線を優先しています。'
+            }
+          ]
+        },
+        project: {
+          eyebrow: 'Project Guide',
+          title: '案件入力のポイント',
+          description: '売上と利益の扱いを先に決めておくと、ダッシュボード集計が安定します。',
+          sections: [
+            { title: '利益の扱い', body: '利益が空欄ならクライアントの既定利益率から自動計算します。個別に上書きしたい場合だけ利益を直接入力してください。' },
+            { title: '完了日の扱い', body: 'ステータスを完了にした場合、完了日が未入力なら当日を自動設定します。月次集計では完了日を優先して扱います。' }
+          ]
+        },
+        client: {
+          eyebrow: 'Client Guide',
+          title: 'クライアント入力のポイント',
+          description: '案件フォームで選びやすい情報を優先して登録します。',
+          sections: [
+            { title: '既定利益率', body: '案件の利益入力を省略したときに使います。案件ごとに異なる場合は案件側で上書きできます。' },
+            { title: '備考', body: '請求条件や連絡上の注意点など、一覧では持ちにくい情報を残す欄です。' }
+          ]
+        },
+        user: {
+          eyebrow: 'User Guide',
+          title: 'ユーザー管理のポイント',
+          description: '権限変更と初期パスワード設定は保存前に確認してください。',
+          sections: [
+            { title: 'ロール設計', body: '管理者のみ認証管理へアクセスできます。編集者は案件とクライアントを更新でき、閲覧者は参照のみです。' },
+            { title: 'ロック解除', body: 'ロック中ユーザーは失敗回数を解除して再利用できます。パスワード更新と同時に実行する場合もあります。' }
+          ]
+        }
       }
-    });
-  };
+    };
 
-  App.resetDataState = function () {
-    App.state.currentView = 'dashboard';
-    App.state.dashboard.filter = App.defaultDashboardFilter();
-    App.state.dashboard.data = null;
-    App.state.dashboard.dirty = true;
-    App.state.dashboard.loadedKey = '';
-    App.state.projects.items = [];
-    App.state.projects.dirty = true;
-    App.state.projects.loaded = false;
-    App.state.projects.scope = null;
-    App.state.clients.items = [];
-    App.state.clients.dirty = true;
-    App.state.clients.loaded = false;
-    App.state.users.items = [];
-    App.state.users.audits = [];
-    App.state.users.dirty = true;
-    App.state.users.loaded = false;
-    App.state.users.auditLimit = 20;
-  };
+    App.defaultDashboardFilter = function () {
+      var now = new Date();
+      return {
+        mode: 'month',
+        year: String(now.getFullYear()),
+        month: String(now.getMonth() + 1).padStart(2, '0')
+      };
+    };
+
+    App.defaultProjectFilters = function () {
+      return { query: '', status: '', clientId: '', dateFrom: '', dateTo: '' };
+    };
+
+    App.defaultClientFilters = function () {
+      return { query: '' };
+    };
+
+    App.defaultUserFilters = function () {
+      return { query: '', role: '', status: '' };
+    };
+
+    App.defaultAuditFilters = function () {
+      return { query: '', result: '' };
+    };
+
+    App.emptyPagination = function () {
+      return {
+        page: 1,
+        pageSize: defaultPageSize(),
+        totalItems: 0,
+        totalPages: 1,
+        hasPrev: false,
+        hasNext: false,
+        start: 0,
+        end: 0
+      };
+    };
+
+    App.helpers = {
+      icon: function (name, size) {
+        return '<svg class="icon ' + (size || 'icon-16') + '" aria-hidden="true"><use href="#icon-' + String(name || 'info') + '"></use></svg>';
+      },
+      escape: function (value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      },
+      clone: function (value) {
+        return JSON.parse(JSON.stringify(value == null ? null : value));
+      },
+      currency: function (value) {
+        return '¥' + Math.round(Number(value) || 0).toLocaleString('ja-JP');
+      },
+      pct: function (value) {
+        return Math.round(Number(value) || 0) + '%';
+      },
+      number: function (value) {
+        return (Number(value) || 0).toLocaleString('ja-JP');
+      },
+      parseDate: function (value) {
+        if (!value) return null;
+        var normalized = String(value).trim().replace(/\//g, '-');
+        var parsed = new Date(normalized);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+      },
+      dateLabel: function (value) {
+        var date = this.parseDate(value);
+        if (!date) return '未設定';
+        return [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0')
+        ].join('.');
+      },
+      dateTimeLabel: function (value) {
+        var date = this.parseDate(value);
+        if (!date) return '未設定';
+        return [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0')
+        ].join('.') + ' ' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+      },
+      serverDateToInput: function (value) {
+        return value ? String(value).split(' ')[0].replace(/\//g, '-') : '';
+      },
+      inputToServerDate: function (value) {
+        return value ? String(value).replace(/-/g, '/') : '';
+      },
+      projectStatusClass: function (status) {
+        if (status === '商談中') return 'lead';
+        if (status === '進行中') return 'active';
+        if (status === '完了') return 'completed';
+        if (status === '停止') return 'stopped';
+        return 'pending';
+      },
+      userStatusClass: function (user) {
+        if (!user) return 'disabled';
+        if (this.isUserLocked(user)) return 'locked';
+        return user.status === 'active' ? 'completed' : 'disabled';
+      },
+      userStatusLabel: function (user) {
+        if (!user) return '未設定';
+        if (this.isUserLocked(user)) return 'ロック中';
+        return user.status === 'active' ? '有効' : '無効';
+      },
+      isUserLocked: function (user) {
+        if (!user || !user.lockedUntil) return false;
+        var date = this.parseDate(user.lockedUntil);
+        return Boolean(date && date.getTime() > Date.now());
+      },
+      resultClass: function (value) {
+        return value === 'SUCCESS' ? 'SUCCESS' : 'FAILURE';
+      },
+      isMobile: function () {
+        return window.matchMedia && window.matchMedia('(max-width: 920px)').matches;
+      },
+      isStandalone: function () {
+        return Boolean(
+          (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+          window.navigator.standalone
+        );
+      },
+      formDataSignature: function (values) {
+        return JSON.stringify(values || {});
+      }
+    };
+
+    App.state = {
+      currentView: 'dashboard',
+      auth: {
+        token: '',
+        user: null,
+        permissions: { role: 'viewer', roleLabel: '閲覧者', canView: false, canEdit: false, canManageUsers: false },
+        session: null,
+        settings: {
+          passwordMinLength: 10,
+          maxFailedAttempts: 5,
+          lockoutMinutes: 15,
+          sessionTtlMinutes: 480,
+          roles: { admin: '管理者', editor: '編集者', viewer: '閲覧者' }
+        }
+      },
+      ui: {
+        online: navigator.onLine !== false,
+        reconnecting: false,
+        drawerOpen: false,
+        activeModal: '',
+        activeModalOptions: null,
+        modalFocus: null,
+        confirmResolver: null,
+        messageResolver: null,
+        deferredInstallPrompt: null,
+        lastSyncAt: '',
+        loadingCount: 0
+      },
+      dashboard: {
+        filter: App.defaultDashboardFilter(),
+        data: null,
+        loading: false,
+        stale: false,
+        error: '',
+        loadedKey: ''
+      },
+      projects: {
+        filters: App.defaultProjectFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        scope: null,
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        clientOptions: [],
+        optionsLoaded: false,
+        formSnapshot: '',
+        formMode: 'create'
+      },
+      clients: {
+        filters: App.defaultClientFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        formSnapshot: '',
+        formMode: 'create'
+      },
+      users: {
+        filters: App.defaultUserFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        audits: {
+          filters: App.defaultAuditFilters(),
+          page: 1,
+          pageSize: defaultPageSize(),
+          items: [],
+          pagination: App.emptyPagination(),
+          summary: null,
+          loading: false,
+          stale: false,
+          error: ''
+        },
+        formSnapshot: '',
+        formMode: 'create'
+      }
+    };
+
+    App.isAuthenticated = function () {
+      return Boolean(App.state.auth.user && App.state.auth.token);
+    };
+
+    App.canEdit = function () {
+      return Boolean(App.state.auth.permissions && App.state.auth.permissions.canEdit);
+    };
+
+    App.canManageUsers = function () {
+      return Boolean(App.state.auth.permissions && App.state.auth.permissions.canManageUsers);
+    };
+
+    App.resetDataState = function () {
+      App.state.currentView = 'dashboard';
+      App.state.dashboard = {
+        filter: App.defaultDashboardFilter(),
+        data: null,
+        loading: false,
+        stale: false,
+        error: '',
+        loadedKey: ''
+      };
+      App.state.projects = {
+        filters: App.defaultProjectFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        scope: null,
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        clientOptions: [],
+        optionsLoaded: false,
+        formSnapshot: '',
+        formMode: 'create'
+      };
+      App.state.clients = {
+        filters: App.defaultClientFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        formSnapshot: '',
+        formMode: 'create'
+      };
+      App.state.users = {
+        filters: App.defaultUserFilters(),
+        page: 1,
+        pageSize: defaultPageSize(),
+        items: [],
+        pagination: App.emptyPagination(),
+        summary: null,
+        loading: false,
+        stale: false,
+        error: '',
+        selectedId: '',
+        detail: null,
+        detailLoading: false,
+        detailError: '',
+        audits: {
+          filters: App.defaultAuditFilters(),
+          page: 1,
+          pageSize: defaultPageSize(),
+          items: [],
+          pagination: App.emptyPagination(),
+          summary: null,
+          loading: false,
+          stale: false,
+          error: ''
+        },
+        formSnapshot: '',
+        formMode: 'create'
+      };
+    };
+  })(window.App);
 </script>

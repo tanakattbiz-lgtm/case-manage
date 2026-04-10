@@ -1,56 +1,137 @@
 <section class="view" id="view-projects" data-view-panel="projects">
-  <div class="view-head">
+  <div class="view-header">
     <div>
+      <div class="overline">Projects</div>
       <h2>案件一覧</h2>
-      <p>案件画面を開いたときだけ案件データとクライアント選択肢を取得します。</p>
+      <p>検索条件、結果一覧、詳細情報を 2 ペインで整理し、モバイルでは詳細をスライド表示します。</p>
+    </div>
+    <div class="toolbar-row">
+      <button class="btn btn-secondary" type="button" id="projectsFilterToggle">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-filter"></use></svg>
+        <span>検索条件</span>
+      </button>
+      <button class="btn btn-secondary" type="button" data-action="reload-projects">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+        <span>再取得</span>
+      </button>
     </div>
   </div>
 
-  <div class="panel filter-panel">
-    <div class="filter-grid">
-      <label class="field">
-        <span class="field-label">キーワード</span>
-        <input class="input" type="text" id="projectQuery" placeholder="案件名・クライアント・備考で検索">
-      </label>
-      <label class="field">
-        <span class="field-label">ステータス</span>
-        <select class="select" id="projectStatusFilter">
-          <option value="">すべて</option>
-          <option>商談中</option>
-          <option>進行中</option>
-          <option>完了</option>
-          <option>停止</option>
-          <option>保留</option>
-        </select>
-      </label>
-      <label class="field">
-        <span class="field-label">クライアント</span>
-        <select class="select" id="projectClientFilter"></select>
-      </label>
-      <label class="field">
-        <span class="field-label">対象日 From</span>
-        <input class="input" type="date" id="projectDateFrom">
-      </label>
-      <label class="field">
-        <span class="field-label">対象日 To</span>
-        <input class="input" type="date" id="projectDateTo">
-      </label>
+  <div class="split-view" id="projectsSplitView">
+    <div class="split-main">
+      <section class="surface section-card collapsible-card is-open" id="projectsFilterCard">
+        <div class="section-head">
+          <div>
+            <h3>検索条件</h3>
+            <p id="projectsScopeLabel">全案件を表示中です。</p>
+          </div>
+          <button class="icon-btn" type="button" data-collapse-target="projectsFilterCard" aria-label="検索条件を開閉">
+            <svg class="icon icon-20" aria-hidden="true"><use href="#icon-more"></use></svg>
+          </button>
+        </div>
+
+        <form id="projectsFilterForm" class="filter-form">
+          <div class="field-grid field-grid-3">
+            <label class="field">
+              <span class="field-label">キーワード</span>
+              <input class="input" type="search" id="projectQuery" placeholder="案件名、クライアント名、備考">
+            </label>
+            <label class="field">
+              <span class="field-label">ステータス</span>
+              <select class="select" id="projectStatusFilter">
+                <option value="">すべて</option>
+                <option value="商談中">商談中</option>
+                <option value="進行中">進行中</option>
+                <option value="完了">完了</option>
+                <option value="停止">停止</option>
+                <option value="保留">保留</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">クライアント</span>
+              <select class="select" id="projectClientFilter"></select>
+            </label>
+          </div>
+
+          <div class="field-grid field-grid-3 advanced-fields" id="projectsAdvancedFields">
+            <label class="field">
+              <span class="field-label">対象日 From</span>
+              <input class="input" type="date" id="projectDateFrom">
+            </label>
+            <label class="field">
+              <span class="field-label">対象日 To</span>
+              <input class="input" type="date" id="projectDateTo">
+            </label>
+            <div class="field">
+              <span class="field-label">絞り込み中</span>
+              <div class="filter-chip-list" id="projectsFilterChips"></div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <svg class="icon icon-16" aria-hidden="true"><use href="#icon-search"></use></svg>
+              <span>検索する</span>
+            </button>
+            <button class="btn btn-secondary" type="button" data-action="reset-project-filters">条件をクリア</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="surface section-card">
+        <div class="section-head">
+          <div>
+            <h3>検索結果</h3>
+            <p id="projectsSummary">読み込み中です。</p>
+          </div>
+          <div class="toolbar-row">
+            <label class="field compact-field">
+              <span class="field-label">件数</span>
+              <select class="select" id="projectsPageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+            <div class="table-caption" id="projectsSortLabel">対象日が新しい順</div>
+          </div>
+        </div>
+
+        <div class="table-wrap desktop-only">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>案件名</th>
+                <th>クライアント</th>
+                <th>ステータス</th>
+                <th class="num">売上</th>
+                <th class="num">利益</th>
+                <th>対象日</th>
+                <th class="actions-cell">操作</th>
+              </tr>
+            </thead>
+            <tbody id="projectsTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="mobile-card-list mobile-only" id="projectsMobileList"></div>
+
+        <div class="pager" id="projectsPager"></div>
+      </section>
     </div>
 
-    <div class="toolbar-inline">
-      <div id="projectsScopeLabel" class="field-hint"></div>
-      <div class="dashboard-filters">
-        <button class="btn btn-secondary btn-small" type="button" data-action="reset-project-filters">条件クリア</button>
-        <button class="btn btn-secondary btn-small" type="button" data-action="reload-projects">再読込</button>
+    <aside class="split-detail" id="projectsDetailRail">
+      <div class="detail-header">
+        <button class="btn btn-ghost mobile-only" type="button" data-detail-close="projects">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-back"></use></svg>
+          <span>一覧へ戻る</span>
+        </button>
+        <div>
+          <div class="overline">Project Detail</div>
+          <h3>案件詳細</h3>
+        </div>
       </div>
-    </div>
-  </div>
-
-  <div class="panel dashboard-section">
-    <div class="section-title">
-      <h3>案件一覧</h3>
-      <span id="projectsSummary">読み込み中</span>
-    </div>
-    <div class="projects-list" id="projectsList"></div>
+      <div id="projectDetailContent"></div>
+    </aside>
   </div>
 </section>

@@ -1,274 +1,495 @@
 <script>
-  App.projects = {
-    bindEvents: function () {
-      var self = this;
-      ['projectQuery', 'projectStatusFilter', 'projectClientFilter', 'projectDateFrom', 'projectDateTo'].forEach(function (id) {
-        App.ui.byId(id).addEventListener(id === 'projectQuery' ? 'input' : 'change', function () {
-          self.syncFiltersFromForm();
-          self.render();
+  (function (App) {
+    App.projects = {
+      bindEvents: function () {
+        var self = this;
+
+        App.ui.byId('projectsFilterToggle').addEventListener('click', function () {
+          App.ui.byId('projectsFilterCard').classList.toggle('is-open');
         });
-      });
 
-      App.ui.byId('projectsList').addEventListener('click', function (event) {
-        var action = event.target.closest('[data-project-action]');
-        if (!action) return;
-        var projectId = action.dataset.projectId;
-        if (action.dataset.projectAction === 'edit') {
-          self.openModal(self.findById(projectId));
+        App.ui.byId('projectsFilterForm').addEventListener('submit', function (event) {
+          event.preventDefault();
+          self.applyFiltersFromForm();
+        });
+
+        App.ui.byId('projectsPageSize').addEventListener('change', function (event) {
+          App.state.projects.pageSize = Number(event.target.value) || 20;
+          App.state.projects.page = 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        App.ui.byId('projectsPager').addEventListener('click', function (event) {
+          var button = event.target.closest('[data-page-action]');
+          if (!button) return;
+          if (button.dataset.pageAction === 'projects:prev') App.state.projects.page -= 1;
+          if (button.dataset.pageAction === 'projects:next') App.state.projects.page += 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        App.ui.byId('projectsTableBody').addEventListener('click', function (event) {
+          var action = event.target.closest('[data-project-action]');
+          if (action) {
+            var projectId = action.dataset.projectId;
+            if (action.dataset.projectAction === 'edit') self.openModal(self.findItem(projectId));
+            if (action.dataset.projectAction === 'delete') self.remove(projectId);
+            return;
+          }
+
+          var row = event.target.closest('[data-project-select]');
+          if (row) self.openDetail(row.dataset.projectSelect);
+        });
+
+        App.ui.byId('projectsMobileList').addEventListener('click', function (event) {
+          var action = event.target.closest('[data-project-action]');
+          if (action) {
+            var projectId = action.dataset.projectId;
+            if (action.dataset.projectAction === 'edit') self.openModal(self.findItem(projectId));
+            if (action.dataset.projectAction === 'delete') self.remove(projectId);
+            return;
+          }
+
+          var card = event.target.closest('[data-project-select]');
+          if (card) self.openDetail(card.dataset.projectSelect);
+        });
+
+        App.ui.byId('projectDetailContent').addEventListener('click', function (event) {
+          var action = event.target.closest('[data-project-detail-action]');
+          if (!action) return;
+          var projectId = action.dataset.projectId;
+          if (action.dataset.projectDetailAction === 'edit') self.openModal(self.findItem(projectId));
+          if (action.dataset.projectDetailAction === 'delete') self.remove(projectId);
+        });
+
+        App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
+        ['projectName', 'projectClientId', 'projectStatus', 'projectCompletedAt', 'projectSales', 'projectProfit', 'projectNote'].forEach(function (id) {
+          App.ui.byId(id).addEventListener('input', function () {
+            self.updateProfitHint();
+          });
+          App.ui.byId(id).addEventListener('change', function () {
+            self.updateProfitHint();
+          });
+        });
+      },
+
+      findItem: function (projectId) {
+        return App.state.projects.items.find(function (item) {
+          return item.id === projectId;
+        }) || null;
+      },
+
+      buildQuery: function () {
+        return {
+          page: App.state.projects.page,
+          pageSize: App.state.projects.pageSize,
+          query: App.state.projects.filters.query,
+          status: App.state.projects.filters.status,
+          clientId: App.state.projects.filters.clientId,
+          dateFrom: App.state.projects.filters.dateFrom,
+          dateTo: App.state.projects.filters.dateTo,
+          scope: App.state.projects.scope
+        };
+      },
+
+      syncClientOptions: async function (force) {
+        if (!force && App.state.projects.optionsLoaded) {
+          this.renderClientOptions();
+          return;
         }
-        if (action.dataset.projectAction === 'delete') {
-          self.remove(projectId);
+        var response = await App.api.clients.options();
+        App.state.projects.clientOptions = response || [];
+        App.state.projects.optionsLoaded = true;
+        this.renderClientOptions();
+      },
+
+      renderClientOptions: function () {
+        var listHtml = ['<option value="">すべて</option>'].concat((App.state.projects.clientOptions || []).map(function (client) {
+          return '<option value="' + App.helpers.escape(client.id) + '">' + App.helpers.escape(client.name) + '</option>';
+        })).join('');
+        App.ui.byId('projectClientFilter').innerHTML = listHtml;
+        App.ui.byId('projectClientFilter').value = App.state.projects.filters.clientId || '';
+
+        App.ui.byId('projectClientId').innerHTML = '<option value="">未設定</option>' + (App.state.projects.clientOptions || []).map(function (client) {
+          return '<option value="' + App.helpers.escape(client.id) + '">' + App.helpers.escape(client.name) + '</option>';
+        }).join('');
+      },
+
+      ensureLoaded: async function (force) {
+        App.state.projects.loading = true;
+        App.state.projects.error = '';
+        this.render();
+        try {
+          await this.syncClientOptions(force);
+          var response = await App.api.projects.list(this.buildQuery());
+          App.state.projects.items = response.items || [];
+          App.state.projects.pagination = response.pagination || App.emptyPagination();
+          App.state.projects.summary = response.summary || null;
+          App.state.projects.stale = Boolean(response.__meta && response.__meta.stale);
+          if (response.__meta) App.ui.setLastSync(response.__meta.savedAt);
+          if (response.filters && response.filters.sort) {
+            App.ui.byId('projectsSortLabel').textContent = response.filters.sort.label;
+          }
+          if (!App.state.projects.selectedId || !this.findItem(App.state.projects.selectedId)) {
+            App.state.projects.selectedId = App.state.projects.items[0] ? App.state.projects.items[0].id : '';
+          }
+          this.render();
+          if (App.state.projects.selectedId) {
+            await this.openDetail(App.state.projects.selectedId, force);
+          } else {
+            App.state.projects.detail = null;
+            this.renderDetail();
+          }
+          App.ui.updateBadges();
+        } catch (error) {
+          App.state.projects.error = error.message || '案件一覧の取得に失敗しました。';
+          this.render();
+          throw error;
+        } finally {
+          App.state.projects.loading = false;
+          this.render();
         }
-      });
+      },
 
-      App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
-      App.ui.byId('projectSales').addEventListener('input', this.updateProfitHint.bind(this));
-      App.ui.byId('projectProfit').addEventListener('input', this.updateProfitHint.bind(this));
-      App.ui.byId('projectClientId').addEventListener('change', this.updateProfitHint.bind(this));
-    },
+      reload: async function () {
+        try {
+          await this.ensureLoaded(true);
+        } catch (error) {
+        }
+      },
 
-    findById: function (projectId) {
-      return App.state.projects.items.find(function (project) {
-        return project.id === projectId;
-      }) || null;
-    },
+      applyScope: function (scope) {
+        App.state.projects.scope = scope || null;
+        App.state.projects.page = 1;
+        App.navigate('projects');
+      },
 
-    syncClientOptions: function () {
-      var filterSelect = App.ui.byId('projectClientFilter');
-      var modalSelect = App.ui.byId('projectClientId');
-      var currentFilter = filterSelect.value;
-      var currentModal = modalSelect.value;
-      var options = ['<option value="">すべて</option>'].concat(App.state.clients.items.map(function (client) {
-        return '<option value="' + App.helpers.escape(client.id) + '">' + App.helpers.escape(client.name) + '</option>';
-      })).join('');
+      applyFiltersFromForm: function () {
+        App.state.projects.filters = {
+          query: App.ui.byId('projectQuery').value.trim(),
+          status: App.ui.byId('projectStatusFilter').value,
+          clientId: App.ui.byId('projectClientFilter').value,
+          dateFrom: App.ui.byId('projectDateFrom').value,
+          dateTo: App.ui.byId('projectDateTo').value
+        };
+        App.state.projects.page = 1;
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-      filterSelect.innerHTML = options;
-      filterSelect.value = currentFilter || '';
-      modalSelect.innerHTML = '<option value="">未設定</option>' + App.state.clients.items.map(function (client) {
-        return '<option value="' + App.helpers.escape(client.id) + '">' + App.helpers.escape(client.name) + '</option>';
-      }).join('');
-      modalSelect.value = currentModal || '';
-    },
-
-    ensureLoaded: async function (force) {
-      var shouldLoadProjects = force || App.state.projects.dirty || !App.state.projects.loaded;
-      var shouldLoadClients = force || App.state.clients.dirty || !App.state.clients.loaded;
-      if (!shouldLoadProjects && !shouldLoadClients) {
-        this.syncClientOptions();
-        return App.state.projects.items;
-      }
-
-      var results = await Promise.all([
-        shouldLoadProjects ? App.api.projects.list() : Promise.resolve(App.state.projects.items),
-        shouldLoadClients ? App.api.clients.list() : Promise.resolve(App.state.clients.items)
-      ]);
-
-      if (shouldLoadProjects) {
-        App.state.projects.items = results[0] || [];
-        App.state.projects.loaded = true;
-        App.state.projects.dirty = false;
-      }
-      if (shouldLoadClients) {
-        App.state.clients.items = results[1] || [];
-        App.state.clients.loaded = true;
-        App.state.clients.dirty = false;
-      }
-      this.syncClientOptions();
-      App.ui.updateBadges();
-      return App.state.projects.items;
-    },
-
-    syncFiltersFromForm: function () {
-      App.state.projects.filters.query = App.ui.byId('projectQuery').value.trim();
-      App.state.projects.filters.status = App.ui.byId('projectStatusFilter').value;
-      App.state.projects.filters.clientId = App.ui.byId('projectClientFilter').value;
-      App.state.projects.filters.dateFrom = App.ui.byId('projectDateFrom').value;
-      App.state.projects.filters.dateTo = App.ui.byId('projectDateTo').value;
-    },
-
-    applyScope: function (scope) {
-      App.state.projects.scope = scope || null;
-      this.resetFilters(false);
-      App.navigate('projects');
-    },
-
-    resetFilters: function (clearScope) {
-      App.state.projects.filters = { query: '', status: '', clientId: '', dateFrom: '', dateTo: '' };
-      if (clearScope !== false) {
+      resetFilters: function () {
+        App.state.projects.filters = App.defaultProjectFilters();
         App.state.projects.scope = null;
-      }
-      App.ui.byId('projectQuery').value = '';
-      App.ui.byId('projectStatusFilter').value = '';
-      App.ui.byId('projectClientFilter').value = '';
-      App.ui.byId('projectDateFrom').value = '';
-      App.ui.byId('projectDateTo').value = '';
-      this.render();
-    },
+        App.state.projects.page = 1;
+        App.ui.byId('projectQuery').value = '';
+        App.ui.byId('projectStatusFilter').value = '';
+        App.ui.byId('projectClientFilter').value = '';
+        App.ui.byId('projectDateFrom').value = '';
+        App.ui.byId('projectDateTo').value = '';
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-    matchesScope: function (project) {
-      var scope = App.state.projects.scope;
-      if (!scope) return true;
-      if (scope.status && project.status !== scope.status) return false;
+      filterChips: function () {
+        var chips = [];
+        var filters = App.state.projects.filters;
+        if (App.state.projects.scope && App.state.projects.scope.label) chips.push('期間: ' + App.state.projects.scope.label);
+        if (App.state.projects.scope && App.state.projects.scope.status) chips.push('ダッシュボード連動: ' + App.state.projects.scope.status);
+        if (filters.query) chips.push('キーワード: ' + filters.query);
+        if (filters.status) chips.push('ステータス: ' + filters.status);
+        if (filters.clientId) {
+          var matched = (App.state.projects.clientOptions || []).find(function (item) { return item.id === filters.clientId; });
+          chips.push('クライアント: ' + (matched ? matched.name : filters.clientId));
+        }
+        if (filters.dateFrom) chips.push('From: ' + filters.dateFrom);
+        if (filters.dateTo) chips.push('To: ' + filters.dateTo);
+        return chips;
+      },
 
-      var date = App.helpers.parseDate(project.completedAt || project.createdAt);
-      if (!date) return false;
-      if (scope.filter.mode === 'all') return true;
-      if (scope.filter.mode === 'year') return String(date.getFullYear()) === String(scope.filter.year);
-      return String(date.getFullYear()) === String(scope.filter.year)
-        && String(date.getMonth() + 1).padStart(2, '0') === String(scope.filter.month);
-    },
+      render: function () {
+        App.ui.byId('projectsPageSize').value = String(App.state.projects.pageSize);
+        App.ui.byId('projectsScopeLabel').textContent = App.state.projects.scope && App.state.projects.scope.label
+          ? 'ダッシュボード連動中: ' + App.state.projects.scope.label + (App.state.projects.scope.status ? ' / ' + App.state.projects.scope.status : '')
+          : '全案件を表示中です。';
+        App.ui.byId('projectsFilterChips').innerHTML = this.filterChips().map(function (text) {
+          return '<span class="chip">' + App.helpers.escape(text) + '</span>';
+        }).join('') || '<span class="row-sub">絞り込み条件はありません。</span>';
 
-    getFilteredItems: function () {
-      var filters = App.state.projects.filters;
-      return App.state.projects.items.filter(function (project) {
-        if (!App.projects.matchesScope(project)) return false;
+        if (App.state.projects.loading && !App.state.projects.items.length) {
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + App.ui.renderSkeletonList(3) + '</td></tr>';
+          App.ui.byId('projectsMobileList').innerHTML = App.ui.renderSkeletonList(3);
+          App.ui.byId('projectsSummary').textContent = '読み込み中です。';
+          return;
+        }
 
-        var queryTarget = [project.name, project.clientName, project.note].join(' ').toLowerCase();
-        if (filters.query && queryTarget.indexOf(filters.query.toLowerCase()) === -1) return false;
-        if (filters.status && project.status !== filters.status) return false;
-        if (filters.clientId && project.clientId !== filters.clientId) return false;
+        if (App.state.projects.error && !App.state.projects.items.length) {
+          var offline = String(App.state.projects.error || '').indexOf('オフライン') >= 0;
+          var errorHtml = App.ui.renderStateBlock(
+            offline ? 'オフラインのため最新情報を取得できません。' : '案件一覧を表示できません。',
+            App.state.projects.error,
+            offline ? 'cloud-off' : 'error',
+            '<button class="btn btn-secondary" type="button" data-action="reload-projects">再試行</button>'
+          );
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + errorHtml + '</td></tr>';
+          App.ui.byId('projectsMobileList').innerHTML = errorHtml;
+          App.ui.byId('projectsSummary').textContent = '取得に失敗しました。';
+          return;
+        }
 
-        var date = App.helpers.parseDate(project.completedAt || project.createdAt);
-        var from = filters.dateFrom ? new Date(filters.dateFrom) : null;
-        var to = filters.dateTo ? new Date(filters.dateTo) : null;
-        if (from && date && date.getTime() < from.getTime()) return false;
-        if (to && date && date.getTime() > to.getTime()) return false;
-        return true;
-      });
-    },
+        var summary = App.state.projects.summary || { filteredItems: 0, totalItems: 0 };
+        App.ui.byId('projectsSummary').textContent =
+          summary.filteredItems + '件 / 全' + summary.totalItems + '件'
+          + (App.state.projects.stale ? ' / キャッシュ表示' : '');
 
-    render: function () {
-      if (!App.state.projects.loaded) return;
-      this.syncFiltersFromForm();
-      this.syncClientOptions();
-
-      var items = this.getFilteredItems();
-      var scopeLabel = App.state.projects.scope
-        ? 'ダッシュボード連動: ' + App.state.projects.scope.label + (App.state.projects.scope.status ? ' / ' + App.state.projects.scope.status : '')
-        : '全案件を表示中';
-      App.ui.byId('projectsScopeLabel').textContent = scopeLabel;
-      App.ui.byId('projectsSummary').textContent = items.length + '件 / 全' + App.state.projects.items.length + '件';
-
-      if (!items.length) {
-        App.ui.renderEmpty(App.ui.byId('projectsList'), '一致する案件はありません。', 'フィルタ条件を見直すか、新しい案件を追加してください。');
-        return;
-      }
-
-      App.ui.byId('projectsList').innerHTML = items.map(this.createCard).join('');
-    },
-
-    createCard: function (project) {
-      return ''
-        + '<article class="project-card">'
-        + '  <div class="project-meta">'
-        + '    <div>'
-        + '      <h3>' + App.helpers.escape(project.name) + '</h3>'
-        + '      <p>' + App.helpers.escape(project.clientName || 'クライアント未設定') + '</p>'
-        + '    </div>'
-        + '    <span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span>'
-        + '  </div>'
-        + '  <div class="project-stats">'
-        + '    <span>売上 ' + App.helpers.currency(project.sales) + '</span>'
-        + '    <span>利益 ' + App.helpers.currency(project.profit) + '</span>'
-        + '    <span>対象日 ' + App.helpers.escape(App.helpers.dateLabel(project.completedAt || project.createdAt)) + '</span>'
-        + '  </div>'
-        + (project.note ? '<div class="field-hint">' + App.helpers.escape(project.note) + '</div>' : '')
-        + '  <div class="project-actions">'
-        + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-project-action="edit" data-project-id="' + App.helpers.escape(project.id) + '">編集</button>' : '')
-        + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-project-action="delete" data-project-id="' + App.helpers.escape(project.id) + '">削除</button>' : '')
-        + '  </div>'
-        + '</article>';
-    },
-
-    openModal: function (project) {
-      this.syncClientOptions();
-      App.ui.byId('projectModalTitle').textContent = project ? '案件を編集' : '案件を追加';
-      App.ui.byId('projectId').value = project ? project.id : '';
-      App.ui.byId('projectName').value = project ? project.name : '';
-      App.ui.byId('projectClientId').value = project ? project.clientId : '';
-      App.ui.byId('projectStatus').value = project ? project.status : '商談中';
-      App.ui.byId('projectCompletedAt').value = project ? App.helpers.serverDateToInput(project.completedAt) : '';
-      App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
-      App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
-      App.ui.byId('projectNote').value = project ? project.note : '';
-      this.updateProfitHint();
-      App.ui.openModal('projectModal');
-    },
-
-    updateProfitHint: function () {
-      var sales = Number(App.ui.byId('projectSales').value) || 0;
-      var clientId = App.ui.byId('projectClientId').value;
-      var profit = App.ui.byId('projectProfit').value;
-      var hint = 'クライアントの既定利益率がある場合は自動で反映されます。';
-      var client = App.state.clients.items.find(function (item) { return item.id === clientId; }) || null;
-
-      if (profit !== '') {
-        hint = '手入力利益 ' + App.helpers.currency(profit || 0) + ' を保存します。';
-      } else if (sales > 0 && client && client.defaultProfitRate !== '') {
-        hint = '自動計算予定: ' + App.helpers.currency(Math.round(sales * Number(client.defaultProfitRate) / 100)) + ' (' + client.defaultProfitRate + '%)';
-      } else if (sales > 0) {
-        hint = '既定利益率がないため、利益は売上と同額で保存されます。';
-      }
-      App.ui.byId('projectProfitHint').textContent = hint;
-    },
-
-    submit: async function (event) {
-      event.preventDefault();
-      var name = App.ui.byId('projectName').value.trim();
-      if (!name) {
-        App.ui.toast('案件名を入力してください。', 'error');
-        return;
-      }
-
-      var payload = {
-        id: App.ui.byId('projectId').value,
-        name: name,
-        clientId: App.ui.byId('projectClientId').value,
-        status: App.ui.byId('projectStatus').value,
-        completedAt: App.helpers.inputToServerDate(App.ui.byId('projectCompletedAt').value),
-        sales: App.ui.byId('projectSales').value === '' ? 0 : Number(App.ui.byId('projectSales').value),
-        profit: App.ui.byId('projectProfit').value === '' ? null : Number(App.ui.byId('projectProfit').value),
-        note: App.ui.byId('projectNote').value
-      };
-
-      App.ui.setBusy('projectSubmit', true, '保存中...', '保存する');
-      try {
-        if (payload.id) {
-          await App.api.projects.update(payload);
+        if (!App.state.projects.items.length) {
+          var emptyHtml = App.ui.renderStateBlock('一致する案件はありません。', '条件を見直すか、新しい案件を追加してください。', 'info');
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + emptyHtml + '</td></tr>';
+          App.ui.byId('projectsMobileList').innerHTML = emptyHtml;
         } else {
-          await App.api.projects.create(payload);
-        }
-        App.ui.closeModal('projectModal');
-        App.ui.toast('案件を保存しました。', 'success');
-        App.markDirty(['dashboard', 'projects']);
-        await this.ensureLoaded(true);
-        this.render();
-        App.state.dashboard.dirty = true;
-        if (App.state.currentView === 'dashboard') {
-          await App.dashboard.ensureLoaded(true);
-          App.dashboard.render();
-        }
-      } catch (error) {
-        App.ui.toast(error.message || '案件の保存に失敗しました。', 'error');
-      } finally {
-        App.ui.setBusy('projectSubmit', false, '保存中...', '保存する');
-      }
-    },
+          App.ui.byId('projectsTableBody').innerHTML = App.state.projects.items.map(function (project) {
+            return ''
+              + '<tr data-project-select="' + App.helpers.escape(project.id) + '"' + (project.id === App.state.projects.selectedId ? ' class="is-selected"' : '') + '>'
+              + '<td><strong>' + App.helpers.escape(project.name) + '</strong></td>'
+              + '<td>' + App.helpers.escape(project.clientName || '未設定') + '</td>'
+              + '<td><span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span></td>'
+              + '<td class="num">' + App.helpers.escape(App.helpers.currency(project.sales)) + '</td>'
+              + '<td class="num">' + App.helpers.escape(App.helpers.currency(project.profit)) + '</td>'
+              + '<td>' + App.helpers.escape(App.helpers.dateLabel(project.targetDate)) + '</td>'
+              + '<td class="actions-cell"><div class="list-actions">'
+              + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-project-action="edit" data-project-id="' + App.helpers.escape(project.id) + '">編集</button>' : '')
+              + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-project-action="delete" data-project-id="' + App.helpers.escape(project.id) + '">削除</button>' : '')
+              + '</div></td>'
+              + '</tr>';
+          }).join('');
 
-    remove: async function (projectId) {
-      var project = this.findById(projectId);
-      if (!project) return;
-      if (!window.confirm('「' + project.name + '」を削除しますか？')) return;
+          App.ui.byId('projectsMobileList').innerHTML = App.state.projects.items.map(function (project) {
+            return ''
+              + '<article class="mobile-card" data-project-select="' + App.helpers.escape(project.id) + '">'
+              + '<div class="row-head"><div><strong>' + App.helpers.escape(project.name) + '</strong><div class="row-sub">' + App.helpers.escape(project.clientName || 'クライアント未設定') + '</div></div><span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span></div>'
+              + '<div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(project.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(project.profit)) + '</span><span>対象日 ' + App.helpers.escape(App.helpers.dateLabel(project.targetDate)) + '</span></div>'
+              + '<div class="list-actions">'
+              + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-project-action="edit" data-project-id="' + App.helpers.escape(project.id) + '">編集</button>' : '')
+              + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-project-action="delete" data-project-id="' + App.helpers.escape(project.id) + '">削除</button>' : '')
+              + '</div>'
+              + '</article>';
+          }).join('');
+        }
 
-      try {
-        await App.api.projects.remove(projectId);
-        App.ui.toast('案件を削除しました。', 'success');
-        App.markDirty(['dashboard', 'projects']);
-        await this.ensureLoaded(true);
+        App.ui.renderPager('projectsPager', App.state.projects.pagination, 'projects');
+      },
+
+      openDetail: async function (projectId, force) {
+        if (!projectId) {
+          App.state.projects.selectedId = '';
+          App.state.projects.detail = null;
+          this.renderDetail();
+          return;
+        }
+        App.state.projects.selectedId = projectId;
         this.render();
-      } catch (error) {
-        App.ui.toast(error.message || '案件の削除に失敗しました。', 'error');
+        App.state.projects.detailLoading = true;
+        this.renderDetail();
+        try {
+          var response = await App.api.projects.detail(projectId);
+          App.state.projects.detail = response;
+          App.state.projects.detailError = '';
+          App.state.projects.stale = Boolean(response.__meta && response.__meta.stale);
+          if (response.__meta) App.ui.setLastSync(response.__meta.savedAt);
+          if (App.helpers.isMobile()) {
+            App.ui.byId('projectsSplitView').classList.add('is-detail-open');
+          }
+          this.renderDetail();
+        } catch (error) {
+          App.state.projects.detailError = error.message || '案件詳細の取得に失敗しました。';
+          this.renderDetail();
+          if (!force) App.ui.toast(App.state.projects.detailError, 'error');
+        } finally {
+          App.state.projects.detailLoading = false;
+          this.renderDetail();
+        }
+      },
+
+      renderDetail: function () {
+        var target = App.ui.byId('projectDetailContent');
+        if (!App.state.projects.selectedId) {
+          target.innerHTML = App.ui.renderStateBlock('案件を選択してください。', '一覧から 1 件選ぶと、詳細と履歴が表示されます。', 'info');
+          return;
+        }
+        if (App.state.projects.detailLoading) {
+          target.innerHTML = App.ui.renderSkeletonList(2);
+          return;
+        }
+        if (App.state.projects.detailError) {
+          target.innerHTML = App.ui.renderStateBlock(
+            String(App.state.projects.detailError || '').indexOf('オフライン') >= 0 ? 'オフラインのため詳細を取得できません。' : '案件詳細を表示できません。',
+            App.state.projects.detailError,
+            String(App.state.projects.detailError || '').indexOf('オフライン') >= 0 ? 'cloud-off' : 'error'
+          );
+          return;
+        }
+        if (!App.state.projects.detail || !App.state.projects.detail.project) {
+          target.innerHTML = App.ui.renderStateBlock('案件詳細がありません。', '別の案件を選択してください。', 'info');
+          return;
+        }
+
+        var detail = App.state.projects.detail;
+        var project = detail.project;
+        var client = detail.client;
+        target.innerHTML = ''
+          + '<section class="detail-section">'
+          + '<div class="row-head"><div><strong>' + App.helpers.escape(project.name) + '</strong><div class="row-sub">' + App.helpers.escape(client ? client.name : 'クライアント未設定') + '</div></div><span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span></div>'
+          + '<div class="stats-row"><span>対象日 ' + App.helpers.escape(App.helpers.dateLabel(project.targetDate)) + '</span><span>利益率 ' + App.helpers.escape(App.helpers.pct(project.marginRate)) + '</span>' + (App.state.projects.stale ? '<span>キャッシュ表示</span>' : '') + '</div>'
+          + '<div class="detail-actions">'
+          + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-project-detail-action="edit" data-project-id="' + App.helpers.escape(project.id) + '">編集する</button>' : '')
+          + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-project-detail-action="delete" data-project-id="' + App.helpers.escape(project.id) + '">削除する</button>' : '')
+          + '</div>'
+          + '</section>'
+          + '<section class="detail-section"><h4>基本情報</h4><dl class="detail-grid">'
+          + '<div class="detail-item"><dt>案件名</dt><dd>' + App.helpers.escape(project.name) + '</dd></div>'
+          + '<div class="detail-item"><dt>クライアント</dt><dd>' + App.helpers.escape(project.clientName || '未設定') + '</dd></div>'
+          + '<div class="detail-item"><dt>売上</dt><dd>' + App.helpers.escape(App.helpers.currency(project.sales)) + '</dd></div>'
+          + '<div class="detail-item"><dt>利益</dt><dd>' + App.helpers.escape(App.helpers.currency(project.profit)) + '</dd></div>'
+          + '<div class="detail-item"><dt>登録日</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(project.createdAt)) + '</dd></div>'
+          + '<div class="detail-item"><dt>更新日</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(project.updatedAt)) + '</dd></div>'
+          + '</dl></section>'
+          + '<section class="detail-section"><h4>備考</h4><p>' + App.helpers.escape(project.note || '備考はありません。') + '</p></section>'
+          + '<section class="detail-section"><h4>関連情報</h4><div class="detail-grid">'
+          + '<div class="detail-item"><dt>クライアント担当者</dt><dd>' + App.helpers.escape(client && client.contactName ? client.contactName : '未設定') + '</dd></div>'
+          + '<div class="detail-item"><dt>クライアント連絡先</dt><dd>' + App.helpers.escape(client && client.email ? client.email : '未設定') + '</dd></div>'
+          + '</div></section>'
+          + '<section class="detail-section"><h4>履歴</h4><div class="timeline">' + (detail.history || []).map(function (item) {
+              return '<div class="timeline-item"><strong>' + App.helpers.escape(item.label) + '</strong><div class="row-sub">' + App.helpers.escape(App.helpers.dateTimeLabel(item.date)) + '</div><p>' + App.helpers.escape(item.description) + '</p></div>';
+            }).join('') + '</div></section>'
+          + '<section class="detail-section"><h4>関連案件</h4>' + ((detail.relatedProjects || []).length
+              ? (detail.relatedProjects || []).map(function (item) {
+                  return '<div class="list-row"><div class="row-head"><div><strong>' + App.helpers.escape(item.name) + '</strong><div class="row-sub">' + App.helpers.escape(App.helpers.dateLabel(item.targetDate)) + '</div></div><span class="status-pill ' + App.helpers.projectStatusClass(item.status) + '">' + App.helpers.escape(item.status) + '</span></div><div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(item.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(item.profit)) + '</span></div></div>';
+                }).join('')
+              : '<p>関連案件はありません。</p>') + '</section>';
+      },
+
+      serializeForm: function () {
+        return App.helpers.formDataSignature({
+          id: App.ui.byId('projectId').value,
+          name: App.ui.byId('projectName').value,
+          clientId: App.ui.byId('projectClientId').value,
+          status: App.ui.byId('projectStatus').value,
+          completedAt: App.ui.byId('projectCompletedAt').value,
+          sales: App.ui.byId('projectSales').value,
+          profit: App.ui.byId('projectProfit').value,
+          note: App.ui.byId('projectNote').value
+        });
+      },
+
+      isFormDirty: function () {
+        return App.state.projects.formSnapshot && App.state.projects.formSnapshot !== this.serializeForm();
+      },
+
+      openModal: function (project) {
+        this.renderClientOptions();
+        App.state.projects.formMode = project ? 'edit' : 'create';
+        App.ui.resetFieldErrors(App.ui.byId('projectForm'));
+        App.ui.byId('projectModalTitle').textContent = project ? '案件を編集' : '案件を追加';
+        App.ui.byId('projectId').value = project ? project.id : '';
+        App.ui.byId('projectName').value = project ? project.name : '';
+        App.ui.byId('projectClientId').value = project ? project.clientId : '';
+        App.ui.byId('projectStatus').value = project ? project.status : '商談中';
+        App.ui.byId('projectCompletedAt').value = project ? App.helpers.serverDateToInput(project.completedAt) : '';
+        App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
+        App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
+        App.ui.byId('projectNote').value = project ? project.note : '';
+        this.updateProfitHint();
+        App.state.projects.formSnapshot = this.serializeForm();
+        App.ui.openModal('projectModal');
+      },
+
+      updateProfitHint: function () {
+        var sales = Number(App.ui.byId('projectSales').value) || 0;
+        var clientId = App.ui.byId('projectClientId').value;
+        var profit = App.ui.byId('projectProfit').value;
+        var client = (App.state.projects.clientOptions || []).find(function (item) { return item.id === clientId; }) || null;
+        var hint = '既定利益率と売上から自動計算します。';
+        if (profit !== '') {
+          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します。';
+        } else if (sales > 0 && client && client.defaultProfitRate !== '') {
+          hint = '自動計算予定: ' + App.helpers.currency(Math.round(sales * Number(client.defaultProfitRate) / 100)) + ' (' + client.defaultProfitRate + '%)';
+        } else if (sales > 0) {
+          hint = '既定利益率が未設定のため、利益は売上と同額で保存されます。';
+        }
+        App.ui.byId('projectProfitHint').textContent = hint;
+      },
+
+      validateForm: function () {
+        var errors = {};
+        if (!App.ui.byId('projectName').value.trim()) {
+          errors.projectName = '案件名を入力してください。';
+        }
+        return errors;
+      },
+
+      submit: async function (event) {
+        event.preventDefault();
+        App.ui.resetFieldErrors(App.ui.byId('projectForm'));
+        var errors = this.validateForm();
+        if (Object.keys(errors).length) {
+          App.ui.applyFieldErrors(errors);
+          return;
+        }
+
+        var confirmed = await App.ui.confirm({
+          eyebrow: 'Project Save',
+          title: '案件を保存しますか。',
+          text: '保存すると一覧、詳細、ダッシュボードの集計に反映されます。',
+          confirmText: '保存する',
+          cancelText: '戻る'
+        });
+        if (!confirmed) return;
+
+        var payload = {
+          id: App.ui.byId('projectId').value,
+          name: App.ui.byId('projectName').value.trim(),
+          clientId: App.ui.byId('projectClientId').value,
+          status: App.ui.byId('projectStatus').value,
+          completedAt: App.helpers.inputToServerDate(App.ui.byId('projectCompletedAt').value),
+          sales: App.ui.byId('projectSales').value === '' ? 0 : Number(App.ui.byId('projectSales').value),
+          profit: App.ui.byId('projectProfit').value === '' ? null : Number(App.ui.byId('projectProfit').value),
+          note: App.ui.byId('projectNote').value
+        };
+
+        App.ui.setBusy('projectSubmit', true, '保存中...', '保存する');
+        try {
+          if (payload.id) await App.api.projects.update(payload);
+          else await App.api.projects.create(payload);
+          await App.ui.closeModal('projectModal', true);
+          App.state.projects.formSnapshot = '';
+          App.state.dashboard.loadedKey = '';
+          App.ui.toast('案件を保存しました。', 'success');
+          await this.ensureLoaded(true);
+        } catch (error) {
+          App.ui.toast(error.message || '案件の保存に失敗しました。', 'error');
+        } finally {
+          App.ui.setBusy('projectSubmit', false, '保存中...', '保存する');
+        }
+      },
+
+      remove: async function (projectId) {
+        var project = this.findItem(projectId);
+        if (!project) return;
+        var confirmed = await App.ui.confirm({
+          eyebrow: 'Delete',
+          title: '案件を削除しますか。',
+          text: '「' + project.name + '」を削除すると元に戻せません。',
+          confirmText: '削除する',
+          cancelText: 'キャンセル',
+          tone: 'danger'
+        });
+        if (!confirmed) return;
+
+        try {
+          await App.api.projects.remove(projectId);
+          App.ui.toast('案件を削除しました。', 'success');
+          App.state.dashboard.loadedKey = '';
+          await this.ensureLoaded(true);
+        } catch (error) {
+          App.ui.toast(error.message || '案件の削除に失敗しました。', 'error');
+        }
       }
-    }
-  };
+    };
+  })(window.App);
 </script>

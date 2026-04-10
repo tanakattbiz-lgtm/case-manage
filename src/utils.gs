@@ -110,6 +110,50 @@ function normalizeNonNegativeNumber_(value, fallback) {
   return Math.round(numeric * 100) / 100;
 }
 
+function normalizePositiveInteger_(value, fallback, min, max) {
+  const normalizedFallback = Number(fallback || 1);
+  const numeric = Number(value);
+  const resolved = isFinite(numeric) ? Math.floor(numeric) : normalizedFallback;
+  const minValue = Number(min || 1);
+  const maxValue = Number(max || resolved || normalizedFallback);
+  return Math.min(Math.max(resolved, minValue), maxValue);
+}
+
+function buildPaginationMeta_(totalItems, page, pageSize) {
+  const total = Math.max(0, Number(totalItems) || 0);
+  const safePageSize = normalizePositiveInteger_(
+    pageSize,
+    FIXED_VALUES.lists.defaultPageSize,
+    1,
+    FIXED_VALUES.lists.maxPageSize
+  );
+  const totalPages = Math.max(1, Math.ceil(total / safePageSize));
+  const currentPage = normalizePositiveInteger_(page, 1, 1, totalPages);
+  const startIndex = total === 0 ? 0 : (currentPage - 1) * safePageSize;
+  const endIndex = total === 0 ? 0 : Math.min(startIndex + safePageSize, total);
+
+  return {
+    page: currentPage,
+    pageSize: safePageSize,
+    totalItems: total,
+    totalPages: totalPages,
+    hasPrev: currentPage > 1,
+    hasNext: currentPage < totalPages,
+    start: total === 0 ? 0 : startIndex + 1,
+    end: endIndex,
+  };
+}
+
+function paginateItems_(items, page, pageSize) {
+  const list = items || [];
+  const meta = buildPaginationMeta_(list.length, page, pageSize);
+  const startIndex = meta.start > 0 ? meta.start - 1 : 0;
+  return {
+    items: list.slice(startIndex, startIndex + meta.pageSize),
+    pagination: meta,
+  };
+}
+
 function copyObject_(value) {
   return Object.assign({}, value || {});
 }

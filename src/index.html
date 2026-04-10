@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#f3f0ea">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#f8fafc">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>案件管理</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   <script>
     (function () {
       try {
@@ -18,12 +20,19 @@
         }
       } catch (error) {
       }
+
+      try {
+        if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+          document.documentElement.classList.add('display-standalone');
+        }
+      } catch (error) {
+      }
     })();
   </script>
   <?!= include('Styles'); ?>
 </head>
 <body>
   <?!= include('IndexShell'); ?>
-  <?!= include('AppScript'); ?>
+  <?!= include('Scripts'); ?>
 </body>
 </html>

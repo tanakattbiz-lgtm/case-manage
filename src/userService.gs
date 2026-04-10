@@ -1,18 +1,49 @@
-function getUsers(sessionToken) {
+function getUsers(sessionToken, query) {
   requireAdminAccess_(sessionToken);
-  const roleOrder = {};
-  roleOrder[USER_ROLES.admin] = 0;
-  roleOrder[USER_ROLES.editor] = 1;
-  roleOrder[USER_ROLES.viewer] = 2;
+  const normalizedQuery = normalizeUserListQuery_(query);
+  const allItems = listUserDtos_();
+  const filteredItems = allItems.filter(function (user) {
+    if (normalizedQuery.role && user.role !== normalizedQuery.role) return false;
+    if (normalizedQuery.status && user.status !== normalizedQuery.status) return false;
+    if (!normalizedQuery.query) return true;
 
-  return listUserRecords_()
-    .sort(function (a, b) {
-      const leftRole = roleOrder[normalizeRole_(a['ロール'])] != null ? roleOrder[normalizeRole_(a['ロール'])] : 99;
-      const rightRole = roleOrder[normalizeRole_(b['ロール'])] != null ? roleOrder[normalizeRole_(b['ロール'])] : 99;
-      if (leftRole !== rightRole) return leftRole - rightRole;
-      return String(a['氏名'] || '').localeCompare(String(b['氏名'] || ''), 'ja');
-    })
-    .map(sanitizeUser_);
+    const joined = [
+      user.name,
+      user.email,
+      user.roleLabel,
+    ].join(' ').toLowerCase();
+    return joined.indexOf(normalizedQuery.query.toLowerCase()) >= 0;
+  });
+  const paged = paginateItems_(filteredItems, normalizedQuery.page, normalizedQuery.pageSize);
+
+  return {
+    items: paged.items,
+    pagination: paged.pagination,
+    filters: normalizedQuery,
+    summary: buildUserListSummary_(filteredItems, allItems.length),
+    fetchedAt: nowDateTimeStr_(),
+  };
+}
+
+function getUserDetail(sessionToken, userId) {
+  requireAdminAccess_(sessionToken);
+  const targetId = normalizeString_(userId);
+  const user = listUserDtos_().find(function (item) {
+    return item.id === targetId;
+  }) || null;
+
+  if (!user) {
+    throwAppError_('USER_NOT_FOUND', 'ユーザーが見つかりません。');
+  }
+
+  const audits = listAuditDtos_().filter(function (audit) {
+    return audit.userId === user.id;
+  }).slice(0, FIXED_VALUES.lists.detailRelatedLimit);
+
+  return {
+    user: user,
+    recentAudits: audits,
+  };
 }
 
 function saveUser(sessionToken, payload) {
@@ -112,8 +143,54 @@ function unlockUser(sessionToken, userId) {
   });
 }
 
-function getAuditLogs(sessionToken) {
+function getAuditLogs(sessionToken, query) {
   requireAdminAccess_(sessionToken);
+  const normalizedQuery = normalizeAuditListQuery_(query);
+  const allItems = listAuditDtos_();
+  const filteredItems = allItems.filter(function (audit) {
+    if (normalizedQuery.result && audit.result !== normalizedQuery.result) return false;
+    if (!normalizedQuery.query) return true;
+
+    const joined = [
+      audit.event,
+      audit.result,
+      audit.name,
+      audit.email,
+      audit.detail,
+    ].join(' ').toLowerCase();
+    return joined.indexOf(normalizedQuery.query.toLowerCase()) >= 0;
+  });
+  const paged = paginateItems_(filteredItems, normalizedQuery.page, normalizedQuery.pageSize);
+
+  return {
+    items: paged.items,
+    pagination: paged.pagination,
+    filters: normalizedQuery,
+    summary: {
+      totalItems: allItems.length,
+      filteredItems: filteredItems.length,
+    },
+    fetchedAt: nowDateTimeStr_(),
+  };
+}
+
+function listUserDtos_() {
+  const roleOrder = {};
+  roleOrder[USER_ROLES.admin] = 0;
+  roleOrder[USER_ROLES.editor] = 1;
+  roleOrder[USER_ROLES.viewer] = 2;
+
+  return listUserRecords_()
+    .sort(function (a, b) {
+      const leftRole = roleOrder[normalizeRole_(a['ロール'])] != null ? roleOrder[normalizeRole_(a['ロール'])] : 99;
+      const rightRole = roleOrder[normalizeRole_(b['ロール'])] != null ? roleOrder[normalizeRole_(b['ロール'])] : 99;
+      if (leftRole !== rightRole) return leftRole - rightRole;
+      return String(a['氏名'] || '').localeCompare(String(b['氏名'] || ''), 'ja');
+    })
+    .map(sanitizeUser_);
+}
+
+function listAuditDtos_() {
   return listAuditRecords_()
     .sort(function (a, b) {
       const left = parseDateValue_(a['日時']);
@@ -134,6 +211,68 @@ function getAuditLogs(sessionToken) {
         userAgent: record['ユーザーエージェント'] || '',
       };
     });
+}
+
+function normalizeUserListQuery_(query) {
+  const input = query || {};
+  return {
+    page: normalizePositiveInteger_(input.page, 1, 1, 999),
+    pageSize: normalizePositiveInteger_(
+      input.pageSize,
+      FIXED_VALUES.lists.defaultPageSize,
+      1,
+      FIXED_VALUES.lists.maxPageSize
+    ),
+    query: normalizeString_(input.query),
+    role: normalizeString_(input.role),
+    status: normalizeString_(input.status),
+    sort: {
+      field: 'role,name',
+      direction: 'asc',
+      label: '権限順',
+    },
+  };
+}
+
+function normalizeAuditListQuery_(query) {
+  const input = query || {};
+  return {
+    page: normalizePositiveInteger_(input.page, 1, 1, 999),
+    pageSize: normalizePositiveInteger_(
+      input.pageSize,
+      FIXED_VALUES.lists.defaultPageSize,
+      1,
+      FIXED_VALUES.lists.maxPageSize
+    ),
+    query: normalizeString_(input.query),
+    result: normalizeString_(input.result).toUpperCase(),
+    sort: {
+      field: 'timestamp',
+      direction: 'desc',
+      label: '新着順',
+    },
+  };
+}
+
+function buildUserListSummary_(filteredItems, totalItems) {
+  return {
+    totalItems: Number(totalItems) || 0,
+    filteredItems: filteredItems.length,
+    activeCount: filteredItems.filter(function (user) {
+      return user.status === USER_STATUSES.active;
+    }).length,
+    lockedCount: filteredItems.filter(function (user) {
+      return isLockedUserDto_(user);
+    }).length,
+    adminCount: filteredItems.filter(function (user) {
+      return user.role === USER_ROLES.admin;
+    }).length,
+  };
+}
+
+function isLockedUserDto_(user) {
+  const lockedUntil = parseDateValue_(user && user.lockedUntil);
+  return Boolean(lockedUntil && lockedUntil.getTime() > Date.now());
 }
 
 function ensureAdminRetention_(currentUser, nextRole, nextStatus) {

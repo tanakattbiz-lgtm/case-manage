@@ -1,55 +1,102 @@
 <div class="auth-shell" id="authShell">
-  <div class="auth-card panel">
-    <section class="auth-copy">
-      <div class="page-eyebrow">Case Manage</div>
-      <h1>案件と顧客情報を、ひとつの画面で管理。</h1>
-      <p>案件の進捗、クライアント情報、売上や利益の状況をまとめて確認できます。メールアドレスとパスワードを入力してログインしてください。</p>
-      <div class="auth-points">
-        <div class="auth-point"><strong>01</strong><span>案件の進捗と対応状況を一覧で確認</span></div>
-        <div class="auth-point"><strong>02</strong><span>クライアント情報と売上・利益をまとめて管理</span></div>
-        <div class="auth-point"><strong>03</strong><span>権限に応じて必要なメニューだけを表示</span></div>
+  <div class="auth-layout">
+    <section class="auth-hero">
+      <div class="auth-hero-inner">
+        <div class="brand-mark">
+          <span class="brand-mark-badge">
+            <svg class="icon icon-20" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+          </span>
+          <div>
+            <div class="overline">Case Manage</div>
+            <h1>案件と顧客情報を、迷わず扱える業務画面へ。</h1>
+          </div>
+        </div>
+
+        <p class="auth-lead">
+          案件、クライアント、認証管理を 1 つの SPA に整理し、PC でもモバイルでも無理なく使える構成にしています。
+          通信失敗時は再試行とキャッシュ表示を用意し、オフライン時も状態を見失わない設計です。
+        </p>
+
+        <div class="auth-hero-grid">
+          <article class="info-tile">
+            <span class="info-tile-icon">
+              <svg class="icon icon-20" aria-hidden="true"><use href="#icon-folder"></use></svg>
+            </span>
+            <strong>案件進行を一覧と詳細で整理</strong>
+            <p>検索、件数制御、詳細確認、編集まで 1 つの導線にまとめています。</p>
+          </article>
+          <article class="info-tile">
+            <span class="info-tile-icon">
+              <svg class="icon icon-20" aria-hidden="true"><use href="#icon-users"></use></svg>
+            </span>
+            <strong>顧客情報と売上状況を同時確認</strong>
+            <p>一覧表示だけでなく、関連案件や売上傾向もすぐ見返せます。</p>
+          </article>
+          <article class="info-tile">
+            <span class="info-tile-icon">
+              <svg class="icon icon-20" aria-hidden="true"><use href="#icon-wifi"></use></svg>
+            </span>
+            <strong>再接続しやすいオフライン設計</strong>
+            <p>接続状態を常時表示し、再試行とキャッシュ参照の導線を用意しています。</p>
+          </article>
+        </div>
       </div>
     </section>
 
-    <section class="auth-form">
-      <div>
-        <div class="page-eyebrow" id="authEyebrow">ログイン</div>
+    <section class="auth-panel surface">
+      <div class="auth-panel-head">
+        <div class="overline" id="authEyebrow">ログイン</div>
         <h2 id="authTitle">ログイン</h2>
-        <p id="authSubtitle">メールアドレスとパスワードでログインしてください。</p>
+        <p id="authSubtitle">メールアドレスとパスワードを入力してください。</p>
       </div>
 
-      <div class="auth-note" id="authNotice">ログイン状態を確認しています。</div>
+      <div class="inline-notice info" id="authNotice">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-info"></use></svg>
+        <span>ログイン状態を確認しています。</span>
+      </div>
 
-      <form id="loginForm" class="modal-form">
+      <form id="loginForm" class="form-stack">
         <label class="field">
-          <span class="field-label">メールアドレス</span>
+          <span class="field-label">メールアドレス <span class="required-dot">必須</span></span>
           <input class="input" type="email" id="loginEmail" autocomplete="username" placeholder="name@example.com">
+          <span class="field-error" data-field-error="loginEmail"></span>
         </label>
         <label class="field">
-          <span class="field-label">パスワード</span>
+          <span class="field-label">パスワード <span class="required-dot">必須</span></span>
           <input class="input" type="password" id="loginPassword" autocomplete="current-password" placeholder="10文字以上">
+          <span class="field-error" data-field-error="loginPassword"></span>
         </label>
-        <button type="submit" class="btn btn-primary" id="loginSubmit">ログイン</button>
+        <button type="submit" class="btn btn-primary btn-block" id="loginSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-lock"></use></svg>
+          <span>ログインする</span>
+        </button>
       </form>
 
-      <form id="setupForm" class="modal-form" hidden>
+      <form id="setupForm" class="form-stack" hidden>
         <label class="field">
-          <span class="field-label">管理者名</span>
+          <span class="field-label">管理者名 <span class="required-dot">必須</span></span>
           <input class="input" type="text" id="setupName" autocomplete="name" placeholder="田中 太郎">
+          <span class="field-error" data-field-error="setupName"></span>
         </label>
         <label class="field">
-          <span class="field-label">メールアドレス</span>
+          <span class="field-label">メールアドレス <span class="required-dot">必須</span></span>
           <input class="input" type="email" id="setupEmail" autocomplete="email" placeholder="admin@example.com">
+          <span class="field-error" data-field-error="setupEmail"></span>
         </label>
         <label class="field">
-          <span class="field-label">初期パスワード</span>
+          <span class="field-label">初期パスワード <span class="required-dot">必須</span></span>
           <input class="input" type="password" id="setupPassword" autocomplete="new-password" placeholder="英字と数字を含む 10 文字以上">
+          <span class="field-error" data-field-error="setupPassword"></span>
         </label>
         <label class="field">
-          <span class="field-label">確認用パスワード</span>
+          <span class="field-label">確認用パスワード <span class="required-dot">必須</span></span>
           <input class="input" type="password" id="setupPasswordConfirm" autocomplete="new-password" placeholder="もう一度入力">
+          <span class="field-error" data-field-error="setupPasswordConfirm"></span>
         </label>
-        <button type="submit" class="btn btn-primary" id="setupSubmit">管理者アカウントを作成</button>
+        <button type="submit" class="btn btn-primary btn-block" id="setupSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-save"></use></svg>
+          <span>管理者アカウントを作成する</span>
+        </button>
       </form>
 
       <div class="auth-meta" id="authMeta"></div>

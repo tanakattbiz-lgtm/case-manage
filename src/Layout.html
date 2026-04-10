@@ -1,50 +1,119 @@
-<div class="app-frame">
-  <aside class="sidebar">
-    <div class="sidebar-brand">
-      <strong>案件管理</strong>
-      <span>案件、クライアント、売上の状況をまとめて確認できます。</span>
+<div class="shell" id="appFrame">
+  <aside class="sidebar surface">
+    <div class="sidebar-top">
+      <div class="sidebar-brand">
+        <span class="sidebar-brand-mark">
+          <svg class="icon icon-20" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+        </span>
+        <div>
+          <strong>案件管理</strong>
+          <span>白基調の業務画面</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-btn is-active" type="button" data-view="dashboard">
+          <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-dashboard"></use></svg></span>
+          <span class="nav-copy">
+            <strong>ダッシュボード</strong>
+            <small>進捗と指標</small>
+          </span>
+        </button>
+        <button class="nav-btn" type="button" data-view="projects">
+          <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-folder"></use></svg></span>
+          <span class="nav-copy">
+            <strong>案件一覧</strong>
+            <small>検索と詳細</small>
+          </span>
+          <span class="nav-badge" id="badgeProjects">-</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="clients">
+          <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+          <span class="nav-copy">
+            <strong>クライアント</strong>
+            <small>顧客と売上傾向</small>
+          </span>
+          <span class="nav-badge" id="badgeClients">-</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="users" id="usersNavBtn" hidden>
+          <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+          <span class="nav-copy">
+            <strong>認証管理</strong>
+            <small>権限と監査ログ</small>
+          </span>
+        </button>
+      </nav>
     </div>
 
-    <nav class="nav-stack">
-      <button class="nav-btn is-active" data-view="dashboard">
-        <span class="nav-label">ダッシュボード</span>
-        <span class="nav-badge" id="badgeProjects">-</span>
-      </button>
-      <button class="nav-btn" data-view="projects">
-        <span class="nav-label">案件一覧</span>
-        <span class="nav-badge" id="badgeProjectsSidebar">-</span>
-      </button>
-      <button class="nav-btn" data-view="clients">
-        <span class="nav-label">クライアント</span>
-        <span class="nav-badge" id="badgeClients">-</span>
-      </button>
-      <button class="nav-btn" data-view="users" id="usersNavBtn" hidden>
-        <span class="nav-label">認証管理</span>
-      </button>
-    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-card">
+        <div class="sidebar-card-title">接続状態</div>
+        <div class="status-chip online" id="sidebarNetworkChip">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-wifi"></use></svg>
+          <span>オンライン</span>
+        </div>
+        <p class="sidebar-card-text">通信失敗時はキャッシュ済みデータを表示し、再接続時に再取得します。</p>
+      </div>
 
-    <div class="sidebar-foot">
-      入力した内容は一覧や集計に反映されます。必要に応じて管理者へお問い合わせください。
+      <div class="sidebar-card" id="sidebarSyncCard">
+        <div class="sidebar-card-title">最終同期</div>
+        <div class="mono-text" id="syncMeta">未同期</div>
+      </div>
     </div>
   </aside>
 
-  <div class="main-column">
-    <header class="topbar panel">
-      <div>
-        <div class="page-eyebrow" id="pageEyebrow">Dashboard</div>
-        <h1 class="page-title" id="pageTitle">ダッシュボード</h1>
+  <div class="shell-main">
+    <header class="mobile-header surface">
+      <button class="icon-btn" type="button" data-action="toggle-drawer" aria-label="ナビゲーションを開く">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-menu"></use></svg>
+      </button>
+      <div class="mobile-header-copy">
+        <div class="overline" id="pageEyebrowMobile">Dashboard</div>
+        <strong id="pageTitleMobile">ダッシュボード</strong>
       </div>
+      <button class="icon-btn" type="button" data-action="open-primary" id="mobileHeaderPrimary" hidden aria-label="主要操作">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-add"></use></svg>
+      </button>
+    </header>
+
+    <header class="topbar">
+      <div class="topbar-copy">
+        <div class="overline" id="pageEyebrow">Dashboard</div>
+        <h1 class="page-title" id="pageTitle">ダッシュボード</h1>
+        <p class="page-subtitle" id="pageSubtitle">案件、クライアント、認証状態を一画面ずつ整理して確認できます。</p>
+      </div>
+
       <div class="topbar-actions">
+        <div class="status-chip online" id="networkChip">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-wifi"></use></svg>
+          <span>オンライン</span>
+        </div>
         <div class="user-chip" id="userChip" hidden>
           <strong id="userChipName">-</strong>
           <span id="userChipRole">-</span>
         </div>
+        <button class="btn btn-secondary" type="button" data-action="open-install-help" id="installHelpAction">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-download"></use></svg>
+          <span>利用ガイド</span>
+        </button>
         <button class="btn btn-secondary" type="button" data-action="open-password" id="passwordAction" hidden>パスワード変更</button>
         <button class="btn btn-secondary" type="button" data-action="go-users" id="securityAction" hidden>認証管理</button>
         <button class="btn btn-secondary" type="button" data-action="logout" id="logoutAction" hidden>ログアウト</button>
-        <button class="btn btn-primary" type="button" data-action="open-primary" id="primaryAction" hidden>追加</button>
+        <button class="btn btn-primary" type="button" data-action="open-primary" id="primaryAction" hidden>
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-add"></use></svg>
+          <span>追加する</span>
+        </button>
       </div>
     </header>
+
+    <div class="status-banner info" id="networkBanner" hidden>
+      <svg class="icon icon-16" aria-hidden="true"><use href="#icon-info"></use></svg>
+      <div class="status-banner-copy">
+        <strong id="networkBannerTitle">接続状態を確認しています。</strong>
+        <span id="networkBannerText">通信状況に応じて表示内容を切り替えます。</span>
+      </div>
+      <button class="btn btn-secondary btn-small" type="button" data-action="retry-current">再試行</button>
+    </div>
 
     <main class="content-area">
       <?!= include('Dashboard'); ?>
@@ -55,215 +124,420 @@
   </div>
 </div>
 
-<nav class="mobile-nav panel">
-  <button class="nav-btn is-active" data-view="dashboard">
-    <span class="nav-label">ダッシュ</span>
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+
+<aside class="mobile-drawer surface" id="mobileDrawer" hidden>
+  <div class="mobile-drawer-head">
+    <div>
+      <div class="overline">Navigation</div>
+      <h3>案件管理</h3>
+    </div>
+    <button class="icon-btn" type="button" data-action="close-drawer" aria-label="ナビゲーションを閉じる">
+      <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+    </button>
+  </div>
+
+  <div class="user-chip user-chip-vertical" id="mobileUserChip" hidden>
+    <strong id="mobileUserChipName">-</strong>
+    <span id="mobileUserChipRole">-</span>
+  </div>
+
+  <nav class="mobile-drawer-nav">
+    <button class="nav-btn is-active" type="button" data-view="dashboard">
+      <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-dashboard"></use></svg></span>
+      <span class="nav-copy"><strong>ダッシュボード</strong><small>概要を確認</small></span>
+    </button>
+    <button class="nav-btn" type="button" data-view="projects">
+      <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-folder"></use></svg></span>
+      <span class="nav-copy"><strong>案件一覧</strong><small>検索と詳細</small></span>
+      <span class="nav-badge" id="badgeProjectsSidebar">-</span>
+    </button>
+    <button class="nav-btn" type="button" data-view="clients">
+      <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-users"></use></svg></span>
+      <span class="nav-copy"><strong>クライアント</strong><small>顧客情報</small></span>
+    </button>
+    <button class="nav-btn" type="button" data-view="users" id="usersNavMobile" hidden>
+      <span class="nav-icon"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-shield"></use></svg></span>
+      <span class="nav-copy"><strong>認証管理</strong><small>権限とログ</small></span>
+    </button>
+  </nav>
+
+  <div class="mobile-drawer-foot">
+    <button class="btn btn-secondary btn-block" type="button" data-action="open-install-help">利用ガイド</button>
+    <button class="btn btn-secondary btn-block" type="button" data-action="logout" id="mobileLogoutAction">ログアウト</button>
+  </div>
+</aside>
+
+<nav class="mobile-tabbar surface">
+  <button class="nav-tab is-active" type="button" data-view="dashboard">
+    <svg class="icon icon-20" aria-hidden="true"><use href="#icon-dashboard"></use></svg>
+    <span>ダッシュ</span>
   </button>
-  <button class="nav-btn" data-view="projects">
-    <span class="nav-label">案件</span>
+  <button class="nav-tab" type="button" data-view="projects">
+    <svg class="icon icon-20" aria-hidden="true"><use href="#icon-folder"></use></svg>
+    <span>案件</span>
   </button>
-  <button class="nav-btn" data-view="clients">
-    <span class="nav-label">顧客</span>
+  <button class="nav-tab" type="button" data-view="clients">
+    <svg class="icon icon-20" aria-hidden="true"><use href="#icon-users"></use></svg>
+    <span>顧客</span>
   </button>
-  <button class="nav-btn" data-view="users" id="usersNavMobile" hidden>
-    <span class="nav-label">認証</span>
+  <button class="nav-tab" type="button" data-view="users" id="mobileTabUsers" hidden>
+    <svg class="icon icon-20" aria-hidden="true"><use href="#icon-shield"></use></svg>
+    <span>認証</span>
   </button>
 </nav>
 
-<div class="modal-shell" id="projectModal" hidden>
-  <div class="modal-panel">
+<div class="mobile-actionbar surface" id="mobileActionBar" hidden>
+  <button class="btn btn-primary btn-block" type="button" data-action="open-primary" id="mobileActionButton">
+    <svg class="icon icon-16" aria-hidden="true"><use href="#icon-add"></use></svg>
+    <span>追加する</span>
+  </button>
+</div>
+
+<div class="loading-overlay" id="globalLoader" hidden>
+  <div class="loading-panel surface">
+    <div class="spinner" aria-hidden="true"></div>
+    <strong id="globalLoaderTitle">読み込み中</strong>
+    <p id="globalLoaderText">必要なデータを取得しています。</p>
+  </div>
+</div>
+
+<div class="modal-shell" id="confirmDialog" hidden>
+  <div class="modal-panel modal-compact" role="dialog" aria-modal="true" aria-labelledby="confirmDialogTitle">
     <div class="modal-head">
       <div>
-        <h3 id="projectModalTitle">案件を追加</h3>
-        <p>必要な項目を入力して保存してください。利益が未入力の場合は自動で計算されます。</p>
+        <div class="overline" id="confirmDialogEyebrow">確認</div>
+        <h3 id="confirmDialogTitle">この操作を実行しますか。</h3>
+        <p id="confirmDialogText">内容を確認してから続行してください。</p>
       </div>
-      <button class="btn btn-ghost" type="button" data-close-modal="projectModal">閉じる</button>
+      <button class="icon-btn" type="button" data-modal-close="confirmDialog" aria-label="閉じる">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" type="button" id="confirmDialogCancel">キャンセル</button>
+      <button class="btn btn-primary" type="button" id="confirmDialogAccept">実行する</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-shell" id="messageDialog" hidden>
+  <div class="modal-panel modal-compact" role="dialog" aria-modal="true" aria-labelledby="messageDialogTitle">
+    <div class="modal-head">
+      <div>
+        <div class="overline" id="messageDialogEyebrow">お知らせ</div>
+        <h3 id="messageDialogTitle">メッセージ</h3>
+        <p id="messageDialogText">詳細メッセージを表示します。</p>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close="messageDialog" aria-label="閉じる">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" type="button" id="messageDialogAccept">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-shell" id="assistModal" hidden>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="assistModalTitle">
+    <div class="modal-head">
+      <div>
+        <div class="overline" id="assistModalEyebrow">利用ガイド</div>
+        <h3 id="assistModalTitle">入力補助</h3>
+        <p id="assistModalText">画面や入力項目の補足を表示します。</p>
+      </div>
+      <button class="icon-btn" type="button" data-modal-close="assistModal" aria-label="閉じる">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+      </button>
+    </div>
+    <div class="assist-content" id="assistModalContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" type="button" data-modal-close="assistModal">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-shell" id="projectModal" hidden>
+  <div class="modal-panel modal-form-panel" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+    <div class="modal-head">
+      <div>
+        <div class="overline">Project Form</div>
+        <h3 id="projectModalTitle">案件を追加</h3>
+        <p>案件情報を入力し、保存前に内容を確認してください。</p>
+      </div>
+      <div class="toolbar-row">
+        <button class="btn btn-ghost" type="button" data-assist-context="project">入力ガイド</button>
+        <button class="icon-btn" type="button" data-modal-close="projectModal" aria-label="閉じる">
+          <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
     </div>
 
-    <form class="modal-form" id="projectForm">
+    <form class="form-stack" id="projectForm">
       <input type="hidden" id="projectId">
-      <label class="field">
-        <span class="field-label">案件名</span>
-        <input class="input" type="text" id="projectName" placeholder="例: LP 制作">
-      </label>
 
-      <div class="modal-grid">
-        <label class="field">
-          <span class="field-label">クライアント</span>
-          <select class="select" id="projectClientId"></select>
-          <span class="field-hint">未登録の場合はクライアント画面で先に追加してください。</span>
-        </label>
-        <label class="field">
-          <span class="field-label">ステータス</span>
-          <select class="select" id="projectStatus">
-            <option>商談中</option>
-            <option>進行中</option>
-            <option>完了</option>
-            <option>停止</option>
-            <option>保留</option>
-          </select>
-        </label>
-        <label class="field">
-          <span class="field-label">完了日</span>
-          <input class="input" type="date" id="projectCompletedAt">
-        </label>
-        <label class="field">
-          <span class="field-label">売上</span>
-          <input class="input" type="number" min="0" id="projectSales" placeholder="300000">
-        </label>
-        <label class="field">
-          <span class="field-label">利益</span>
-          <input class="input" type="number" min="0" id="projectProfit" placeholder="空欄なら自動計算">
-          <span class="field-hint" id="projectProfitHint">クライアントの既定利益率がある場合は自動で反映されます。</span>
-        </label>
-      </div>
+      <section class="form-section">
+        <div class="section-head">
+          <div>
+            <h4>基本情報</h4>
+            <p>案件名、担当クライアント、ステータスを設定します。</p>
+          </div>
+        </div>
+        <div class="field-grid field-grid-2">
+          <label class="field field-span-2">
+            <span class="field-label">案件名 <span class="required-dot">必須</span></span>
+            <input class="input" type="text" id="projectName" placeholder="例: サービス紹介 LP 制作">
+            <span class="field-error" data-field-error="projectName"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">クライアント</span>
+            <select class="select" id="projectClientId"></select>
+            <span class="field-error" data-field-error="projectClientId"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">ステータス</span>
+            <select class="select" id="projectStatus">
+              <option value="商談中">商談中</option>
+              <option value="進行中">進行中</option>
+              <option value="完了">完了</option>
+              <option value="停止">停止</option>
+              <option value="保留">保留</option>
+            </select>
+            <span class="field-error" data-field-error="projectStatus"></span>
+          </label>
+        </div>
+      </section>
 
-      <label class="field">
-        <span class="field-label">備考</span>
-        <textarea class="textarea" id="projectNote" placeholder="URL、メモ、次回アクションなど"></textarea>
-      </label>
+      <section class="form-section">
+        <div class="section-head">
+          <div>
+            <h4>売上情報</h4>
+            <p>利益が未入力の場合はクライアントの既定利益率で補完します。</p>
+          </div>
+        </div>
+        <div class="field-grid field-grid-3">
+          <label class="field">
+            <span class="field-label">売上</span>
+            <input class="input" type="number" min="0" id="projectSales" placeholder="300000">
+            <span class="field-error" data-field-error="projectSales"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">利益</span>
+            <input class="input" type="number" min="0" id="projectProfit" placeholder="空欄なら自動計算">
+            <span class="field-error" data-field-error="projectProfit"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">完了日</span>
+            <input class="input" type="date" id="projectCompletedAt">
+            <span class="field-error" data-field-error="projectCompletedAt"></span>
+          </label>
+        </div>
+        <div class="inline-note" id="projectProfitHint">既定利益率と売上から自動計算します。</div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-head">
+          <div>
+            <h4>補足情報</h4>
+            <p>次回対応や URL など、一覧では見切れる情報を保存できます。</p>
+          </div>
+        </div>
+        <label class="field">
+          <span class="field-label">備考</span>
+          <textarea class="textarea" id="projectNote" placeholder="関連 URL、次回アクション、メモ"></textarea>
+          <span class="field-error" data-field-error="projectNote"></span>
+        </label>
+      </section>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" type="button" data-close-modal="projectModal">キャンセル</button>
-        <button class="btn btn-primary" type="submit" id="projectSubmit">保存する</button>
+        <button class="btn btn-secondary" type="button" data-modal-close="projectModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="projectSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-save"></use></svg>
+          <span>保存する</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <div class="modal-shell" id="clientModal" hidden>
-  <div class="modal-panel">
+  <div class="modal-panel modal-form-panel" role="dialog" aria-modal="true" aria-labelledby="clientModalTitle">
     <div class="modal-head">
       <div>
+        <div class="overline">Client Form</div>
         <h3 id="clientModalTitle">クライアントを追加</h3>
-        <p>案件で参照しやすいよう、表示名や連絡先、既定利益率を登録できます。</p>
+        <p>連絡先や既定利益率を整理し、案件入力時の手間を減らします。</p>
       </div>
-      <button class="btn btn-ghost" type="button" data-close-modal="clientModal">閉じる</button>
+      <div class="toolbar-row">
+        <button class="btn btn-ghost" type="button" data-assist-context="client">入力ガイド</button>
+        <button class="icon-btn" type="button" data-modal-close="clientModal" aria-label="閉じる">
+          <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
     </div>
 
-    <form class="modal-form" id="clientForm">
+    <form class="form-stack" id="clientForm">
       <input type="hidden" id="clientId">
-      <label class="field">
-        <span class="field-label">クライアント名</span>
-        <input class="input" type="text" id="clientName" placeholder="株式会社サンプル">
-      </label>
 
-      <div class="modal-grid">
-        <label class="field">
-          <span class="field-label">担当者</span>
-          <input class="input" type="text" id="clientContactName" placeholder="田中 太郎">
-        </label>
-        <label class="field">
-          <span class="field-label">メール</span>
-          <input class="input" type="email" id="clientEmail" placeholder="info@example.com">
-        </label>
-        <label class="field">
-          <span class="field-label">電話</span>
-          <input class="input" type="text" id="clientPhone" placeholder="03-0000-0000">
-        </label>
-        <label class="field">
-          <span class="field-label">既定利益率 (%)</span>
-          <input class="input" type="number" min="0" step="0.1" id="clientDefaultProfitRate" placeholder="30">
-        </label>
-      </div>
+      <section class="form-section">
+        <div class="field-grid field-grid-2">
+          <label class="field field-span-2">
+            <span class="field-label">クライアント名 <span class="required-dot">必須</span></span>
+            <input class="input" type="text" id="clientName" placeholder="株式会社サンプル">
+            <span class="field-error" data-field-error="clientName"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">担当者</span>
+            <input class="input" type="text" id="clientContactName" placeholder="田中 太郎">
+            <span class="field-error" data-field-error="clientContactName"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">電話</span>
+            <input class="input" type="text" id="clientPhone" placeholder="03-0000-0000">
+            <span class="field-error" data-field-error="clientPhone"></span>
+          </label>
+          <label class="field field-span-2">
+            <span class="field-label">メール</span>
+            <input class="input" type="email" id="clientEmail" placeholder="info@example.com">
+            <span class="field-error" data-field-error="clientEmail"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">既定利益率 (%)</span>
+            <input class="input" type="number" min="0" step="0.1" id="clientDefaultProfitRate" placeholder="30">
+            <span class="field-error" data-field-error="clientDefaultProfitRate"></span>
+          </label>
+        </div>
+      </section>
 
-      <label class="field">
-        <span class="field-label">備考</span>
-        <textarea class="textarea" id="clientNote" placeholder="運用メモや請求条件など"></textarea>
-      </label>
+      <section class="form-section">
+        <label class="field">
+          <span class="field-label">備考</span>
+          <textarea class="textarea" id="clientNote" placeholder="請求条件、契約メモ、運用上の注意点"></textarea>
+          <span class="field-error" data-field-error="clientNote"></span>
+        </label>
+      </section>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" type="button" data-close-modal="clientModal">キャンセル</button>
-        <button class="btn btn-primary" type="submit" id="clientSubmit">保存する</button>
+        <button class="btn btn-secondary" type="button" data-modal-close="clientModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="clientSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-save"></use></svg>
+          <span>保存する</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <div class="modal-shell" id="userModal" hidden>
-  <div class="modal-panel">
+  <div class="modal-panel modal-form-panel" role="dialog" aria-modal="true" aria-labelledby="userModalTitle">
     <div class="modal-head">
       <div>
+        <div class="overline">User Form</div>
         <h3 id="userModalTitle">ユーザーを追加</h3>
-        <p>ユーザーの追加や権限変更は管理者のみ行えます。必要に応じて利用停止やパスワード再設定も行えます。</p>
+        <p>ロール、利用状態、初期パスワードを確認しながら保存できます。</p>
       </div>
-      <button class="btn btn-ghost" type="button" data-close-modal="userModal">閉じる</button>
+      <div class="toolbar-row">
+        <button class="btn btn-ghost" type="button" data-assist-context="user">入力ガイド</button>
+        <button class="icon-btn" type="button" data-modal-close="userModal" aria-label="閉じる">
+          <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+        </button>
+      </div>
     </div>
 
-    <form class="modal-form" id="userForm">
+    <form class="form-stack" id="userForm">
       <input type="hidden" id="userId">
-      <label class="field">
-        <span class="field-label">氏名</span>
-        <input class="input" type="text" id="userName" placeholder="田中 太郎">
-      </label>
-      <label class="field">
-        <span class="field-label">メールアドレス</span>
-        <input class="input" type="email" id="userEmail" placeholder="member@example.com">
-      </label>
 
-      <div class="modal-grid">
-        <label class="field">
-          <span class="field-label">ロール</span>
-          <select class="select" id="userRole">
-            <option value="admin">管理者</option>
-            <option value="editor">編集者</option>
-            <option value="viewer">閲覧者</option>
-          </select>
+      <section class="form-section">
+        <div class="field-grid field-grid-2">
+          <label class="field">
+            <span class="field-label">氏名 <span class="required-dot">必須</span></span>
+            <input class="input" type="text" id="userName" placeholder="田中 太郎">
+            <span class="field-error" data-field-error="userName"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">メールアドレス <span class="required-dot">必須</span></span>
+            <input class="input" type="email" id="userEmail" placeholder="member@example.com">
+            <span class="field-error" data-field-error="userEmail"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">ロール</span>
+            <select class="select" id="userRole">
+              <option value="admin">管理者</option>
+              <option value="editor">編集者</option>
+              <option value="viewer">閲覧者</option>
+            </select>
+            <span class="field-error" data-field-error="userRole"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">状態</span>
+            <select class="select" id="userStatus">
+              <option value="active">有効</option>
+              <option value="disabled">無効</option>
+            </select>
+            <span class="field-error" data-field-error="userStatus"></span>
+          </label>
+          <label class="field field-span-2">
+            <span class="field-label" id="userPasswordLabel">初期パスワード</span>
+            <input class="input" type="password" id="userPassword" placeholder="編集時は空欄で据え置き">
+            <span class="field-error" data-field-error="userPassword"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <label class="field check-field">
+          <input type="checkbox" id="userUnlock">
+          <span>ロック状態と失敗回数を解除する</span>
         </label>
-        <label class="field">
-          <span class="field-label">状態</span>
-          <select class="select" id="userStatus">
-            <option value="active">有効</option>
-            <option value="disabled">無効</option>
-          </select>
-        </label>
-      </div>
-
-      <label class="field">
-        <span class="field-label" id="userPasswordLabel">初期パスワード</span>
-        <input class="input" type="password" id="userPassword" placeholder="編集時は空欄で据え置き">
-      </label>
-
-      <label class="field">
-        <span class="field-label">追加オプション</span>
-        <label><input type="checkbox" id="userUnlock"> ロック状態と失敗回数を解除する</label>
-      </label>
+      </section>
 
       <div class="modal-actions">
-        <button class="btn btn-secondary" type="button" data-close-modal="userModal">キャンセル</button>
-        <button class="btn btn-primary" type="submit" id="userSubmit">保存する</button>
+        <button class="btn btn-secondary" type="button" data-modal-close="userModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="userSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-save"></use></svg>
+          <span>保存する</span>
+        </button>
       </div>
     </form>
   </div>
 </div>
 
 <div class="modal-shell" id="passwordModal" hidden>
-  <div class="modal-panel">
+  <div class="modal-panel modal-compact" role="dialog" aria-modal="true" aria-labelledby="passwordModalTitle">
     <div class="modal-head">
       <div>
-        <h3>パスワード変更</h3>
-        <p>変更後は他セッションを失効させ、再ログインを促します。</p>
+        <div class="overline">Security</div>
+        <h3 id="passwordModalTitle">パスワード変更</h3>
+        <p>更新後は他セッションを失効し、再ログインを促します。</p>
       </div>
-      <button class="btn btn-ghost" type="button" data-close-modal="passwordModal">閉じる</button>
+      <button class="icon-btn" type="button" data-modal-close="passwordModal" aria-label="閉じる">
+        <svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg>
+      </button>
     </div>
 
-    <form class="modal-form" id="passwordForm">
+    <form class="form-stack" id="passwordForm">
       <label class="field">
-        <span class="field-label">現在のパスワード</span>
+        <span class="field-label">現在のパスワード <span class="required-dot">必須</span></span>
         <input class="input" type="password" id="passwordCurrent" autocomplete="current-password">
+        <span class="field-error" data-field-error="passwordCurrent"></span>
       </label>
       <label class="field">
-        <span class="field-label">新しいパスワード</span>
+        <span class="field-label">新しいパスワード <span class="required-dot">必須</span></span>
         <input class="input" type="password" id="passwordNext" autocomplete="new-password" placeholder="英字と数字を含む 10 文字以上">
+        <span class="field-error" data-field-error="passwordNext"></span>
       </label>
       <label class="field">
-        <span class="field-label">確認用パスワード</span>
+        <span class="field-label">確認用パスワード <span class="required-dot">必須</span></span>
         <input class="input" type="password" id="passwordConfirm" autocomplete="new-password">
+        <span class="field-error" data-field-error="passwordConfirm"></span>
       </label>
-
       <div class="modal-actions">
-        <button class="btn btn-secondary" type="button" data-close-modal="passwordModal">キャンセル</button>
-        <button class="btn btn-primary" type="submit" id="passwordSubmit">更新する</button>
+        <button class="btn btn-secondary" type="button" data-modal-close="passwordModal">キャンセル</button>
+        <button class="btn btn-primary" type="submit" id="passwordSubmit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-save"></use></svg>
+          <span>更新する</span>
+        </button>
       </div>
     </form>
   </div>

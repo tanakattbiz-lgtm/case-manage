@@ -1,16 +1,86 @@
 <section class="view" id="view-clients" data-view-panel="clients">
-  <div class="view-head">
+  <div class="view-header">
     <div>
-      <h2>クライアント</h2>
-      <p>既定利益率を案件登録時に再利用するため、案件とは分離して管理します。</p>
+      <div class="overline">Clients</div>
+      <h2>クライアント管理</h2>
+      <p>顧客情報と関連案件の状況を分けて確認し、売上の偏りや担当情報も追いやすくしています。</p>
+    </div>
+    <div class="toolbar-row">
+      <button class="btn btn-secondary" type="button" data-action="reload-clients">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+        <span>再取得</span>
+      </button>
     </div>
   </div>
 
-  <div class="panel dashboard-section">
-    <div class="section-title">
-      <h3>クライアント一覧</h3>
-      <span id="clientsSummary">読み込み中</span>
+  <div class="split-view" id="clientsSplitView">
+    <div class="split-main">
+      <section class="surface section-card">
+        <div class="section-head">
+          <div>
+            <h3>検索条件</h3>
+            <p>名称、担当者、連絡先で絞り込みできます。</p>
+          </div>
+        </div>
+        <form id="clientsFilterForm" class="filter-form">
+          <div class="field-grid field-grid-2">
+            <label class="field">
+              <span class="field-label">キーワード</span>
+              <input class="input" type="search" id="clientQuery" placeholder="クライアント名、担当者、メール">
+            </label>
+            <label class="field">
+              <span class="field-label">絞り込み状態</span>
+              <div class="filter-chip-list" id="clientsFilterChips"></div>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <svg class="icon icon-16" aria-hidden="true"><use href="#icon-search"></use></svg>
+              <span>検索する</span>
+            </button>
+            <button class="btn btn-secondary" type="button" data-action="reset-client-filters">条件をクリア</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="surface section-card">
+        <div class="section-head">
+          <div>
+            <h3>検索結果</h3>
+            <p id="clientsSummary">読み込み中です。</p>
+          </div>
+          <div class="toolbar-row">
+            <label class="field compact-field">
+              <span class="field-label">件数</span>
+              <select class="select" id="clientsPageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="desktop-only">
+          <div class="client-list-table" id="clientsTableBody"></div>
+        </div>
+        <div class="mobile-card-list mobile-only" id="clientsMobileList"></div>
+        <div class="pager" id="clientsPager"></div>
+      </section>
     </div>
-    <div class="clients-grid" id="clientsGrid"></div>
+
+    <aside class="split-detail" id="clientsDetailRail">
+      <div class="detail-header">
+        <button class="btn btn-ghost mobile-only" type="button" data-detail-close="clients">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-back"></use></svg>
+          <span>一覧へ戻る</span>
+        </button>
+        <div>
+          <div class="overline">Client Detail</div>
+          <h3>クライアント詳細</h3>
+        </div>
+      </div>
+      <div id="clientDetailContent"></div>
+    </aside>
   </div>
 </section>

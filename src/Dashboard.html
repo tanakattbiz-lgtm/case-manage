@@ -1,69 +1,98 @@
 <section class="view is-active" id="view-dashboard" data-view-panel="dashboard">
-  <div class="panel dashboard-controls">
-    <div class="dashboard-filter-row">
-      <div>
-        <div class="page-eyebrow">現在の状況</div>
-        <h2 style="margin:6px 0 0;">ダッシュボード</h2>
-      </div>
-      <div class="dashboard-filters">
-        <button class="btn btn-secondary btn-small" type="button" data-dashboard-mode="all">全期間</button>
-        <button class="btn btn-secondary btn-small" type="button" data-dashboard-mode="year">今年</button>
-        <button class="btn btn-secondary btn-small" type="button" data-dashboard-mode="month">今月</button>
-      </div>
+  <div class="view-header">
+    <div>
+      <div class="overline">Dashboard</div>
+      <h2>状況をひと目で把握</h2>
+      <p>当月の進捗、売上、注意点を上から順に確認できるよう整理しています。</p>
     </div>
-
-    <div class="dashboard-filter-row">
-      <div class="dashboard-filters">
-        <select class="select" id="dashboardYear" style="min-width: 140px;"></select>
-        <select class="select" id="dashboardMonth" style="min-width: 140px;"></select>
+    <div class="toolbar-row">
+      <div class="segmented" id="dashboardModeButtons">
+        <button class="segment-btn is-active" type="button" data-dashboard-mode="month">月次</button>
+        <button class="segment-btn" type="button" data-dashboard-mode="year">年次</button>
+        <button class="segment-btn" type="button" data-dashboard-mode="all">全期間</button>
       </div>
-      <button class="btn btn-primary btn-small" type="button" data-action="dashboard-open-projects">対象案件を表示</button>
+      <div class="toolbar-row">
+        <label class="field compact-field">
+          <span class="field-label">年</span>
+          <select class="select" id="dashboardYear"></select>
+        </label>
+        <label class="field compact-field">
+          <span class="field-label">月</span>
+          <select class="select" id="dashboardMonth"></select>
+        </label>
+        <button class="btn btn-secondary" type="button" data-action="refresh-dashboard">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+          <span>更新</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="dashboard-metrics" id="dashboardMetrics"></div>
+  <div class="kpi-grid" id="dashboardMetrics"></div>
 
-  <div class="dashboard-grid">
-    <div class="panel dashboard-section">
-      <div class="section-title">
-        <h3>月次推移</h3>
-        <span id="dashboardPeriodLabel">集計期間を読み込み中</span>
+  <div class="dashboard-grid dashboard-grid-primary">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>売上と利益の推移</h3>
+          <p id="dashboardPeriodLabel">期間を読み込み中です。</p>
+        </div>
       </div>
-      <div class="chart-box" id="dashboardTrend"></div>
-    </div>
+      <div class="chart-shell" id="dashboardTrend"></div>
+    </section>
 
-    <div class="panel dashboard-section">
-      <div class="section-title">
-        <h3>ステータス分布</h3>
-        <span>クリックで案件一覧へ反映</span>
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>ステータス別サマリー</h3>
+          <p>カードを選ぶと案件一覧へ絞り込み遷移します。</p>
+        </div>
       </div>
       <div class="status-grid" id="dashboardStatusGrid"></div>
-    </div>
+    </section>
   </div>
 
-  <div class="dashboard-grid">
-    <div class="panel dashboard-section">
-      <div class="section-title">
-        <h3>主要クライアント</h3>
-        <span>完了案件ベース</span>
+  <div class="dashboard-grid dashboard-grid-secondary">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>主要クライアント</h3>
+          <p>完了案件ベースの売上上位を表示しています。</p>
+        </div>
       </div>
       <div class="ranking-list" id="dashboardRanking"></div>
-    </div>
+    </section>
 
-    <div class="panel dashboard-section">
-      <div class="section-title">
-        <h3>最近の完了案件</h3>
-        <span>完了日優先</span>
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>最近の完了案件</h3>
+          <p>最新の完了案件から確認できます。</p>
+        </div>
       </div>
-      <div class="recent-list" id="dashboardRecent"></div>
-    </div>
+      <div class="stack-list" id="dashboardRecent"></div>
+    </section>
   </div>
 
-  <div class="panel dashboard-section">
-    <div class="section-title">
-      <h3>インサイト</h3>
-      <span>売上や進行状況の傾向を確認できます</span>
-    </div>
-    <div class="insight-list" id="dashboardInsights"></div>
+  <div class="dashboard-grid dashboard-grid-tertiary">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>インサイト</h3>
+          <p>判断に必要なポイントだけを短く要約しています。</p>
+        </div>
+      </div>
+      <div class="insight-list" id="dashboardInsights"></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>PWA 利用ガイド</h3>
+          <p>ホーム画面追加とオフライン運用の考え方を整理しています。</p>
+        </div>
+      </div>
+      <div class="stack-list" id="dashboardPwaCard"></div>
+    </section>
   </div>
 </section>

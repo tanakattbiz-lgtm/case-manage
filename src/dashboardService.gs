@@ -8,7 +8,7 @@ function getDashboard(sessionToken, filter) {
     return JSON.parse(cached);
   }
 
-  const projects = getProjects(sessionToken);
+  const projects = listProjectDtos_();
   const dashboard = buildDashboardSummary_(projects, normalizedFilter);
   cache.put(cacheKey, JSON.stringify(dashboard), FIXED_VALUES.dashboard.cacheSeconds);
   return dashboard;

@@ -1,163 +1,461 @@
 <script>
-  App.users = {
-    bindEvents: function () {
-      var self = this;
-      App.ui.byId('usersTableBody').addEventListener('click', function (event) {
-        var action = event.target.closest('[data-user-action]');
-        if (!action) return;
-        var userId = action.dataset.userId;
-        if (action.dataset.userAction === 'edit') {
-          self.openModal(self.findById(userId));
+  (function (App) {
+    App.users = {
+      bindEvents: function () {
+        var self = this;
+        App.ui.byId('usersFilterForm').addEventListener('submit', function (event) {
+          event.preventDefault();
+          self.applyFiltersFromForm();
+        });
+
+        App.ui.byId('auditsFilterForm').addEventListener('submit', function (event) {
+          event.preventDefault();
+          self.applyAuditFiltersFromForm();
+        });
+
+        App.ui.byId('usersPageSize').addEventListener('change', function (event) {
+          App.state.users.pageSize = Number(event.target.value) || 20;
+          App.state.users.page = 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        App.ui.byId('auditPageSize').addEventListener('change', function (event) {
+          App.state.users.audits.pageSize = Number(event.target.value) || 20;
+          App.state.users.audits.page = 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        App.ui.byId('usersPager').addEventListener('click', function (event) {
+          var button = event.target.closest('[data-page-action]');
+          if (!button) return;
+          if (button.dataset.pageAction === 'users:prev') App.state.users.page -= 1;
+          if (button.dataset.pageAction === 'users:next') App.state.users.page += 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        App.ui.byId('auditPager').addEventListener('click', function (event) {
+          var button = event.target.closest('[data-page-action]');
+          if (!button) return;
+          if (button.dataset.pageAction === 'audits:prev') App.state.users.audits.page -= 1;
+          if (button.dataset.pageAction === 'audits:next') App.state.users.audits.page += 1;
+          self.ensureLoaded(true).catch(function () {});
+        });
+
+        ['usersTableBody', 'usersMobileList', 'userDetailContent'].forEach(function (id) {
+          App.ui.byId(id).addEventListener('click', function (event) {
+            var action = event.target.closest('[data-user-action]');
+            if (action) {
+              var userId = action.dataset.userId;
+              if (action.dataset.userAction === 'edit') self.openModal(self.findItem(userId));
+              if (action.dataset.userAction === 'unlock') self.unlock(userId);
+              return;
+            }
+
+            var row = event.target.closest('[data-user-select]');
+            if (row) self.openDetail(row.dataset.userSelect);
+          });
+        });
+
+        App.ui.byId('userForm').addEventListener('submit', this.submit.bind(this));
+      },
+
+      findItem: function (userId) {
+        return App.state.users.items.find(function (item) {
+          return item.id === userId;
+        }) || null;
+      },
+
+      buildUserQuery: function () {
+        return {
+          page: App.state.users.page,
+          pageSize: App.state.users.pageSize,
+          query: App.state.users.filters.query,
+          role: App.state.users.filters.role,
+          status: App.state.users.filters.status
+        };
+      },
+
+      buildAuditQuery: function () {
+        return {
+          page: App.state.users.audits.page,
+          pageSize: App.state.users.audits.pageSize,
+          query: App.state.users.audits.filters.query,
+          result: App.state.users.audits.filters.result
+        };
+      },
+
+      ensureLoaded: async function (force) {
+        if (!App.canManageUsers()) {
+          this.renderNoPermission();
+          return;
         }
-        if (action.dataset.userAction === 'unlock') {
-          self.unlock(userId);
+
+        App.state.users.loading = true;
+        App.state.users.error = '';
+        App.state.users.audits.error = '';
+        this.render();
+        try {
+          var results = await Promise.all([
+            App.api.users.list(this.buildUserQuery()),
+            App.api.users.audits(this.buildAuditQuery())
+          ]);
+
+          var usersResponse = results[0];
+          var auditsResponse = results[1];
+
+          App.state.users.items = usersResponse.items || [];
+          App.state.users.pagination = usersResponse.pagination || App.emptyPagination();
+          App.state.users.summary = usersResponse.summary || null;
+          App.state.users.stale = Boolean(usersResponse.__meta && usersResponse.__meta.stale);
+
+          App.state.users.audits.items = auditsResponse.items || [];
+          App.state.users.audits.pagination = auditsResponse.pagination || App.emptyPagination();
+          App.state.users.audits.summary = auditsResponse.summary || null;
+          App.state.users.audits.stale = Boolean(auditsResponse.__meta && auditsResponse.__meta.stale);
+
+          if (usersResponse.__meta) App.ui.setLastSync(usersResponse.__meta.savedAt);
+          if (!App.state.users.selectedId || !this.findItem(App.state.users.selectedId)) {
+            App.state.users.selectedId = App.state.users.items[0] ? App.state.users.items[0].id : '';
+          }
+          this.render();
+          if (App.state.users.selectedId) {
+            await this.openDetail(App.state.users.selectedId, force);
+          } else {
+            App.state.users.detail = null;
+            this.renderDetail();
+          }
+        } catch (error) {
+          App.state.users.error = error.message || 'ユーザー一覧の取得に失敗しました。';
+          this.render();
+          throw error;
+        } finally {
+          App.state.users.loading = false;
+          this.render();
         }
-      });
+      },
 
-      App.ui.byId('auditLimit').addEventListener('change', function (event) {
-        App.state.users.auditLimit = Number(event.target.value) || 20;
-        self.renderAudits();
-      });
+      reload: async function () {
+        try {
+          await this.ensureLoaded(true);
+        } catch (error) {
+        }
+      },
 
-      App.ui.byId('userForm').addEventListener('submit', this.submit.bind(this));
-    },
+      applyFiltersFromForm: function () {
+        App.state.users.filters = {
+          query: App.ui.byId('userQuery').value.trim(),
+          role: App.ui.byId('userRoleFilter').value,
+          status: App.ui.byId('userStatusFilter').value
+        };
+        App.state.users.page = 1;
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-    findById: function (userId) {
-      return App.state.users.items.find(function (user) {
-        return user.id === userId;
-      }) || null;
-    },
+      applyAuditFiltersFromForm: function () {
+        App.state.users.audits.filters = {
+          query: App.ui.byId('auditQuery').value.trim(),
+          result: App.ui.byId('auditResultFilter').value
+        };
+        App.state.users.audits.page = 1;
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-    ensureLoaded: async function (force) {
-      if (!App.canManageUsers()) return [];
-      if (!force && !App.state.users.dirty && App.state.users.loaded) {
-        return App.state.users.items;
-      }
+      resetFilters: function () {
+        App.state.users.filters = App.defaultUserFilters();
+        App.state.users.page = 1;
+        App.ui.byId('userQuery').value = '';
+        App.ui.byId('userRoleFilter').value = '';
+        App.ui.byId('userStatusFilter').value = '';
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-      var results = await Promise.all([
-        App.api.users.list(),
-        App.api.users.audits()
-      ]);
-      App.state.users.items = results[0] || [];
-      App.state.users.audits = results[1] || [];
-      App.state.users.loaded = true;
-      App.state.users.dirty = false;
-      return App.state.users.items;
-    },
+      resetAuditFilters: function () {
+        App.state.users.audits.filters = App.defaultAuditFilters();
+        App.state.users.audits.page = 1;
+        App.ui.byId('auditQuery').value = '';
+        App.ui.byId('auditResultFilter').value = '';
+        this.ensureLoaded(true).catch(function () {});
+      },
 
-    render: function () {
-      if (!App.canManageUsers()) {
-        App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6"><div class="empty-state"><strong>権限がありません。</strong><span>管理者でログインしてください。</span></div></td></tr>';
-        return;
-      }
-      if (!App.state.users.loaded) return;
+      renderNoPermission: function () {
+        var html = App.ui.renderStateBlock('権限がありません。', '管理者権限でログインすると認証管理を利用できます。', 'warning');
+        App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6">' + html + '</td></tr>';
+        App.ui.byId('usersMobileList').innerHTML = html;
+        App.ui.byId('userDetailContent').innerHTML = html;
+        App.ui.byId('auditList').innerHTML = html;
+      },
 
-      var users = App.state.users.items;
-      var lockedCount = users.filter(App.helpers.isUserLocked).length;
-      App.ui.byId('auditLimit').value = String(App.state.users.auditLimit);
-      App.ui.byId('usersCount').textContent = String(users.length);
-      App.ui.byId('usersLockedCount').textContent = String(lockedCount);
-      App.ui.byId('auditCount').textContent = String(Math.min(App.state.users.auditLimit, App.state.users.audits.length));
+      renderKpis: function () {
+        var summary = App.state.users.summary || { filteredItems: 0, activeCount: 0, lockedCount: 0, adminCount: 0 };
+        App.ui.byId('usersKpiCards').innerHTML = [
+          '<div class="surface metric-card"><strong>対象ユーザー</strong><div class="metric">' + App.helpers.number(summary.filteredItems) + '</div><span>検索条件に一致</span></div>',
+          '<div class="surface metric-card"><strong>有効ユーザー</strong><div class="metric">' + App.helpers.number(summary.activeCount) + '</div><span>現在有効なアカウント</span></div>',
+          '<div class="surface metric-card"><strong>ロック中</strong><div class="metric">' + App.helpers.number(summary.lockedCount) + '</div><span>解除対象の候補</span></div>'
+        ].join('');
+      },
 
-      App.ui.byId('usersTableBody').innerHTML = users.length
-        ? users.map(function (user) {
-            var locked = App.helpers.isUserLocked(user);
+      render: function () {
+        this.renderKpis();
+        App.ui.byId('usersPageSize').value = String(App.state.users.pageSize);
+        App.ui.byId('auditPageSize').value = String(App.state.users.audits.pageSize);
+
+        if (!App.canManageUsers()) {
+          this.renderNoPermission();
+          return;
+        }
+
+        var summary = App.state.users.summary || { filteredItems: 0, totalItems: 0 };
+        App.ui.byId('usersSummary').textContent = summary.filteredItems + '件 / 全' + summary.totalItems + '件' + (App.state.users.stale ? ' / キャッシュ表示' : '');
+        var auditSummary = App.state.users.audits.summary || { filteredItems: 0, totalItems: 0 };
+        App.ui.byId('auditsSummary').textContent = auditSummary.filteredItems + '件 / 全' + auditSummary.totalItems + '件' + (App.state.users.audits.stale ? ' / キャッシュ表示' : '');
+
+        if (App.state.users.loading && !App.state.users.items.length) {
+          App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6">' + App.ui.renderSkeletonList(3) + '</td></tr>';
+          App.ui.byId('usersMobileList').innerHTML = App.ui.renderSkeletonList(3);
+          App.ui.byId('auditList').innerHTML = App.ui.renderSkeletonList(2);
+          return;
+        }
+
+        if (App.state.users.error && !App.state.users.items.length) {
+          var offline = String(App.state.users.error || '').indexOf('オフライン') >= 0;
+          var errorHtml = App.ui.renderStateBlock(
+            offline ? 'オフラインのため最新情報を取得できません。' : 'ユーザー一覧を表示できません。',
+            App.state.users.error,
+            offline ? 'cloud-off' : 'error',
+            '<button class="btn btn-secondary" type="button" data-action="reload-users">再試行</button>'
+          );
+          App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6">' + errorHtml + '</td></tr>';
+          App.ui.byId('usersMobileList').innerHTML = errorHtml;
+        } else if (!App.state.users.items.length) {
+          var emptyHtml = App.ui.renderStateBlock('ユーザーがいません。', '右上の追加ボタンからユーザーを作成してください。', 'info');
+          App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6">' + emptyHtml + '</td></tr>';
+          App.ui.byId('usersMobileList').innerHTML = emptyHtml;
+        } else {
+          App.ui.byId('usersTableBody').innerHTML = App.state.users.items.map(function (user) {
             return ''
-              + '<tr>'
-              + '  <td><strong>' + App.helpers.escape(user.name) + '</strong></td>'
-              + '  <td>' + App.helpers.escape(user.roleLabel) + '</td>'
-              + '  <td>' + App.helpers.escape(user.email) + '</td>'
-              + '  <td>' + App.helpers.escape(user.status === 'active' ? (locked ? 'ロック中' : '有効') : '無効') + '</td>'
-              + '  <td>' + App.helpers.escape(user.lastLoginAt || '—') + '</td>'
-              + '  <td>'
-              + '    <div class="dashboard-filters">'
-              + '      <button class="btn btn-secondary btn-small" type="button" data-user-action="edit" data-user-id="' + App.helpers.escape(user.id) + '">編集</button>'
-              + (locked ? '<button class="btn btn-secondary btn-small" type="button" data-user-action="unlock" data-user-id="' + App.helpers.escape(user.id) + '">ロック解除</button>' : '')
-              + '    </div>'
-              + '  </td>'
+              + '<tr data-user-select="' + App.helpers.escape(user.id) + '"' + (user.id === App.state.users.selectedId ? ' class="is-selected"' : '') + '>'
+              + '<td><strong>' + App.helpers.escape(user.name) + '</strong></td>'
+              + '<td>' + App.helpers.escape(user.roleLabel) + '</td>'
+              + '<td>' + App.helpers.escape(user.email) + '</td>'
+              + '<td><span class="status-pill ' + App.helpers.userStatusClass(user) + '">' + App.helpers.escape(App.helpers.userStatusLabel(user)) + '</span></td>'
+              + '<td>' + App.helpers.escape(App.helpers.dateTimeLabel(user.lastLoginAt)) + '</td>'
+              + '<td class="actions-cell"><div class="list-actions">'
+              + '<button class="btn btn-secondary btn-small" type="button" data-user-action="edit" data-user-id="' + App.helpers.escape(user.id) + '">編集</button>'
+              + (App.helpers.isUserLocked(user) ? '<button class="btn btn-secondary btn-small" type="button" data-user-action="unlock" data-user-id="' + App.helpers.escape(user.id) + '">解除</button>' : '')
+              + '</div></td>'
               + '</tr>';
-          }).join('')
-        : '<tr><td colspan="6"><div class="empty-state"><strong>ユーザーがいません。</strong><span>右上の追加ボタンから作成してください。</span></div></td></tr>';
+          }).join('');
 
-      this.renderAudits();
-    },
+          App.ui.byId('usersMobileList').innerHTML = App.state.users.items.map(function (user) {
+            return ''
+              + '<article class="mobile-card" data-user-select="' + App.helpers.escape(user.id) + '">'
+              + '<div class="row-head"><div><strong>' + App.helpers.escape(user.name) + '</strong><div class="row-sub">' + App.helpers.escape(user.email) + '</div></div><span class="status-pill ' + App.helpers.userStatusClass(user) + '">' + App.helpers.escape(App.helpers.userStatusLabel(user)) + '</span></div>'
+              + '<div class="stats-row"><span>ロール ' + App.helpers.escape(user.roleLabel) + '</span><span>最終ログイン ' + App.helpers.escape(App.helpers.dateTimeLabel(user.lastLoginAt)) + '</span></div>'
+              + '<div class="list-actions"><button class="btn btn-secondary btn-small" type="button" data-user-action="edit" data-user-id="' + App.helpers.escape(user.id) + '">編集</button>' + (App.helpers.isUserLocked(user) ? '<button class="btn btn-secondary btn-small" type="button" data-user-action="unlock" data-user-id="' + App.helpers.escape(user.id) + '">解除</button>' : '') + '</div>'
+              + '</article>';
+          }).join('');
+        }
 
-    renderAudits: function () {
-      var limit = App.state.users.auditLimit;
-      var audits = App.state.users.audits.slice(0, limit);
-      App.ui.byId('auditList').innerHTML = audits.length
-        ? audits.map(function (audit) {
+        App.ui.renderPager('usersPager', App.state.users.pagination, 'users');
+        this.renderAudits();
+      },
+
+      renderAudits: function () {
+        if (App.state.users.audits.error && !App.state.users.audits.items.length) {
+          App.ui.byId('auditList').innerHTML = App.ui.renderStateBlock('監査ログを表示できません。', App.state.users.audits.error, 'error');
+          return;
+        }
+        if (!App.state.users.audits.items.length) {
+          App.ui.byId('auditList').innerHTML = App.ui.renderStateBlock('監査ログはまだありません。', 'ログインや権限操作があるとここへ記録されます。', 'info');
+        } else {
+          App.ui.byId('auditList').innerHTML = App.state.users.audits.items.map(function (audit) {
             return ''
               + '<div class="audit-row">'
-              + '  <div class="audit-meta">'
-              + '    <span class="audit-result ' + App.helpers.escape(audit.result) + '">' + App.helpers.escape(audit.result) + '</span>'
-              + '    <span>' + App.helpers.escape(audit.event) + '</span>'
-              + '    <span>' + App.helpers.escape(audit.timestamp) + '</span>'
-              + '  </div>'
-              + '  <strong>' + App.helpers.escape(audit.name || audit.email || 'system') + '</strong>'
-              + '  <div class="field-hint">' + App.helpers.escape(audit.detail || '詳細なし') + '</div>'
+              + '<div class="audit-meta"><span class="result-pill ' + App.helpers.resultClass(audit.result) + '">' + App.helpers.escape(audit.result) + '</span><span class="chip">' + App.helpers.escape(audit.event) + '</span><span class="row-sub">' + App.helpers.escape(App.helpers.dateTimeLabel(audit.timestamp)) + '</span></div>'
+              + '<strong>' + App.helpers.escape(audit.name || audit.email || 'system') + '</strong>'
+              + '<p>' + App.helpers.escape(audit.detail || '詳細なし') + '</p>'
               + '</div>';
-          }).join('')
-        : '<div class="empty-state"><strong>監査ログはまだありません。</strong><span>ログインや権限チェックの結果がここへ出ます。</span></div>';
-    },
+          }).join('');
+        }
+        App.ui.renderPager('auditPager', App.state.users.audits.pagination, 'audits');
+      },
 
-    openModal: function (user) {
-      App.ui.byId('userModalTitle').textContent = user ? 'ユーザーを編集' : 'ユーザーを追加';
-      App.ui.byId('userPasswordLabel').textContent = user ? '新しいパスワード（空欄で据え置き）' : '初期パスワード';
-      App.ui.byId('userId').value = user ? user.id : '';
-      App.ui.byId('userName').value = user ? user.name : '';
-      App.ui.byId('userEmail').value = user ? user.email : '';
-      App.ui.byId('userRole').value = user ? user.role : 'viewer';
-      App.ui.byId('userStatus').value = user ? user.status : 'active';
-      App.ui.byId('userPassword').value = '';
-      App.ui.byId('userUnlock').checked = false;
-      App.ui.openModal('userModal');
-    },
-
-    submit: async function (event) {
-      event.preventDefault();
-      var name = App.ui.byId('userName').value.trim();
-      var email = App.ui.byId('userEmail').value.trim();
-      if (!name || !email) {
-        App.ui.toast('氏名とメールアドレスを入力してください。', 'error');
-        return;
-      }
-
-      var payload = {
-        id: App.ui.byId('userId').value,
-        name: name,
-        email: email,
-        role: App.ui.byId('userRole').value,
-        status: App.ui.byId('userStatus').value,
-        password: App.ui.byId('userPassword').value,
-        unlock: App.ui.byId('userUnlock').checked
-      };
-
-      App.ui.setBusy('userSubmit', true, '保存中...', '保存する');
-      try {
-        await App.api.users.save(payload);
-        App.ui.closeModal('userModal');
-        App.ui.toast('ユーザーを保存しました。', 'success');
-        App.markDirty(['users']);
-        await this.ensureLoaded(true);
+      openDetail: async function (userId, force) {
+        if (!userId) {
+          App.state.users.selectedId = '';
+          App.state.users.detail = null;
+          this.renderDetail();
+          return;
+        }
+        App.state.users.selectedId = userId;
+        App.state.users.detailLoading = true;
         this.render();
-      } catch (error) {
-        App.ui.toast(error.message || 'ユーザー保存に失敗しました。', 'error');
-      } finally {
-        App.ui.setBusy('userSubmit', false, '保存中...', '保存する');
-      }
-    },
+        this.renderDetail();
+        try {
+          var response = await App.api.users.detail(userId);
+          App.state.users.detail = response;
+          App.state.users.detailError = '';
+          if (App.helpers.isMobile()) App.ui.byId('usersSplitView').classList.add('is-detail-open');
+          this.renderDetail();
+        } catch (error) {
+          App.state.users.detailError = error.message || 'ユーザー詳細の取得に失敗しました。';
+          this.renderDetail();
+          if (!force) App.ui.toast(App.state.users.detailError, 'error');
+        } finally {
+          App.state.users.detailLoading = false;
+          this.renderDetail();
+        }
+      },
 
-    unlock: async function (userId) {
-      try {
-        await App.api.users.unlock(userId);
-        App.ui.toast('ロック状態を解除しました。', 'success');
-        App.markDirty(['users']);
-        await this.ensureLoaded(true);
-        this.render();
-      } catch (error) {
-        App.ui.toast(error.message || 'ロック解除に失敗しました。', 'error');
+      renderDetail: function () {
+        var target = App.ui.byId('userDetailContent');
+        if (!App.canManageUsers()) {
+          target.innerHTML = App.ui.renderStateBlock('権限がありません。', '管理者のみ詳細を表示できます。', 'warning');
+          return;
+        }
+        if (!App.state.users.selectedId) {
+          target.innerHTML = App.ui.renderStateBlock('ユーザーを選択してください。', '一覧から 1 件選ぶと詳細と直近監査が表示されます。', 'info');
+          return;
+        }
+        if (App.state.users.detailLoading) {
+          target.innerHTML = App.ui.renderSkeletonList(2);
+          return;
+        }
+        if (App.state.users.detailError) {
+          target.innerHTML = App.ui.renderStateBlock(
+            String(App.state.users.detailError || '').indexOf('オフライン') >= 0 ? 'オフラインのため詳細を取得できません。' : 'ユーザー詳細を表示できません。',
+            App.state.users.detailError,
+            String(App.state.users.detailError || '').indexOf('オフライン') >= 0 ? 'cloud-off' : 'error'
+          );
+          return;
+        }
+        if (!App.state.users.detail || !App.state.users.detail.user) {
+          target.innerHTML = App.ui.renderStateBlock('ユーザー詳細がありません。', '別のユーザーを選択してください。', 'info');
+          return;
+        }
+
+        var user = App.state.users.detail.user;
+        var audits = App.state.users.detail.recentAudits || [];
+        target.innerHTML = ''
+          + '<section class="detail-section">'
+          + '<div class="row-head"><div><strong>' + App.helpers.escape(user.name) + '</strong><div class="row-sub">' + App.helpers.escape(user.email) + '</div></div><span class="status-pill ' + App.helpers.userStatusClass(user) + '">' + App.helpers.escape(App.helpers.userStatusLabel(user)) + '</span></div>'
+          + '<div class="detail-actions"><button class="btn btn-secondary btn-small" type="button" data-user-action="edit" data-user-id="' + App.helpers.escape(user.id) + '">編集する</button>' + (App.helpers.isUserLocked(user) ? '<button class="btn btn-secondary btn-small" type="button" data-user-action="unlock" data-user-id="' + App.helpers.escape(user.id) + '">ロック解除</button>' : '') + '</div>'
+          + '</section>'
+          + '<section class="detail-section"><h4>基本情報</h4><dl class="detail-grid">'
+          + '<div class="detail-item"><dt>ロール</dt><dd>' + App.helpers.escape(user.roleLabel) + '</dd></div>'
+          + '<div class="detail-item"><dt>最終ログイン</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(user.lastLoginAt)) + '</dd></div>'
+          + '<div class="detail-item"><dt>登録日</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(user.createdAt)) + '</dd></div>'
+          + '<div class="detail-item"><dt>最終 PW 変更</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(user.passwordChangedAt)) + '</dd></div>'
+          + '</dl></section>'
+          + '<section class="detail-section"><h4>直近の監査</h4>' + (audits.length
+              ? audits.map(function (audit) {
+                  return '<div class="audit-row"><div class="audit-meta"><span class="result-pill ' + App.helpers.resultClass(audit.result) + '">' + App.helpers.escape(audit.result) + '</span><span class="chip">' + App.helpers.escape(audit.event) + '</span></div><p>' + App.helpers.escape(audit.detail || '詳細なし') + '</p></div>';
+                }).join('')
+              : '<p>直近の監査ログはありません。</p>') + '</section>';
+      },
+
+      serializeForm: function () {
+        return App.helpers.formDataSignature({
+          id: App.ui.byId('userId').value,
+          name: App.ui.byId('userName').value,
+          email: App.ui.byId('userEmail').value,
+          role: App.ui.byId('userRole').value,
+          status: App.ui.byId('userStatus').value,
+          password: App.ui.byId('userPassword').value,
+          unlock: App.ui.byId('userUnlock').checked
+        });
+      },
+
+      isFormDirty: function () {
+        return App.state.users.formSnapshot && App.state.users.formSnapshot !== this.serializeForm();
+      },
+
+      openModal: function (user) {
+        App.state.users.formMode = user ? 'edit' : 'create';
+        App.ui.resetFieldErrors(App.ui.byId('userForm'));
+        App.ui.byId('userModalTitle').textContent = user ? 'ユーザーを編集' : 'ユーザーを追加';
+        App.ui.byId('userPasswordLabel').textContent = user ? '新しいパスワード（空欄で据え置き）' : '初期パスワード';
+        App.ui.byId('userId').value = user ? user.id : '';
+        App.ui.byId('userName').value = user ? user.name : '';
+        App.ui.byId('userEmail').value = user ? user.email : '';
+        App.ui.byId('userRole').value = user ? user.role : 'viewer';
+        App.ui.byId('userStatus').value = user ? user.status : 'active';
+        App.ui.byId('userPassword').value = '';
+        App.ui.byId('userUnlock').checked = false;
+        App.state.users.formSnapshot = this.serializeForm();
+        App.ui.openModal('userModal');
+      },
+
+      validateForm: function () {
+        var errors = {};
+        if (!App.ui.byId('userName').value.trim()) errors.userName = '氏名を入力してください。';
+        if (!App.ui.byId('userEmail').value.trim()) errors.userEmail = 'メールアドレスを入力してください。';
+        if (!App.ui.byId('userId').value && !App.ui.byId('userPassword').value) errors.userPassword = '新規ユーザーには初期パスワードが必要です。';
+        return errors;
+      },
+
+      submit: async function (event) {
+        event.preventDefault();
+        App.ui.resetFieldErrors(App.ui.byId('userForm'));
+        var errors = this.validateForm();
+        if (Object.keys(errors).length) {
+          App.ui.applyFieldErrors(errors);
+          return;
+        }
+
+        var confirmed = await App.ui.confirm({
+          eyebrow: 'User Save',
+          title: 'ユーザーを保存しますか。',
+          text: '権限や状態の変更は即時反映されます。',
+          confirmText: '保存する',
+          cancelText: '戻る'
+        });
+        if (!confirmed) return;
+
+        var payload = {
+          id: App.ui.byId('userId').value,
+          name: App.ui.byId('userName').value.trim(),
+          email: App.ui.byId('userEmail').value.trim(),
+          role: App.ui.byId('userRole').value,
+          status: App.ui.byId('userStatus').value,
+          password: App.ui.byId('userPassword').value,
+          unlock: App.ui.byId('userUnlock').checked
+        };
+
+        App.ui.setBusy('userSubmit', true, '保存中...', '保存する');
+        try {
+          await App.api.users.save(payload);
+          await App.ui.closeModal('userModal', true);
+          App.state.users.formSnapshot = '';
+          App.ui.toast('ユーザーを保存しました。', 'success');
+          await this.ensureLoaded(true);
+        } catch (error) {
+          App.ui.toast(error.message || 'ユーザーの保存に失敗しました。', 'error');
+        } finally {
+          App.ui.setBusy('userSubmit', false, '保存中...', '保存する');
+        }
+      },
+
+      unlock: async function (userId) {
+        var user = this.findItem(userId);
+        if (!user) return;
+        var confirmed = await App.ui.confirm({
+          eyebrow: 'Unlock',
+          title: 'ロック状態を解除しますか。',
+          text: '「' + user.name + '」の失敗回数とロック期限を解除します。',
+          confirmText: '解除する',
+          cancelText: 'キャンセル'
+        });
+        if (!confirmed) return;
+
+        try {
+          await App.api.users.unlock(userId);
+          App.ui.toast('ロック状態を解除しました。', 'success');
+          await this.ensureLoaded(true);
+        } catch (error) {
+          App.ui.toast(error.message || 'ロック解除に失敗しました。', 'error');
+        }
       }
-    }
-  };
+    };
+  })(window.App);
 </script>

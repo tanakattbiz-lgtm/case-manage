@@ -1,61 +1,162 @@
 <section class="view" id="view-users" data-view-panel="users">
-  <div class="view-head">
+  <div class="view-header">
     <div>
+      <div class="overline">Security</div>
       <h2>認証管理</h2>
-      <p>管理者のみアクセスできます。ユーザー一覧と監査ログを必要時にだけ読み込みます。</p>
+      <p>ユーザー一覧、権限、ロック状態、監査ログをひと続きで追える構成にしています。</p>
+    </div>
+    <div class="toolbar-row">
+      <button class="btn btn-secondary" type="button" data-action="reload-users">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+        <span>再取得</span>
+      </button>
     </div>
   </div>
 
-  <div class="users-summary">
-    <div class="panel summary-card">
-      <strong>登録ユーザー</strong>
-      <div class="metric" id="usersCount">0</div>
-      <span>ロール付きアカウント数</span>
+  <div class="kpi-grid kpi-grid-small" id="usersKpiCards"></div>
+
+  <div class="split-view" id="usersSplitView">
+    <div class="split-main">
+      <section class="surface section-card">
+        <div class="section-head">
+          <div>
+            <h3>ユーザー検索</h3>
+            <p>氏名、メール、権限、状態で絞り込みできます。</p>
+          </div>
+        </div>
+
+        <form id="usersFilterForm" class="filter-form">
+          <div class="field-grid field-grid-3">
+            <label class="field">
+              <span class="field-label">キーワード</span>
+              <input class="input" type="search" id="userQuery" placeholder="氏名、メール">
+            </label>
+            <label class="field">
+              <span class="field-label">ロール</span>
+              <select class="select" id="userRoleFilter">
+                <option value="">すべて</option>
+                <option value="admin">管理者</option>
+                <option value="editor">編集者</option>
+                <option value="viewer">閲覧者</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">状態</span>
+              <select class="select" id="userStatusFilter">
+                <option value="">すべて</option>
+                <option value="active">有効</option>
+                <option value="disabled">無効</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">
+              <svg class="icon icon-16" aria-hidden="true"><use href="#icon-search"></use></svg>
+              <span>検索する</span>
+            </button>
+            <button class="btn btn-secondary" type="button" data-action="reset-user-filters">条件をクリア</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="surface section-card">
+        <div class="section-head">
+          <div>
+            <h3>ユーザー一覧</h3>
+            <p id="usersSummary">読み込み中です。</p>
+          </div>
+          <div class="toolbar-row">
+            <label class="field compact-field">
+              <span class="field-label">件数</span>
+              <select class="select" id="usersPageSize">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="table-wrap desktop-only">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>氏名</th>
+                <th>ロール</th>
+                <th>メール</th>
+                <th>状態</th>
+                <th>最終ログイン</th>
+                <th class="actions-cell">操作</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+
+        <div class="mobile-card-list mobile-only" id="usersMobileList"></div>
+        <div class="pager" id="usersPager"></div>
+      </section>
     </div>
-    <div class="panel summary-card">
-      <strong>ロック中</strong>
-      <div class="metric" id="usersLockedCount">0</div>
-      <span>ログイン失敗により一時停止中</span>
-    </div>
-    <div class="panel summary-card">
-      <strong>監査ログ件数</strong>
-      <div class="metric" id="auditCount">0</div>
-      <span>現在の表示件数</span>
-    </div>
+
+    <aside class="split-detail" id="usersDetailRail">
+      <div class="detail-header">
+        <button class="btn btn-ghost mobile-only" type="button" data-detail-close="users">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-back"></use></svg>
+          <span>一覧へ戻る</span>
+        </button>
+        <div>
+          <div class="overline">User Detail</div>
+          <h3>ユーザー詳細</h3>
+        </div>
+      </div>
+      <div id="userDetailContent"></div>
+    </aside>
   </div>
 
-  <div class="panel dashboard-section">
-    <div class="section-title">
-      <h3>ユーザー一覧</h3>
-      <span>管理者のみ編集可能</span>
+  <section class="surface section-card section-space">
+    <div class="section-head">
+      <div>
+        <h3>監査ログ</h3>
+        <p id="auditsSummary">直近の操作記録を表示します。</p>
+      </div>
+      <div class="toolbar-row">
+        <label class="field compact-field">
+          <span class="field-label">件数</span>
+          <select class="select" id="auditPageSize">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+      </div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>氏名</th>
-            <th>ロール</th>
-            <th>メール</th>
-            <th>状態</th>
-            <th>最終ログイン</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody"></tbody>
-      </table>
-    </div>
-  </div>
 
-  <div class="panel dashboard-section">
-    <div class="section-title">
-      <h3>監査ログ</h3>
-      <select class="select" id="auditLimit" style="max-width: 140px;">
-        <option value="20">20件</option>
-        <option value="50">50件</option>
-        <option value="100">100件</option>
-        <option value="120">120件</option>
-      </select>
-    </div>
+    <form id="auditsFilterForm" class="filter-form">
+      <div class="field-grid field-grid-2">
+        <label class="field">
+          <span class="field-label">キーワード</span>
+          <input class="input" type="search" id="auditQuery" placeholder="イベント、メール、詳細">
+        </label>
+        <label class="field">
+          <span class="field-label">結果</span>
+          <select class="select" id="auditResultFilter">
+            <option value="">すべて</option>
+            <option value="SUCCESS">SUCCESS</option>
+            <option value="FAILURE">FAILURE</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" type="submit">
+          <svg class="icon icon-16" aria-hidden="true"><use href="#icon-search"></use></svg>
+          <span>検索する</span>
+        </button>
+        <button class="btn btn-secondary" type="button" data-action="reset-audit-filters">条件をクリア</button>
+      </div>
+    </form>
+
     <div class="audit-list" id="auditList"></div>
-  </div>
+    <div class="pager" id="auditPager"></div>
+  </section>
 </section>
