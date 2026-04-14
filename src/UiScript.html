@@ -68,8 +68,8 @@
         }, 3400);
       },
 
-      setBusy: function (buttonId, busy, busyLabel, idleLabel) {
-        var button = typeof buttonId === 'string' ? this.byId(buttonId) : buttonId;
+      setBusyElement: function (buttonEl, busy, busyLabel, idleLabel) {
+        var button = buttonEl;
         if (!button) return;
         if (!button.dataset.idleLabel) {
           button.dataset.idleLabel = idleLabel || button.textContent.trim();
@@ -84,6 +84,11 @@
         }
       },
 
+      setBusy: function (buttonId, busy, busyLabel, idleLabel) {
+        var button = typeof buttonId === 'string' ? this.byId(buttonId) : buttonId;
+        this.setBusyElement(button, busy, busyLabel, idleLabel);
+      },
+
       setLoading: function (visible, title, text) {
         if (visible) {
           App.state.ui.loadingCount += 1;
@@ -96,7 +101,7 @@
       },
 
       syncBodyLocks: function () {
-        document.body.classList.toggle('modal-open', Boolean(App.state.ui.activeModal));
+        document.body.classList.toggle('modal-open', Boolean(App.state.ui.modalStack.length));
         document.body.classList.toggle('drawer-open', App.state.ui.drawerOpen);
       },
 
@@ -110,9 +115,17 @@
       openModal: function (modalId, options) {
         var modal = this.byId(modalId);
         if (!modal) return;
-        App.state.ui.modalFocus = document.activeElement;
+        var modalOptions = Object.assign({ backdropClose: true, escClose: true }, options || {});
+        App.state.ui.modalStack = App.state.ui.modalStack.filter(function (entry) {
+          return entry.id !== modalId;
+        });
+        App.state.ui.modalStack.push({
+          id: modalId,
+          options: modalOptions,
+          focus: document.activeElement
+        });
         App.state.ui.activeModal = modalId;
-        App.state.ui.activeModalOptions = Object.assign({ backdropClose: true, escClose: true }, options || {});
+        App.state.ui.activeModalOptions = modalOptions;
         modal.hidden = false;
         this.syncBodyLocks();
         var self = this;
@@ -125,18 +138,28 @@
         var modal = this.byId(modalId);
         if (!modal) return Promise.resolve(true);
         function finalizeClose(dismissValue) {
+          var stack = App.state.ui.modalStack;
+          var stackIndex = -1;
+          for (var i = stack.length - 1; i >= 0; i -= 1) {
+            if (stack[i].id === modalId) {
+              stackIndex = i;
+              break;
+            }
+          }
+          var closedState = stackIndex >= 0 ? stack.splice(stackIndex, 1)[0] : null;
+          var nextState = stack.length ? stack[stack.length - 1] : null;
           var confirmResolver = App.state.ui.confirmResolver;
           var messageResolver = App.state.ui.messageResolver;
           var isConfirm = modalId === 'confirmDialog';
           var isMessage = modalId === 'messageDialog';
           modal.hidden = true;
-          App.state.ui.activeModal = '';
-          App.state.ui.activeModalOptions = null;
-          App.state.ui.confirmResolver = null;
-          App.state.ui.messageResolver = null;
+          App.state.ui.activeModal = nextState ? nextState.id : '';
+          App.state.ui.activeModalOptions = nextState ? nextState.options : null;
+          if (isConfirm) App.state.ui.confirmResolver = null;
+          if (isMessage) App.state.ui.messageResolver = null;
           App.ui.syncBodyLocks();
-          if (App.state.ui.modalFocus && typeof App.state.ui.modalFocus.focus === 'function') {
-            App.state.ui.modalFocus.focus();
+          if (closedState && closedState.focus && typeof closedState.focus.focus === 'function') {
+            closedState.focus.focus();
           }
           if (isConfirm && confirmResolver && dismissValue != null) confirmResolver(dismissValue);
           if (isMessage && messageResolver && dismissValue != null) messageResolver(dismissValue);
@@ -154,6 +177,7 @@
       },
 
       guardDirtyModal: function (modalId) {
+        if (App.state.ui.activeModal === 'confirmDialog') return Promise.resolve(false);
         var checker = dirtyCheckers()[modalId];
         if (!checker || !checker()) return Promise.resolve(true);
         return this.confirm({
@@ -253,11 +277,6 @@
         });
         this.qq('.nav-btn[data-view], .nav-tab[data-view]').forEach(function (button) {
           button.classList.toggle('is-active', button.dataset.view === view);
-        });
-        var detailMaps = { projects: 'projectsSplitView', clients: 'clientsSplitView', users: 'usersSplitView' };
-        Object.keys(detailMaps).forEach(function (key) {
-          var node = App.ui.byId(detailMaps[key]);
-          if (node && key !== view) node.classList.remove('is-detail-open');
         });
         this.setPageMeta(view);
       },
@@ -416,13 +435,6 @@
             self.closeModal(closeButton.dataset.modalClose);
           }
 
-          var detailClose = event.target.closest('[data-detail-close]');
-          if (detailClose) {
-            var viewId = detailClose.dataset.detailClose;
-            var split = self.byId(viewId + 'SplitView');
-            if (split) split.classList.remove('is-detail-open');
-          }
-
           var assistButton = event.target.closest('[data-assist-context]');
           if (assistButton) {
             self.openAssist(assistButton.dataset.assistContext);
@@ -435,7 +447,9 @@
 
         this.qq('.modal-shell').forEach(function (modal) {
           modal.addEventListener('click', function (event) {
-            if (event.target === modal && App.state.ui.activeModalOptions && App.state.ui.activeModalOptions.backdropClose) {
+            if (event.target !== modal) return;
+            if (App.state.ui.activeModal !== modal.id) return;
+            if (App.state.ui.activeModalOptions && App.state.ui.activeModalOptions.backdropClose) {
               self.closeModal(modal.id);
             }
           });
