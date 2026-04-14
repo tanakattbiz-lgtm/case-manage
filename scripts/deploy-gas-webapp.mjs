@@ -67,7 +67,15 @@ async function main() {
   const versionNumber = parseCreatedVersion(versionResult.stdout);
 
   console.log(`==> Redeploying existing Web App deployment: ${deploymentId}`);
-  await runClasp(["redeploy", deploymentId, versionNumber, description]);
+  await runClasp([
+    "create-deployment",
+    "--deploymentId",
+    deploymentId,
+    "--versionNumber",
+    versionNumber,
+    "--description",
+    description
+  ]);
 
   console.log("==> Deployment completed");
   console.log(`deploymentId=${deploymentId}`);
