@@ -51,5 +51,10 @@ jobs:
         run: |
           printf '%s\n' "$GAS_CLASPRC_JSON" > "$HOME/.clasprc.json"
 
+      - name: Verify Web App deployment
+        run: npm run gas:verify:webapp
+
       - name: Deploy Web App
+        env:
+          GITHUB_SHA: ${{ github.sha }}
         run: npm run gas:deploy:webapp
