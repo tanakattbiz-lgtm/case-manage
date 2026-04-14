@@ -2,15 +2,12 @@
   .auth-shell {
     min-height: 100svh;
     padding: 24px;
-    background:
-      radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 34%),
-      radial-gradient(circle at bottom left, rgba(14, 165, 233, 0.08), transparent 32%),
-      var(--bg);
+    background: var(--bg);
   }
 
   .auth-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(360px, 480px);
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
     gap: 24px;
     max-width: 1240px;
     margin: 0 auto;
@@ -19,7 +16,7 @@
   }
 
   .auth-hero {
-    padding: 40px;
+    padding: 24px;
   }
 
   .auth-hero-inner {
@@ -34,7 +31,7 @@
   }
 
   .brand-mark h1 {
-    font-size: clamp(32px, 5vw, 52px);
+    font-size: clamp(28px, 4vw, 40px);
     line-height: 1.12;
   }
 
@@ -45,7 +42,7 @@
     width: 52px;
     height: 52px;
     border-radius: 18px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.16), rgba(14, 165, 233, 0.12));
+    background: #f2f5f8;
     color: var(--accent);
   }
 
@@ -65,8 +62,8 @@
     gap: 12px;
     padding: 20px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.72);
+    background: #ffffff;
+    border: 1px solid var(--line);
     box-shadow: var(--shadow-sm);
   }
 

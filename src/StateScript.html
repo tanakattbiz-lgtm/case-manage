@@ -13,73 +13,31 @@
       projectStatuses: ['商談中', '進行中', '完了', '停止', '保留'],
       viewTitles: {
         dashboard: {
-          eyebrow: 'Dashboard',
+          eyebrow: '概要',
           title: 'ダッシュボード',
-          subtitle: '案件、クライアント、認証状態を一画面ずつ整理して確認できます。'
+          subtitle: '必要な情報だけを上から順に確認できます。'
         },
         projects: {
-          eyebrow: 'Projects',
+          eyebrow: '案件',
           title: '案件一覧',
-          subtitle: '一覧、詳細、編集を 1 つの導線で扱えるようにしています。'
+          subtitle: '検索から詳細確認まで同じ流れで操作できます。'
         },
         clients: {
-          eyebrow: 'Clients',
+          eyebrow: '顧客',
           title: 'クライアント管理',
-          subtitle: '顧客情報と関連案件の状況を分けて確認できます。'
+          subtitle: '顧客情報をすばやく検索できます。'
         },
         users: {
-          eyebrow: 'Security',
+          eyebrow: '管理',
           title: '認証管理',
-          subtitle: 'ユーザー権限、ロック状態、監査ログをまとめて確認できます。'
+          subtitle: 'ユーザー情報を整理して管理できます。'
         }
       },
       assistContent: {
-        install: {
-          eyebrow: 'PWA Guide',
-          title: 'ホーム画面追加とオフライン運用',
-          description: 'Google Apps Script の制約を踏まえ、実務で使いやすい導線を整理しています。',
-          sections: [
-            {
-              title: 'ホーム画面追加',
-              body: 'ブラウザメニューからホーム画面に追加すると、アプリ風の表示密度で利用しやすくなります。beforeinstallprompt が利用できる環境では、案内ボタンから起動します。'
-            },
-            {
-              title: 'オフライン時',
-              body: '最新の取得結果をキャッシュ表示し、更新系操作は停止します。接続が戻ると自動で再取得し、必要に応じて手動再試行もできます。'
-            },
-            {
-              title: 'GAS での完全 PWA',
-              body: 'manifest や service worker は HtmlService と配信制約を見ながら採否を判断します。この画面では、まずキャッシュ UI と再接続導線を優先しています。'
-            }
-          ]
-        },
-        project: {
-          eyebrow: 'Project Guide',
-          title: '案件入力のポイント',
-          description: '売上と利益の扱いを先に決めておくと、ダッシュボード集計が安定します。',
-          sections: [
-            { title: '利益の扱い', body: '利益が空欄ならクライアントの既定利益率から自動計算します。個別に上書きしたい場合だけ利益を直接入力してください。' },
-            { title: '完了日の扱い', body: 'ステータスを完了にした場合、完了日が未入力なら当日を自動設定します。月次集計では完了日を優先して扱います。' }
-          ]
-        },
-        client: {
-          eyebrow: 'Client Guide',
-          title: 'クライアント入力のポイント',
-          description: '案件フォームで選びやすい情報を優先して登録します。',
-          sections: [
-            { title: '既定利益率', body: '案件の利益入力を省略したときに使います。案件ごとに異なる場合は案件側で上書きできます。' },
-            { title: '備考', body: '請求条件や連絡上の注意点など、一覧では持ちにくい情報を残す欄です。' }
-          ]
-        },
-        user: {
-          eyebrow: 'User Guide',
-          title: 'ユーザー管理のポイント',
-          description: '権限変更と初期パスワード設定は保存前に確認してください。',
-          sections: [
-            { title: 'ロール設計', body: '管理者のみ認証管理へアクセスできます。編集者は案件とクライアントを更新でき、閲覧者は参照のみです。' },
-            { title: 'ロック解除', body: 'ロック中ユーザーは失敗回数を解除して再利用できます。パスワード更新と同時に実行する場合もあります。' }
-          ]
-        }
+        install: { eyebrow: '案内', title: '使い方', description: '必要な操作だけを表示しています。', sections: [{ title: '操作', body: '画面上部のボタンから登録・更新できます。' }] },
+        project: { eyebrow: '案内', title: '案件入力', description: '必須項目を入力して保存してください。', sections: [{ title: '入力', body: '案件名・クライアント・ステータスを確認して保存します。' }] },
+        client: { eyebrow: '案内', title: '顧客入力', description: '顧客情報を入力して保存してください。', sections: [{ title: '入力', body: '顧客名と連絡先を入力します。' }] },
+        user: { eyebrow: '案内', title: 'ユーザー入力', description: 'ユーザー情報を入力して保存してください。', sections: [{ title: '入力', body: '氏名・メール・権限を確認して保存します。' }] }
       }
     };
 
