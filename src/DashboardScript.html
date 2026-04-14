@@ -174,9 +174,8 @@
 
         App.ui.byId('dashboardPwaCard').innerHTML = ''
           + '<div class="list-row">'
-          + '<div class="row-head"><div><strong>' + (App.helpers.isStandalone() ? 'アプリ表示で利用中です。' : 'ホーム画面追加を案内できます。') + '</strong><div class="row-sub">' + (App.state.ui.online ? '現在はオンラインです。' : '現在はオフラインです。') + '</div></div></div>'
-          + '<div class="stats-row"><span>キャッシュ表示: ' + (App.state.dashboard.stale ? '利用中' : '最新') + '</span><span>再接続導線: 有効</span></div>'
-          + '<div class="detail-actions"><button class="btn btn-secondary btn-small" type="button" data-action="open-install-help">利用ガイドを開く</button></div>'
+          + '<div class="row-head"><div><strong>確認ポイント</strong><div class="row-sub">案件の更新状況を日次で確認してください。</div></div></div>'
+          + '<div class="stats-row"><span>最終更新: ' + (App.state.ui.lastSyncAt ? App.helpers.dateTimeLabel(App.state.ui.lastSyncAt) : '未更新') + '</span></div>'
           + '</div>';
       }
     };

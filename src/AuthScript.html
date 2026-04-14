@@ -24,14 +24,8 @@
       },
 
       renderMeta: function () {
-        var settings = App.state.auth.settings;
-        App.ui.byId('authMeta').innerHTML = [
-          '最小 ' + settings.passwordMinLength + ' 文字',
-          '失敗 ' + settings.maxFailedAttempts + ' 回で ' + settings.lockoutMinutes + ' 分ロック',
-          'セッション ' + Math.round(settings.sessionTtlMinutes / 60) + ' 時間'
-        ].map(function (text) {
-          return '<span>' + App.helpers.escape(text) + '</span>';
-        }).join('');
+        var meta = App.ui.byId('authMeta');
+        if (meta) meta.innerHTML = '';
       },
 
       applyAuthPayload: function (payload) {

@@ -5,9 +5,9 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 240px;
+    width: 220px;
     height: 100svh;
-    padding: 24px 16px;
+    padding: 28px 16px;
     border-radius: 0;
     border-left: 0;
     border-top: 0;
@@ -18,7 +18,7 @@
   .sidebar-top,
   .sidebar-bottom {
     display: grid;
-    gap: 24px;
+    gap: 28px;
   }
 
   .sidebar-brand {
@@ -34,7 +34,7 @@
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.14), rgba(14, 165, 233, 0.1));
+    background: #f6f8fa;
     color: var(--accent);
   }
 
@@ -67,8 +67,8 @@
   }
 
   .nav-btn.is-active {
-    background: var(--select-bg);
-    color: var(--accent);
+    background: #f5f7fa;
+    color: var(--text);
   }
 
   .nav-icon {
@@ -82,7 +82,7 @@
   }
 
   .nav-btn.is-active .nav-icon {
-    background: rgba(59, 130, 246, 0.14);
+    background: #eef2f7;
   }
 
   .nav-copy {
@@ -118,7 +118,7 @@
     padding: 16px;
     border: 1px solid var(--line);
     border-radius: 16px;
-    background: linear-gradient(180deg, #ffffff, #fbfdff);
+    background: #ffffff;
   }
 
   .sidebar-card-title {
@@ -158,12 +158,9 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 24px;
+    gap: 28px;
     padding: 24px var(--content-padding) 20px;
-    background:
-      linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(248, 250, 252, 0.88)),
-      linear-gradient(90deg, rgba(59, 130, 246, 0.08), rgba(14, 165, 233, 0.04));
-    backdrop-filter: blur(16px);
+    background: #ffffff;
     border-bottom: 1px solid var(--line);
   }
 
@@ -215,13 +212,13 @@
 
   .content-area {
     display: grid;
-    gap: 32px;
-    padding: 24px var(--content-padding) 32px;
+    gap: 28px;
+    padding: 28px var(--content-padding) 40px;
   }
 
   .view {
     display: none;
-    gap: 24px;
+    gap: 28px;
   }
 
   .view.is-active {
@@ -238,13 +235,13 @@
 
   .view-header h2 {
     margin-bottom: 8px;
-    font-size: 28px;
+    font-size: 30px;
   }
 
   .section-card {
     display: grid;
     gap: 20px;
-    padding: 20px;
+    padding: 24px;
   }
 
   .section-space {
@@ -283,8 +280,8 @@
   }
 
   .segment-btn.is-active {
-    background: var(--select-bg);
-    color: var(--accent);
+    background: #f5f7fa;
+    color: var(--text);
   }
 
   .drawer-backdrop {
@@ -304,7 +301,7 @@
 
   @media (max-width: 920px) {
     :root {
-      --content-padding: 20px;
+      --content-padding: 24px;
     }
 
     .sidebar {
@@ -416,7 +413,7 @@
     }
 
     .content-area {
-      gap: 24px;
+      gap: 28px;
       padding: 16px var(--content-padding) 120px;
     }
 
