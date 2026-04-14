@@ -51,6 +51,17 @@ jobs:
         run: |
           printf '%s\n' "$GAS_CLASPRC_JSON" > "$HOME/.clasprc.json"
 
+      - name: Write clasp project settings
+        shell: bash
+        run: |
+          cat > .clasp.json <<'EOF'
+          {
+            "scriptId": "__SCRIPT_ID__",
+            "rootDir": "src"
+          }
+          EOF
+          sed -i "s/__SCRIPT_ID__/$GAS_SCRIPT_ID/" .clasp.json
+
       - name: Verify Web App deployment
         run: npm run gas:verify:webapp
 
