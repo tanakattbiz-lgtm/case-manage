@@ -75,7 +75,8 @@
 
   button:disabled {
     cursor: not-allowed;
-    opacity: 0.64;
+    opacity: 0.48;
+    filter: saturate(0.35);
   }
 
   p {
@@ -562,6 +563,14 @@
     padding: 24px;
     background: rgba(15, 23, 42, 0.36);
     backdrop-filter: blur(10px);
+  }
+
+  #messageDialog {
+    z-index: 110;
+  }
+
+  #confirmDialog {
+    z-index: 120;
   }
 
   .modal-panel {

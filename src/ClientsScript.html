@@ -9,12 +9,14 @@
         });
 
         App.ui.byId('clientsPageSize').addEventListener('change', function (event) {
+          if (App.state.clients.loading) return;
           App.state.clients.pageSize = Number(event.target.value) || 20;
           App.state.clients.page = 1;
           self.ensureLoaded(true).catch(function () {});
         });
 
         App.ui.byId('clientsPager').addEventListener('click', function (event) {
+          if (App.state.clients.loading) return;
           var button = event.target.closest('[data-page-action]');
           if (!button) return;
           if (button.dataset.pageAction === 'clients:prev') App.state.clients.page -= 1;
@@ -22,13 +24,13 @@
           self.ensureLoaded(true).catch(function () {});
         });
 
-        ['clientsTableBody', 'clientsMobileList', 'clientDetailContent'].forEach(function (id) {
+        ['clientsTableBody', 'clientsMobileList', 'detailModalContent'].forEach(function (id) {
           App.ui.byId(id).addEventListener('click', function (event) {
             var action = event.target.closest('[data-client-action]');
             if (action) {
               var clientId = action.dataset.clientId;
               if (action.dataset.clientAction === 'edit') self.openModal(self.findItem(clientId));
-              if (action.dataset.clientAction === 'delete') self.remove(clientId);
+              if (action.dataset.clientAction === 'delete') self.remove(clientId, action);
               return;
             }
 
@@ -55,6 +57,7 @@
       },
 
       ensureLoaded: async function (force) {
+        if (App.state.clients.loading) return;
         App.state.clients.loading = true;
         App.state.clients.error = '';
         this.render();
@@ -94,12 +97,14 @@
       },
 
       applyFiltersFromForm: function () {
+        if (App.state.clients.loading) return;
         App.state.clients.filters.query = App.ui.byId('clientQuery').value.trim();
         App.state.clients.page = 1;
         this.ensureLoaded(true).catch(function () {});
       },
 
       resetFilters: function () {
+        if (App.state.clients.loading) return;
         App.state.clients.filters = App.defaultClientFilters();
         App.state.clients.page = 1;
         App.ui.byId('clientQuery').value = '';
@@ -107,7 +112,12 @@
       },
 
       render: function () {
+        var loading = App.state.clients.loading;
         App.ui.byId('clientsPageSize').value = String(App.state.clients.pageSize);
+        App.ui.byId('clientsPageSize').disabled = loading;
+        App.ui.byId('clientQuery').disabled = loading;
+        App.ui.qq('[data-action="reload-clients"], [data-action="reset-client-filters"], #clientsFilterForm button[type="submit"]')
+          .forEach(function (button) { button.disabled = loading; });
         App.ui.byId('clientsFilterChips').innerHTML = App.state.clients.filters.query
           ? '<span class="chip">キーワード: ' + App.helpers.escape(App.state.clients.filters.query) + '</span>'
           : '<span class="row-sub">絞り込み条件はありません。</span>';
@@ -167,6 +177,7 @@
           return;
         }
         App.state.clients.selectedId = clientId;
+        App.ui.openModal('detailModal');
         App.state.clients.detailLoading = true;
         this.render();
         this.renderDetail();
@@ -174,7 +185,6 @@
           var response = await App.api.clients.detail(clientId);
           App.state.clients.detail = response;
           App.state.clients.detailError = '';
-          if (App.helpers.isMobile()) App.ui.byId('clientsSplitView').classList.add('is-detail-open');
           this.renderDetail();
         } catch (error) {
           App.state.clients.detailError = error.message || 'クライアント詳細の取得に失敗しました。';
@@ -187,7 +197,10 @@
       },
 
       renderDetail: function () {
-        var target = App.ui.byId('clientDetailContent');
+        var target = App.ui.byId('detailModalContent');
+        App.ui.setText('detailModalEyebrow', 'Client Detail');
+        App.ui.setText('detailModalTitle', 'クライアント詳細');
+        App.ui.byId('detailModalActions').innerHTML = '';
         if (!App.state.clients.selectedId) {
           target.innerHTML = App.ui.renderStateBlock('クライアントを選択してください。', '一覧から 1 件選ぶと詳細が表示されます。', 'info');
           return;
@@ -316,7 +329,7 @@
         }
       },
 
-      remove: async function (clientId) {
+      remove: async function (clientId, triggerButton) {
         var client = this.findItem(clientId);
         if (!client) return;
         var confirmed = await App.ui.confirm({
@@ -329,6 +342,7 @@
         });
         if (!confirmed) return;
 
+        App.ui.setBusyElement(triggerButton, true, '削除中...', '削除');
         try {
           await App.api.clients.remove(clientId);
           App.state.projects.optionsLoaded = false;
@@ -336,6 +350,8 @@
           await this.ensureLoaded(true);
         } catch (error) {
           App.ui.toast(error.message || 'クライアントの削除に失敗しました。', 'error');
+        } finally {
+          App.ui.setBusyElement(triggerButton, false, '削除中...', '削除');
         }
       }
     };

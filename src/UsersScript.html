@@ -14,18 +14,21 @@
         });
 
         App.ui.byId('usersPageSize').addEventListener('change', function (event) {
+          if (App.state.users.loading) return;
           App.state.users.pageSize = Number(event.target.value) || 20;
           App.state.users.page = 1;
           self.ensureLoaded(true).catch(function () {});
         });
 
         App.ui.byId('auditPageSize').addEventListener('change', function (event) {
+          if (App.state.users.loading) return;
           App.state.users.audits.pageSize = Number(event.target.value) || 20;
           App.state.users.audits.page = 1;
           self.ensureLoaded(true).catch(function () {});
         });
 
         App.ui.byId('usersPager').addEventListener('click', function (event) {
+          if (App.state.users.loading) return;
           var button = event.target.closest('[data-page-action]');
           if (!button) return;
           if (button.dataset.pageAction === 'users:prev') App.state.users.page -= 1;
@@ -34,6 +37,7 @@
         });
 
         App.ui.byId('auditPager').addEventListener('click', function (event) {
+          if (App.state.users.loading) return;
           var button = event.target.closest('[data-page-action]');
           if (!button) return;
           if (button.dataset.pageAction === 'audits:prev') App.state.users.audits.page -= 1;
@@ -41,13 +45,13 @@
           self.ensureLoaded(true).catch(function () {});
         });
 
-        ['usersTableBody', 'usersMobileList', 'userDetailContent'].forEach(function (id) {
+        ['usersTableBody', 'usersMobileList', 'detailModalContent'].forEach(function (id) {
           App.ui.byId(id).addEventListener('click', function (event) {
             var action = event.target.closest('[data-user-action]');
             if (action) {
               var userId = action.dataset.userId;
               if (action.dataset.userAction === 'edit') self.openModal(self.findItem(userId));
-              if (action.dataset.userAction === 'unlock') self.unlock(userId);
+              if (action.dataset.userAction === 'unlock') self.unlock(userId, action);
               return;
             }
 
@@ -85,6 +89,7 @@
       },
 
       ensureLoaded: async function (force) {
+        if (App.state.users.loading) return;
         if (!App.canManageUsers()) {
           this.renderNoPermission();
           return;
@@ -142,6 +147,7 @@
       },
 
       applyFiltersFromForm: function () {
+        if (App.state.users.loading) return;
         App.state.users.filters = {
           query: App.ui.byId('userQuery').value.trim(),
           role: App.ui.byId('userRoleFilter').value,
@@ -152,6 +158,7 @@
       },
 
       applyAuditFiltersFromForm: function () {
+        if (App.state.users.loading) return;
         App.state.users.audits.filters = {
           query: App.ui.byId('auditQuery').value.trim(),
           result: App.ui.byId('auditResultFilter').value
@@ -161,6 +168,7 @@
       },
 
       resetFilters: function () {
+        if (App.state.users.loading) return;
         App.state.users.filters = App.defaultUserFilters();
         App.state.users.page = 1;
         App.ui.byId('userQuery').value = '';
@@ -170,6 +178,7 @@
       },
 
       resetAuditFilters: function () {
+        if (App.state.users.loading) return;
         App.state.users.audits.filters = App.defaultAuditFilters();
         App.state.users.audits.page = 1;
         App.ui.byId('auditQuery').value = '';
@@ -181,7 +190,7 @@
         var html = App.ui.renderStateBlock('権限がありません。', '管理者権限でログインすると認証管理を利用できます。', 'warning');
         App.ui.byId('usersTableBody').innerHTML = '<tr><td colspan="6">' + html + '</td></tr>';
         App.ui.byId('usersMobileList').innerHTML = html;
-        App.ui.byId('userDetailContent').innerHTML = html;
+        App.ui.byId('detailModalContent').innerHTML = html;
         App.ui.byId('auditList').innerHTML = html;
       },
 
@@ -195,9 +204,19 @@
       },
 
       render: function () {
+        var loading = App.state.users.loading;
         this.renderKpis();
         App.ui.byId('usersPageSize').value = String(App.state.users.pageSize);
         App.ui.byId('auditPageSize').value = String(App.state.users.audits.pageSize);
+        App.ui.byId('usersPageSize').disabled = loading;
+        App.ui.byId('auditPageSize').disabled = loading;
+        App.ui.byId('userQuery').disabled = loading;
+        App.ui.byId('userRoleFilter').disabled = loading;
+        App.ui.byId('userStatusFilter').disabled = loading;
+        App.ui.byId('auditQuery').disabled = loading;
+        App.ui.byId('auditResultFilter').disabled = loading;
+        App.ui.qq('[data-action="reload-users"], [data-action="reset-user-filters"], [data-action="reset-audit-filters"], #usersFilterForm button[type="submit"], #auditsFilterForm button[type="submit"]')
+          .forEach(function (button) { button.disabled = loading; });
 
         if (!App.canManageUsers()) {
           this.renderNoPermission();
@@ -288,6 +307,7 @@
           return;
         }
         App.state.users.selectedId = userId;
+        App.ui.openModal('detailModal');
         App.state.users.detailLoading = true;
         this.render();
         this.renderDetail();
@@ -295,7 +315,6 @@
           var response = await App.api.users.detail(userId);
           App.state.users.detail = response;
           App.state.users.detailError = '';
-          if (App.helpers.isMobile()) App.ui.byId('usersSplitView').classList.add('is-detail-open');
           this.renderDetail();
         } catch (error) {
           App.state.users.detailError = error.message || 'ユーザー詳細の取得に失敗しました。';
@@ -308,7 +327,10 @@
       },
 
       renderDetail: function () {
-        var target = App.ui.byId('userDetailContent');
+        var target = App.ui.byId('detailModalContent');
+        App.ui.setText('detailModalEyebrow', 'User Detail');
+        App.ui.setText('detailModalTitle', 'ユーザー詳細');
+        App.ui.byId('detailModalActions').innerHTML = '';
         if (!App.canManageUsers()) {
           target.innerHTML = App.ui.renderStateBlock('権限がありません。', '管理者のみ詳細を表示できます。', 'warning');
           return;
@@ -436,7 +458,7 @@
         }
       },
 
-      unlock: async function (userId) {
+      unlock: async function (userId, triggerButton) {
         var user = this.findItem(userId);
         if (!user) return;
         var confirmed = await App.ui.confirm({
@@ -448,12 +470,15 @@
         });
         if (!confirmed) return;
 
+        App.ui.setBusyElement(triggerButton, true, '解除中...', '解除');
         try {
           await App.api.users.unlock(userId);
           App.ui.toast('ロック状態を解除しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {
           App.ui.toast(error.message || 'ロック解除に失敗しました。', 'error');
+        } finally {
+          App.ui.setBusyElement(triggerButton, false, '解除中...', '解除');
         }
       }
     };

@@ -14,12 +14,14 @@
         });
 
         App.ui.byId('projectsPageSize').addEventListener('change', function (event) {
+          if (App.state.projects.loading) return;
           App.state.projects.pageSize = Number(event.target.value) || 20;
           App.state.projects.page = 1;
           self.ensureLoaded(true).catch(function () {});
         });
 
         App.ui.byId('projectsPager').addEventListener('click', function (event) {
+          if (App.state.projects.loading) return;
           var button = event.target.closest('[data-page-action]');
           if (!button) return;
           if (button.dataset.pageAction === 'projects:prev') App.state.projects.page -= 1;
@@ -32,7 +34,7 @@
           if (action) {
             var projectId = action.dataset.projectId;
             if (action.dataset.projectAction === 'edit') self.openModal(self.findItem(projectId));
-            if (action.dataset.projectAction === 'delete') self.remove(projectId);
+            if (action.dataset.projectAction === 'delete') self.remove(projectId, action);
             return;
           }
 
@@ -45,7 +47,7 @@
           if (action) {
             var projectId = action.dataset.projectId;
             if (action.dataset.projectAction === 'edit') self.openModal(self.findItem(projectId));
-            if (action.dataset.projectAction === 'delete') self.remove(projectId);
+            if (action.dataset.projectAction === 'delete') self.remove(projectId, action);
             return;
           }
 
@@ -53,12 +55,12 @@
           if (card) self.openDetail(card.dataset.projectSelect);
         });
 
-        App.ui.byId('projectDetailContent').addEventListener('click', function (event) {
+        App.ui.byId('detailModalContent').addEventListener('click', function (event) {
           var action = event.target.closest('[data-project-detail-action]');
           if (!action) return;
           var projectId = action.dataset.projectId;
           if (action.dataset.projectDetailAction === 'edit') self.openModal(self.findItem(projectId));
-          if (action.dataset.projectDetailAction === 'delete') self.remove(projectId);
+          if (action.dataset.projectDetailAction === 'delete') self.remove(projectId, action);
         });
 
         App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
@@ -115,6 +117,7 @@
       },
 
       ensureLoaded: async function (force) {
+        if (App.state.projects.loading) return;
         App.state.projects.loading = true;
         App.state.projects.error = '';
         this.render();
@@ -164,6 +167,7 @@
       },
 
       applyFiltersFromForm: function () {
+        if (App.state.projects.loading) return;
         App.state.projects.filters = {
           query: App.ui.byId('projectQuery').value.trim(),
           status: App.ui.byId('projectStatusFilter').value,
@@ -176,6 +180,7 @@
       },
 
       resetFilters: function () {
+        if (App.state.projects.loading) return;
         App.state.projects.filters = App.defaultProjectFilters();
         App.state.projects.scope = null;
         App.state.projects.page = 1;
@@ -204,7 +209,17 @@
       },
 
       render: function () {
+        var loading = App.state.projects.loading;
         App.ui.byId('projectsPageSize').value = String(App.state.projects.pageSize);
+        App.ui.byId('projectsPageSize').disabled = loading;
+        App.ui.byId('projectQuery').disabled = loading;
+        App.ui.byId('projectStatusFilter').disabled = loading;
+        App.ui.byId('projectClientFilter').disabled = loading;
+        App.ui.byId('projectDateFrom').disabled = loading;
+        App.ui.byId('projectDateTo').disabled = loading;
+        App.ui.byId('projectsFilterToggle').disabled = loading;
+        App.ui.qq('[data-action="reload-projects"], [data-action="reset-project-filters"], #projectsFilterForm button[type="submit"]')
+          .forEach(function (button) { button.disabled = loading; });
         App.ui.byId('projectsScopeLabel').textContent = App.state.projects.scope && App.state.projects.scope.label
           ? 'ダッシュボード連動中: ' + App.state.projects.scope.label + (App.state.projects.scope.status ? ' / ' + App.state.projects.scope.status : '')
           : '全案件を表示中です。';
@@ -283,6 +298,7 @@
           return;
         }
         App.state.projects.selectedId = projectId;
+        App.ui.openModal('detailModal');
         this.render();
         App.state.projects.detailLoading = true;
         this.renderDetail();
@@ -292,9 +308,6 @@
           App.state.projects.detailError = '';
           App.state.projects.stale = Boolean(response.__meta && response.__meta.stale);
           if (response.__meta) App.ui.setLastSync(response.__meta.savedAt);
-          if (App.helpers.isMobile()) {
-            App.ui.byId('projectsSplitView').classList.add('is-detail-open');
-          }
           this.renderDetail();
         } catch (error) {
           App.state.projects.detailError = error.message || '案件詳細の取得に失敗しました。';
@@ -307,7 +320,10 @@
       },
 
       renderDetail: function () {
-        var target = App.ui.byId('projectDetailContent');
+        var target = App.ui.byId('detailModalContent');
+        App.ui.setText('detailModalEyebrow', 'Project Detail');
+        App.ui.setText('detailModalTitle', '案件詳細');
+        App.ui.byId('detailModalActions').innerHTML = '';
         if (!App.state.projects.selectedId) {
           target.innerHTML = App.ui.renderStateBlock('案件を選択してください。', '一覧から 1 件選ぶと、詳細と履歴が表示されます。', 'info');
           return;
@@ -468,7 +484,7 @@
         }
       },
 
-      remove: async function (projectId) {
+      remove: async function (projectId, triggerButton) {
         var project = this.findItem(projectId);
         if (!project) return;
         var confirmed = await App.ui.confirm({
@@ -481,6 +497,7 @@
         });
         if (!confirmed) return;
 
+        App.ui.setBusyElement(triggerButton, true, '削除中...', '削除');
         try {
           await App.api.projects.remove(projectId);
           App.ui.toast('案件を削除しました。', 'success');
@@ -488,6 +505,8 @@
           await this.ensureLoaded(true);
         } catch (error) {
           App.ui.toast(error.message || '案件の削除に失敗しました。', 'error');
+        } finally {
+          App.ui.setBusyElement(triggerButton, false, '削除中...', '削除');
         }
       }
     };
