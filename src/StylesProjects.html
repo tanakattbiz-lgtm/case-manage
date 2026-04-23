@@ -10,8 +10,8 @@
     gap: 12px;
     padding: 16px;
     border: 1px solid var(--line);
-    border-radius: 16px;
-    background: #ffffff;
+    border-radius: var(--radius-lg);
+    background: var(--panel);
   }
 
   .detail-grid {
@@ -108,7 +108,7 @@
     border-collapse: separate;
     border-spacing: 0;
     min-width: 760px;
-    background: #ffffff;
+    background: transparent;
   }
 
   .data-table th,
@@ -124,7 +124,8 @@
     position: sticky;
     top: 0;
     z-index: 1;
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(9, 9, 11, 0.9);
+    backdrop-filter: blur(12px);
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
@@ -179,8 +180,8 @@
     gap: 12px;
     padding: 16px;
     border: 1px solid var(--line);
-    border-radius: 16px;
-    background: #ffffff;
+    border-radius: var(--radius-lg);
+    background: var(--panel);
   }
 
   .row-head {

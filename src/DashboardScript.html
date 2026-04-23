@@ -105,9 +105,11 @@
         }
       },
 
-      metricCard: function (title, value, caption) {
+      metricCard: function (title, value, caption, icon) {
+        var svg = icon ? '<div class="metric-icon" style="color: var(--accent); margin-bottom: 8px;"><svg class="icon icon-24" aria-hidden="true"><use href="#icon-' + icon + '"></use></svg></div>' : '';
         return ''
           + '<div class="surface metric-card">'
+          + svg
           + '<strong>' + App.helpers.escape(title) + '</strong>'
           + '<div class="metric">' + App.helpers.escape(value) + '</div>'
           + '<span>' + App.helpers.escape(caption) + '</span>'
@@ -130,10 +132,10 @@
 
         App.ui.byId('dashboardPeriodLabel').textContent = data.filter.label + (App.state.dashboard.stale ? ' / キャッシュ表示' : '');
         App.ui.byId('dashboardMetrics').innerHTML = [
-          this.metricCard('予測売上', App.helpers.currency(data.summary.forecastSales), '完了・進行中・商談中を含む'),
-          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ'),
-          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ'),
-          this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '完了案件平均')
+          this.metricCard('予測売上', App.helpers.currency(data.summary.forecastSales), '完了・進行中・商談中を含む', 'folder'),
+          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ', 'success'),
+          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ', 'chart'),
+          this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '完了案件平均', 'percent')
         ].join('');
 
         App.ui.byId('dashboardStatusGrid').innerHTML = App.constants.projectStatuses.map(function (status) {
