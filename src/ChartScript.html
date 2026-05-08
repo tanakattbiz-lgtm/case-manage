@@ -23,6 +23,44 @@
       return instances[canvasId];
     }
 
+    function renderTrendSvg(target, items) {
+      var width = 760;
+      var height = 320;
+      var padding = { top: 24, right: 20, bottom: 44, left: 54 };
+      var chartWidth = width - padding.left - padding.right;
+      var chartHeight = height - padding.top - padding.bottom;
+      var max = Math.max.apply(null, items.map(function (item) {
+        return Math.max(item.sales || 0, item.profit || 0, item.activeSales || 0, item.proposalSales || 0);
+      }).concat([1]));
+
+      function point(index, value) {
+        var x = padding.left + (chartWidth / Math.max(items.length - 1, 1)) * index;
+        var y = padding.top + chartHeight - ((Number(value) || 0) / max) * chartHeight;
+        return x + ',' + y;
+      }
+
+      var salesLine = items.map(function (item, index) { return point(index, item.sales); }).join(' ');
+      var profitLine = items.map(function (item, index) { return point(index, item.profit); }).join(' ');
+      var labels = items.map(function (item, index) {
+        var x = padding.left + (chartWidth / Math.max(items.length - 1, 1)) * index;
+        return '<text x="' + x + '" y="' + (height - 12) + '" text-anchor="middle" font-size="11" fill="#6B7280">' + App.helpers.escape(String(item.month || '').replace('/', '.')) + '</text>';
+      }).join('');
+      var grid = [0.25, 0.5, 0.75, 1].map(function (ratio) {
+        var y = padding.top + chartHeight - chartHeight * ratio;
+        return '<line x1="' + padding.left + '" y1="' + y + '" x2="' + (width - padding.right) + '" y2="' + y + '" stroke="#E5E7EB" />';
+      }).join('');
+
+      target.innerHTML = ''
+        + '<svg viewBox="0 0 ' + width + ' ' + height + '" width="100%" height="100%" role="img" aria-label="売上と利益の推移">'
+        + grid
+        + '<line x1="' + padding.left + '" y1="' + (padding.top + chartHeight) + '" x2="' + (width - padding.right) + '" y2="' + (padding.top + chartHeight) + '" stroke="#D1D5DB" />'
+        + '<polyline fill="none" stroke="#111827" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="' + salesLine + '" />'
+        + '<polyline fill="none" stroke="#166534" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" points="' + profitLine + '" />'
+        + labels
+        + '</svg>'
+        + '<div class="stats-row"><span><strong style="color:#111827;">■</strong> 売上</span><span><strong style="color:#166534;">■</strong> 利益</span></div>';
+    }
+
     function defaultOptions(extra) {
       return Object.assign({
         responsive: true,
@@ -51,7 +89,7 @@
 
     App.charts = {
       renderMoneyCombo: function (canvasId, items) {
-        ensureChart(canvasId, {
+        return ensureChart(canvasId, {
           type: 'bar',
           data: {
             labels: (items || []).map(function (item) { return String(item.month || '').replace('/', '.'); }),
@@ -121,7 +159,9 @@
         }
 
         target.innerHTML = '<canvas id="' + App.helpers.escape(targetId + 'Canvas') + '"></canvas>';
-        this.renderMoneyCombo(targetId + 'Canvas', items);
+        if (!this.renderMoneyCombo(targetId + 'Canvas', items)) {
+          renderTrendSvg(target, items);
+        }
         return;
 
         var width = 760;
