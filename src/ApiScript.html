@@ -158,13 +158,13 @@
         },
         clients: {
           list: function (query) {
-            return read('getClients', [query || {}], { cacheKey: 'clients:list:' + JSON.stringify(query || {}) });
+            return read('api_searchClients', [query || {}], { cacheKey: 'clients:list:' + JSON.stringify(query || {}) });
           },
           options: function () {
             return read('getClientOptions', [], { cacheKey: 'clients:options' });
           },
           detail: function (clientId) {
-            return read('getClientDetail', [clientId], { cacheKey: 'clients:detail:' + String(clientId || '') });
+            return read('api_getClientDetail', [{ clientId: clientId }], { cacheKey: 'clients:detail:' + String(clientId || '') });
           },
           create: function (payload) {
             return call('addClient', [payload]);
@@ -202,8 +202,163 @@
       getCaseDetail: function (caseId) { return App.api.rpc('api_getCaseDetail', [{ caseId: caseId }]); },
       saveCase: function (payload) { return App.api.rpc('api_saveCase', [payload || {}]); },
       deleteCase: function (caseId) { return App.api.rpc('api_deleteCase', [{ caseId: caseId }]); },
-      getDashboardData: function () { return App.api.rpc('api_getDashboardData', [App.state.dashboard.filter || {}]); },
+      getDashboardData: function (condition) { return App.api.rpc('api_getDashboardData', [condition || App.state.dashboard.filter || {}]); },
+      searchClients: function (condition) { return App.api.rpc('api_searchClients', [condition || {}]); },
+      getClientDetail: function (clientId) { return App.api.rpc('api_getClientDetail', [{ clientId: clientId }]); },
+      saveClient: function (payload) { return payload && payload.id ? App.api.rpc('updateClient', [payload]) : App.api.rpc('addClient', [payload || {}]); },
+      deleteClient: function (clientId) { return App.api.rpc('deleteClient', [clientId]); },
       getReportData: function (condition) { return App.api.rpc('api_getReportData', [condition || {}]); }
+    };
+
+    window.Store = {
+      currentUser: null,
+      masterData: null,
+      dashboard: { data: null, fetchedAt: null, stale: true },
+      cases: { byQueryKey: {}, selectedCaseId: null, lastCondition: null },
+      caseDetails: { byId: {} },
+      clients: { byQueryKey: {}, byId: {} },
+      reports: { byQueryKey: {} },
+      ui: {
+        activeRoute: 'dashboard',
+        activeTab: null,
+        loadingKeys: {},
+        errors: {},
+        modals: [],
+        drawer: null,
+        toastQueue: [],
+        scrollPositions: {}
+      }
+    };
+
+    window.createQueryKey = function (condition) {
+      var input = condition || {};
+      return JSON.stringify({
+        keyword: input.keyword || input.query || '',
+        status: input.status || '',
+        assignee: input.assignee || '',
+        from: input.from || input.dateFrom || '',
+        to: input.to || input.dateTo || '',
+        page: input.page || 1,
+        pageSize: input.pageSize || 50,
+        sortKey: input.sortKey || 'updatedAt',
+        sortOrder: input.sortOrder || 'desc',
+        clientId: input.clientId || '',
+        scope: input.scope || null,
+        mode: input.mode || '',
+        year: input.year || '',
+        month: input.month || ''
+      });
+    };
+
+    window.DataLoader = {
+      loadOnce: function (loadingKey, cacheGetter, cacheSetter, requestFn, options) {
+        var config = options || {};
+        var cached = cacheGetter();
+        if (cached && !config.forceRefresh) return Promise.resolve(cached);
+        if (Store.ui.loadingKeys[loadingKey]) return Store.ui.loadingKeys[loadingKey];
+
+        var promise = requestFn()
+          .then(function (data) {
+            cacheSetter(data);
+            delete Store.ui.errors[loadingKey];
+            return data;
+          })
+          .catch(function (error) {
+            Store.ui.errors[loadingKey] = error;
+            throw error;
+          })
+          .finally(function () {
+            delete Store.ui.loadingKeys[loadingKey];
+          });
+
+        Store.ui.loadingKeys[loadingKey] = promise;
+        return promise;
+      },
+
+      getDashboard: function (condition, options) {
+        return this.loadOnce(
+          'dashboard:' + createQueryKey(condition || {}),
+          function () { return Store.dashboard.data; },
+          function (data) {
+            Store.dashboard.data = data;
+            Store.dashboard.fetchedAt = new Date().toISOString();
+            Store.dashboard.stale = false;
+          },
+          function () { return ApiClient.getDashboardData(condition || {}); },
+          options
+        );
+      },
+
+      searchCases: function (condition, options) {
+        var key = createQueryKey(condition || {});
+        return this.loadOnce(
+          'cases:' + key,
+          function () { return Store.cases.byQueryKey[key]; },
+          function (data) {
+            Store.cases.byQueryKey[key] = data;
+            Store.cases.lastCondition = condition || {};
+          },
+          function () { return ApiClient.searchCases(condition || {}); },
+          options
+        );
+      },
+
+      getCaseDetail: function (caseId, options) {
+        return this.loadOnce(
+          'caseDetail:' + caseId,
+          function () { return Store.caseDetails.byId[caseId]; },
+          function (data) { Store.caseDetails.byId[caseId] = data; },
+          function () { return ApiClient.getCaseDetail(caseId); },
+          options
+        );
+      },
+
+      searchClients: function (condition, options) {
+        var key = createQueryKey(condition || {});
+        return this.loadOnce(
+          'clients:' + key,
+          function () { return Store.clients.byQueryKey[key]; },
+          function (data) { Store.clients.byQueryKey[key] = data; },
+          function () { return ApiClient.searchClients(condition || {}); },
+          options
+        );
+      },
+
+      getClientDetail: function (clientId, options) {
+        return this.loadOnce(
+          'clientDetail:' + clientId,
+          function () { return Store.clients.byId[clientId]; },
+          function (data) { Store.clients.byId[clientId] = data; },
+          function () { return ApiClient.getClientDetail(clientId); },
+          options
+        );
+      },
+
+      getReportData: function (condition, options) {
+        var key = createQueryKey(condition || {});
+        return this.loadOnce(
+          'reports:' + key,
+          function () { return Store.reports.byQueryKey[key]; },
+          function (data) { Store.reports.byQueryKey[key] = data; },
+          function () { return ApiClient.getReportData(condition || {}); },
+          options
+        );
+      },
+
+      invalidateCases: function (caseId) {
+        Store.cases.byQueryKey = {};
+        if (caseId) delete Store.caseDetails.byId[caseId];
+        Store.dashboard.stale = true;
+      },
+
+      invalidateClients: function (clientId) {
+        Store.clients.byQueryKey = {};
+        if (clientId) delete Store.clients.byId[clientId];
+      },
+
+      invalidateReports: function () {
+        Store.reports.byQueryKey = {};
+      }
     };
   })(window.App);
 </script>

@@ -52,7 +52,14 @@ function api_getInitialData(sessionToken) {
 
 function api_searchCases(sessionToken, condition) {
   try {
-    return apiSuccess_(getProjects(sessionToken, condition || {}));
+    const normalized = normalizeCaseSearchCondition_(condition || {});
+    const result = getProjects(sessionToken, normalized);
+    result.rows = (result.items || []).map(caseListDtoToApiRow_);
+    result.page = result.pagination ? result.pagination.page : normalized.page;
+    result.pageSize = result.pagination ? result.pagination.pageSize : normalized.pageSize;
+    result.total = result.pagination ? result.pagination.totalItems : 0;
+    result.hasNext = result.pagination ? result.pagination.hasNext : false;
+    return apiSuccess_(result);
   } catch (error) {
     return apiFailure_(error);
   }
@@ -89,6 +96,34 @@ function api_deleteCase(sessionToken, payload) {
 function api_getDashboardData(sessionToken, condition) {
   try {
     return apiSuccess_(getDashboard(sessionToken, condition || {}));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_searchClients(sessionToken, condition) {
+  try {
+    const input = condition || {};
+    const result = getClients(sessionToken, {
+      query: input.keyword || input.query || '',
+      page: input.page || 1,
+      pageSize: input.pageSize || 50,
+    });
+    result.rows = result.items || [];
+    result.page = result.pagination ? result.pagination.page : 1;
+    result.pageSize = result.pagination ? result.pagination.pageSize : 50;
+    result.total = result.pagination ? result.pagination.totalItems : 0;
+    result.hasNext = result.pagination ? result.pagination.hasNext : false;
+    return apiSuccess_(result);
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_getClientDetail(sessionToken, payload) {
+  try {
+    const input = payload || {};
+    return apiSuccess_(getClientDetail(sessionToken, input.clientId || input.id));
   } catch (error) {
     return apiFailure_(error);
   }
@@ -134,5 +169,36 @@ function buildReportData_(projects, filter) {
     ownerPerformance: clientSales,
     overdueTrend: [],
     fetchedAt: nowDateTimeStr_(),
+  };
+}
+
+function normalizeCaseSearchCondition_(condition) {
+  const input = condition || {};
+  return {
+    query: input.keyword || input.query || '',
+    status: input.status || '',
+    assignee: input.assignee || '',
+    clientId: input.clientId || '',
+    dateFrom: input.from || input.dateFrom || '',
+    dateTo: input.to || input.dateTo || '',
+    page: input.page || 1,
+    pageSize: input.pageSize || 50,
+    sortKey: input.sortKey || 'updatedAt',
+    sortOrder: input.sortOrder || 'desc',
+    scope: input.scope || null,
+  };
+}
+
+function caseListDtoToApiRow_(project) {
+  return {
+    caseId: project.id,
+    caseName: project.name,
+    clientName: project.clientName,
+    status: project.status,
+    assignee: '',
+    amount: project.sales,
+    grossProfit: project.profit,
+    dueDate: project.targetDate,
+    updatedAt: project.updatedAt,
   };
 }

@@ -11,6 +11,12 @@
       var canvas = App.ui.byId(canvasId);
       if (!canvas || !window.Chart) return null;
       if (instances[canvasId]) {
+        if (instances[canvasId].config.type === config.type) {
+          instances[canvasId].data = config.data;
+          instances[canvasId].options = config.options;
+          instances[canvasId].update();
+          return instances[canvasId];
+        }
         instances[canvasId].destroy();
       }
       instances[canvasId] = new Chart(canvas, config);

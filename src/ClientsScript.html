@@ -57,24 +57,29 @@
       },
 
       ensureLoaded: async function (force) {
+        var cached = Store.clients.byQueryKey[createQueryKey(this.buildQuery())];
+        if (cached && !force) {
+          App.state.clients.items = cached.items || cached.rows || [];
+          App.state.clients.pagination = cached.pagination || App.emptyPagination();
+          App.state.clients.summary = cached.summary || null;
+          App.state.clients.stale = false;
+          this.render();
+          App.ui.updateBadges();
+          return cached;
+        }
         if (App.state.clients.loading) return;
         App.state.clients.loading = true;
         App.state.clients.error = '';
         this.render();
         try {
-          var response = await App.api.clients.list(this.buildQuery());
-          App.state.clients.items = response.items || [];
+          var response = await DataLoader.searchClients(this.buildQuery(), { forceRefresh: Boolean(force) });
+          App.state.clients.items = response.items || response.rows || [];
           App.state.clients.pagination = response.pagination || App.emptyPagination();
           App.state.clients.summary = response.summary || null;
           App.state.clients.stale = Boolean(response.__meta && response.__meta.stale);
           if (response.__meta) App.ui.setLastSync(response.__meta.savedAt);
-          if (!App.state.clients.selectedId || !this.findItem(App.state.clients.selectedId)) {
-            App.state.clients.selectedId = App.state.clients.items[0] ? App.state.clients.items[0].id : '';
-          }
           this.render();
-          if (App.state.clients.selectedId) {
-            await this.openDetail(App.state.clients.selectedId, force);
-          } else {
+          if (!App.state.clients.selectedId) {
             App.state.clients.detail = null;
             this.renderDetail();
           }
@@ -92,6 +97,7 @@
       reload: async function () {
         try {
           await this.ensureLoaded(true);
+          App.ui.toast('クライアント一覧を更新しました。', 'success');
         } catch (error) {
         }
       },
@@ -177,12 +183,21 @@
           return;
         }
         App.state.clients.selectedId = clientId;
-        App.ui.openModal('detailModal');
+        App.ui.openDetailPane();
+        var cached = Store.clients.byId[clientId];
+        if (cached && !force) {
+          App.state.clients.detail = cached;
+          App.state.clients.detailError = '';
+          App.state.clients.detailLoading = false;
+          this.render();
+          this.renderDetail();
+          return cached;
+        }
         App.state.clients.detailLoading = true;
         this.render();
         this.renderDetail();
         try {
-          var response = await App.api.clients.detail(clientId);
+          var response = await DataLoader.getClientDetail(clientId, { forceRefresh: Boolean(force) });
           App.state.clients.detail = response;
           App.state.clients.detailError = '';
           this.renderDetail();
@@ -315,11 +330,11 @@
 
         App.ui.setBusy('clientSubmit', true, '保存中...', '保存する');
         try {
-          if (payload.id) await App.api.clients.update(payload);
-          else await App.api.clients.create(payload);
+          await ApiClient.saveClient(payload);
           await App.ui.closeModal('clientModal', true);
           App.state.clients.formSnapshot = '';
           App.state.projects.optionsLoaded = false;
+          DataLoader.invalidateClients(payload.id);
           App.ui.toast('クライアントを保存しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {
@@ -344,8 +359,9 @@
 
         App.ui.setBusyElement(triggerButton, true, '削除中...', '削除');
         try {
-          await App.api.clients.remove(clientId);
+          await ApiClient.deleteClient(clientId);
           App.state.projects.optionsLoaded = false;
+          DataLoader.invalidateClients(clientId);
           App.ui.toast('クライアントを削除しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {

@@ -117,14 +117,24 @@
       },
 
       ensureLoaded: async function (force) {
+        var cached = Store.cases.byQueryKey[createQueryKey(this.buildQuery())];
+        if (cached && !force) {
+          App.state.projects.items = cached.items || cached.rows || [];
+          App.state.projects.pagination = cached.pagination || App.emptyPagination();
+          App.state.projects.summary = cached.summary || null;
+          App.state.projects.stale = false;
+          this.render();
+          App.ui.updateBadges();
+          return cached;
+        }
         if (App.state.projects.loading) return;
         App.state.projects.loading = true;
         App.state.projects.error = '';
         this.render();
         try {
           await this.syncClientOptions(force);
-          var response = await App.api.projects.list(this.buildQuery());
-          App.state.projects.items = response.items || [];
+          var response = await DataLoader.searchCases(this.buildQuery(), { forceRefresh: Boolean(force) });
+          App.state.projects.items = response.items || response.rows || [];
           App.state.projects.pagination = response.pagination || App.emptyPagination();
           App.state.projects.summary = response.summary || null;
           App.state.projects.stale = Boolean(response.__meta && response.__meta.stale);
@@ -132,13 +142,8 @@
           if (response.filters && response.filters.sort) {
             App.ui.byId('projectsSortLabel').textContent = response.filters.sort.label;
           }
-          if (!App.state.projects.selectedId || !this.findItem(App.state.projects.selectedId)) {
-            App.state.projects.selectedId = App.state.projects.items[0] ? App.state.projects.items[0].id : '';
-          }
           this.render();
-          if (App.state.projects.selectedId) {
-            await this.openDetail(App.state.projects.selectedId, force);
-          } else {
+          if (!App.state.projects.selectedId) {
             App.state.projects.detail = null;
             this.renderDetail();
           }
@@ -156,6 +161,7 @@
       reload: async function () {
         try {
           await this.ensureLoaded(true);
+          App.ui.toast('案件一覧を更新しました。', 'success');
         } catch (error) {
         }
       },
@@ -301,12 +307,21 @@
           return;
         }
         App.state.projects.selectedId = projectId;
-        App.ui.openModal('detailModal');
+        Store.cases.selectedCaseId = projectId;
+        App.ui.openDetailPane();
         this.render();
+        var cached = Store.caseDetails.byId[projectId];
+        if (cached && !force) {
+          App.state.projects.detail = cached;
+          App.state.projects.detailError = '';
+          App.state.projects.detailLoading = false;
+          this.renderDetail();
+          return cached;
+        }
         App.state.projects.detailLoading = true;
         this.renderDetail();
         try {
-          var response = await App.api.projects.detail(projectId);
+          var response = await DataLoader.getCaseDetail(projectId, { forceRefresh: Boolean(force) });
           App.state.projects.detail = response;
           App.state.projects.detailError = '';
           App.state.projects.stale = Boolean(response.__meta && response.__meta.stale);
@@ -473,11 +488,12 @@
 
         App.ui.setBusy('projectSubmit', true, '保存中...', '保存する');
         try {
-          if (payload.id) await App.api.projects.update(payload);
-          else await App.api.projects.create(payload);
+          await ApiClient.saveCase(payload);
           await App.ui.closeModal('projectModal', true);
           App.state.projects.formSnapshot = '';
-          App.state.dashboard.loadedKey = '';
+          App.state.dashboard.stale = true;
+          DataLoader.invalidateCases(payload.id);
+          DataLoader.invalidateReports();
           App.ui.toast('案件を保存しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {
@@ -502,7 +518,10 @@
 
         App.ui.setBusyElement(triggerButton, true, '削除中...', '削除');
         try {
-          await App.api.projects.remove(projectId);
+          await ApiClient.deleteCase(projectId);
+          DataLoader.invalidateCases(projectId);
+          DataLoader.invalidateReports();
+          App.state.dashboard.stale = true;
           App.ui.toast('案件を削除しました。', 'success');
           App.state.dashboard.loadedKey = '';
           await this.ensureLoaded(true);

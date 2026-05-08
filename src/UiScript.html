@@ -375,6 +375,18 @@
         this.syncBodyLocks();
       },
 
+      openDetailPane: function () {
+        Store.ui.drawer = 'detail';
+        this.byId('detailModal').hidden = false;
+        document.body.classList.add('detail-pane-open');
+      },
+
+      closeDetailPane: function () {
+        Store.ui.drawer = null;
+        this.byId('detailModal').hidden = true;
+        document.body.classList.remove('detail-pane-open');
+      },
+
       closeDrawer: function () {
         App.state.ui.drawerOpen = false;
         this.byId('mobileDrawer').hidden = true;
@@ -432,6 +444,10 @@
 
           var closeButton = event.target.closest('[data-modal-close]');
           if (closeButton) {
+            if (closeButton.dataset.modalClose === 'detailModal') {
+              self.closeDetailPane();
+              return;
+            }
             self.closeModal(closeButton.dataset.modalClose);
           }
 
@@ -538,18 +554,26 @@
 
     App.navigate = async function (view) {
       var nextView = view === 'users' && !App.canManageUsers() ? 'dashboard' : view;
+      Store.ui.scrollPositions[App.state.currentView] = document.querySelector('.content-area') ? document.querySelector('.content-area').scrollTop : window.scrollY;
       if (App.state.ui.activeModal) {
         var closed = await App.ui.closeModal(App.state.ui.activeModal);
         if (!closed) return;
       }
 
       App.state.currentView = nextView;
+      Store.ui.activeRoute = nextView;
       App.ui.activateView(nextView);
       App.ui.updatePrimaryAction();
       if (!App.isAuthenticated()) return;
 
       try {
         await App.loadCurrentView(false);
+        window.setTimeout(function () {
+          var area = document.querySelector('.content-area');
+          var y = Store.ui.scrollPositions[nextView] || 0;
+          if (area) area.scrollTop = y;
+          else window.scrollTo(0, y);
+        }, 0);
       } catch (error) {
         App.ui.toast(error.message || '画面の読み込みに失敗しました。', 'error');
       }

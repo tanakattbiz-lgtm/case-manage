@@ -34,7 +34,7 @@
         App.state.reports.loading = true;
         this.renderLoading();
         try {
-          var response = await ApiClient.getReportData(App.state.reports.condition);
+          var response = await DataLoader.getReportData(App.state.reports.condition, { forceRefresh: Boolean(force) });
           App.state.reports.data = response;
           App.state.reports.loadedKey = key;
           App.state.reports.error = '';
@@ -53,6 +53,7 @@
       reload: async function () {
         try {
           await this.ensureLoaded(true);
+          App.ui.toast('レポートを更新しました。', 'success');
         } catch (error) {
           App.ui.toast(error.message || 'レポートの更新に失敗しました。', 'error');
         }

@@ -83,6 +83,33 @@
     letter-spacing: 0;
   }
 
+  .topbar,
+  .mobile-header,
+  .app-header {
+    min-height: 60px;
+    background: #FFFFFF;
+    color: #111827;
+    border-bottom: 1px solid #E5E7EB;
+    border-radius: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .topbar-copy,
+  .topbar-actions,
+  .mobile-header-copy {
+    color: #111827;
+  }
+
   .page-subtitle,
   p {
     color: var(--color-text-subtle);
@@ -238,6 +265,10 @@
   #detailModal {
     place-items: stretch end;
     padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    pointer-events: none;
   }
 
   #detailModal .modal-panel {
@@ -246,6 +277,7 @@
     height: 100svh;
     border-radius: 0;
     animation: drawer-enter 180ms ease;
+    pointer-events: auto;
   }
 
   @keyframes drawer-enter {

@@ -77,7 +77,7 @@
 
         App.state.dashboard.loading = true;
         try {
-          var response = await App.api.dashboard.get(App.state.dashboard.filter);
+          var response = await DataLoader.getDashboard(App.state.dashboard.filter, { forceRefresh: Boolean(force) });
           App.state.dashboard.data = response;
           App.state.dashboard.loadedKey = key;
           App.state.dashboard.error = '';
@@ -101,6 +101,7 @@
       reload: async function () {
         try {
           await this.ensureLoaded(true);
+          App.ui.toast('ダッシュボードを更新しました。', 'success');
         } catch (error) {
         }
       },

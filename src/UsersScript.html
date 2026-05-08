@@ -89,6 +89,11 @@
       },
 
       ensureLoaded: async function (force) {
+        var loadedKey = createQueryKey(this.buildUserQuery()) + ':' + createQueryKey(this.buildAuditQuery());
+        if (!force && App.state.users.loadedKey === loadedKey && (App.state.users.items.length || App.state.users.summary)) {
+          this.render();
+          return;
+        }
         if (App.state.users.loading) return;
         if (!App.canManageUsers()) {
           this.renderNoPermission();
@@ -117,15 +122,11 @@
           App.state.users.audits.pagination = auditsResponse.pagination || App.emptyPagination();
           App.state.users.audits.summary = auditsResponse.summary || null;
           App.state.users.audits.stale = Boolean(auditsResponse.__meta && auditsResponse.__meta.stale);
+          App.state.users.loadedKey = loadedKey;
 
           if (usersResponse.__meta) App.ui.setLastSync(usersResponse.__meta.savedAt);
-          if (!App.state.users.selectedId || !this.findItem(App.state.users.selectedId)) {
-            App.state.users.selectedId = App.state.users.items[0] ? App.state.users.items[0].id : '';
-          }
           this.render();
-          if (App.state.users.selectedId) {
-            await this.openDetail(App.state.users.selectedId, force);
-          } else {
+          if (!App.state.users.selectedId) {
             App.state.users.detail = null;
             this.renderDetail();
           }
@@ -307,7 +308,7 @@
           return;
         }
         App.state.users.selectedId = userId;
-        App.ui.openModal('detailModal');
+        App.ui.openDetailPane();
         App.state.users.detailLoading = true;
         this.render();
         this.renderDetail();
