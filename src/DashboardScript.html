@@ -12,14 +12,14 @@
               App.state.dashboard.filter.year = '';
               App.state.dashboard.filter.month = '';
             }
-            App.dashboard.reload();
+            App.dashboard.ensureLoaded(false).catch(function () {});
           });
         });
 
         App.ui.byId('dashboardYear').addEventListener('change', function (event) {
           App.state.dashboard.filter.year = event.target.value;
           App.state.dashboard.filter.mode = event.target.value ? 'year' : 'all';
-          App.dashboard.reload();
+          App.dashboard.ensureLoaded(false).catch(function () {});
         });
 
         App.ui.byId('dashboardMonth').addEventListener('change', function (event) {
@@ -30,7 +30,7 @@
               App.state.dashboard.filter.year = String(new Date().getFullYear());
             }
           }
-          App.dashboard.reload();
+          App.dashboard.ensureLoaded(false).catch(function () {});
         });
 
         App.ui.byId('dashboardStatusGrid').addEventListener('click', function (event) {

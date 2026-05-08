@@ -166,6 +166,12 @@
           return true;
         }
 
+        if (modalId === 'confirmDialog' && !force) {
+          return Promise.resolve(finalizeClose(false));
+        }
+        if (modalId === 'messageDialog' && !force) {
+          return Promise.resolve(finalizeClose(true));
+        }
         if (!force) {
           return this.guardDirtyModal(modalId).then(function (allowed) {
             if (!allowed) return false;
@@ -448,6 +454,8 @@
               self.closeDetailPane();
               return;
             }
+            event.preventDefault();
+            event.stopPropagation();
             self.closeModal(closeButton.dataset.modalClose);
           }
 

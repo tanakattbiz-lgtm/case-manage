@@ -335,6 +335,7 @@
           App.state.clients.formSnapshot = '';
           App.state.projects.optionsLoaded = false;
           DataLoader.invalidateClients(payload.id);
+          DataLoader.invalidateReports();
           App.ui.toast('クライアントを保存しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {
@@ -362,6 +363,7 @@
           await ApiClient.deleteClient(clientId);
           App.state.projects.optionsLoaded = false;
           DataLoader.invalidateClients(clientId);
+          DataLoader.invalidateReports();
           App.ui.toast('クライアントを削除しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {

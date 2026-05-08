@@ -213,7 +213,7 @@
     window.Store = {
       currentUser: null,
       masterData: null,
-      dashboard: { data: null, fetchedAt: null, stale: true },
+      dashboard: { data: null, fetchedAt: null, stale: true, byQueryKey: {} },
       cases: { byQueryKey: {}, selectedCaseId: null, lastCondition: null },
       caseDetails: { byId: {} },
       clients: { byQueryKey: {}, byId: {} },
@@ -276,10 +276,12 @@
       },
 
       getDashboard: function (condition, options) {
+        var key = createQueryKey(condition || {});
         return this.loadOnce(
-          'dashboard:' + createQueryKey(condition || {}),
-          function () { return Store.dashboard.data; },
+          'dashboard:' + key,
+          function () { return Store.dashboard.byQueryKey[key]; },
           function (data) {
+            Store.dashboard.byQueryKey[key] = data;
             Store.dashboard.data = data;
             Store.dashboard.fetchedAt = new Date().toISOString();
             Store.dashboard.stale = false;
@@ -348,12 +350,27 @@
       invalidateCases: function (caseId) {
         Store.cases.byQueryKey = {};
         if (caseId) delete Store.caseDetails.byId[caseId];
+        Store.dashboard.byQueryKey = {};
+        Store.dashboard.data = null;
         Store.dashboard.stale = true;
+        if (window.App && App.state && App.state.dashboard) {
+          App.state.dashboard.data = null;
+          App.state.dashboard.loadedKey = '';
+          App.state.dashboard.stale = true;
+        }
       },
 
       invalidateClients: function (clientId) {
         Store.clients.byQueryKey = {};
         if (clientId) delete Store.clients.byId[clientId];
+        Store.dashboard.byQueryKey = {};
+        Store.dashboard.data = null;
+        Store.dashboard.stale = true;
+        if (window.App && App.state && App.state.dashboard) {
+          App.state.dashboard.data = null;
+          App.state.dashboard.loadedKey = '';
+          App.state.dashboard.stale = true;
+        }
       },
 
       invalidateReports: function () {
