@@ -1,0 +1,100 @@
+<script>
+  (function (App) {
+    App.reports = {
+      bindEvents: function () {
+        App.ui.qq('[data-report-mode]').forEach(function (button) {
+          button.addEventListener('click', function () {
+            App.state.reports.condition.mode = button.dataset.reportMode;
+            if (button.dataset.reportMode === 'year') {
+              App.state.reports.condition.year = String(new Date().getFullYear());
+              App.state.reports.condition.month = '';
+            }
+            if (button.dataset.reportMode === 'all') {
+              App.state.reports.condition.year = '';
+              App.state.reports.condition.month = '';
+            }
+            App.reports.reload();
+          });
+        });
+
+        document.addEventListener('click', function (event) {
+          if (event.target.closest('[data-action="refresh-reports"]')) {
+            App.reports.reload();
+          }
+        });
+      },
+
+      ensureLoaded: async function (force) {
+        var key = JSON.stringify(App.state.reports.condition || {});
+        if (!force && App.state.reports.data && App.state.reports.loadedKey === key) {
+          this.render();
+          return App.state.reports.data;
+        }
+
+        App.state.reports.loading = true;
+        this.renderLoading();
+        try {
+          var response = await ApiClient.getReportData(App.state.reports.condition);
+          App.state.reports.data = response;
+          App.state.reports.loadedKey = key;
+          App.state.reports.error = '';
+          App.state.reports.stale = Boolean(response && response.__meta && response.__meta.stale);
+          this.render();
+          return response;
+        } catch (error) {
+          App.state.reports.error = error.message || 'レポートの取得に失敗しました。';
+          this.renderError();
+          throw error;
+        } finally {
+          App.state.reports.loading = false;
+        }
+      },
+
+      reload: async function () {
+        try {
+          await this.ensureLoaded(true);
+        } catch (error) {
+          App.ui.toast(error.message || 'レポートの更新に失敗しました。', 'error');
+        }
+      },
+
+      renderLoading: function () {
+        App.ui.byId('reportMetrics').innerHTML = App.ui.renderSkeletonList(2);
+      },
+
+      renderError: function () {
+        App.ui.byId('reportMetrics').innerHTML = App.ui.renderStateBlock(
+          'レポートを表示できません。',
+          App.state.reports.error || '通信状態を確認して再試行してください。',
+          'error',
+          '<button class="btn btn-secondary" type="button" data-action="refresh-reports">再試行</button>'
+        );
+      },
+
+      metricCard: function (title, value, caption) {
+        return '<div class="surface metric-card"><strong>' + App.helpers.escape(title) + '</strong><div class="metric">' + App.helpers.escape(value) + '</div><span>' + App.helpers.escape(caption) + '</span></div>';
+      },
+
+      render: function () {
+        var data = App.state.reports.data;
+        if (!data) return this.renderError();
+
+        App.ui.qq('[data-report-mode]').forEach(function (button) {
+          button.classList.toggle('is-active', button.dataset.reportMode === App.state.reports.condition.mode);
+        });
+
+        App.ui.byId('reportMetrics').innerHTML = [
+          this.metricCard('案件数', App.helpers.number(data.summary.totalCount), data.filter.label),
+          this.metricCard('売上', App.helpers.currency(data.summary.totalSales), '完了案件'),
+          this.metricCard('粗利', App.helpers.currency(data.summary.totalProfit), '完了案件'),
+          this.metricCard('平均粗利率', App.helpers.pct(data.summary.avgMargin), '完了案件平均')
+        ].join('');
+
+        App.charts.renderMoneyCombo('reportSalesProfitChart', data.monthly || []);
+        App.charts.renderDoughnut('reportStatusChart', data.statusDistribution || []);
+        App.charts.renderHorizontalBars('reportClientChart', data.clientSales || [], 'sales');
+        App.charts.renderPipeline('reportPipelineChart', data.statusDistribution || []);
+      }
+    };
+  })(window.App);
+</script>

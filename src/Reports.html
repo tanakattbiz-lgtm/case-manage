@@ -1,0 +1,64 @@
+<section class="view" id="view-reports" data-view-panel="reports">
+  <div class="view-header">
+    <div>
+      <div class="overline">レポート</div>
+      <h2>売上・利益・案件分布</h2>
+      <p>グラフ用データをまとめて取得し、画面内で描画します。</p>
+    </div>
+    <div class="toolbar-row">
+      <div class="segmented" id="reportModeButtons">
+        <button class="segment-btn is-active" type="button" data-report-mode="month">月次</button>
+        <button class="segment-btn" type="button" data-report-mode="year">年次</button>
+        <button class="segment-btn" type="button" data-report-mode="all">全期間</button>
+      </div>
+      <button class="btn btn-secondary" type="button" data-action="refresh-reports">
+        <svg class="icon icon-16" aria-hidden="true"><use href="#icon-refresh"></use></svg>
+        <span>更新</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="kpi-grid" id="reportMetrics"></div>
+
+  <div class="chart-grid">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>月別売上・粗利</h3>
+          <p>金額は3桁区切りで表示します。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="reportSalesProfitChart"></canvas></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>ステータス別分布</h3>
+          <p>案件数の構成比です。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="reportStatusChart"></canvas></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>顧客別売上</h3>
+          <p>上位顧客の売上と粗利です。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="reportClientChart"></canvas></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>受注確度別パイプライン</h3>
+          <p>現行データではステータスを確度の代替指標として表示します。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="reportPipelineChart"></canvas></div>
+    </section>
+  </div>
+</section>

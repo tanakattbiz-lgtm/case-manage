@@ -148,6 +148,12 @@
         }).join('');
 
         App.charts.renderTrend('dashboardTrend', data.monthly);
+        App.charts.renderDoughnut('dashboardStatusChart', App.constants.projectStatuses.map(function (status) {
+          return { label: status, count: data.statusCount[status] || 0, sales: data.statusSales[status] || 0 };
+        }));
+        App.charts.renderHorizontalBars('dashboardOwnerChart', (data.clientRanking || []).map(function (item) {
+          return { label: item.name, count: item.count || 0 };
+        }), 'count');
 
         App.ui.byId('dashboardRanking').innerHTML = data.clientRanking.length
           ? data.clientRanking.map(function (item) {

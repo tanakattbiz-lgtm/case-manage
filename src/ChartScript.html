@@ -1,12 +1,122 @@
 <script>
   (function (App) {
+    var instances = {};
+    var palette = ['#111827', '#6B7280', '#9CA3AF', '#166534', '#92400E', '#1E40AF', '#991B1B'];
+
+    function money(value) {
+      return '¥' + Math.round(Number(value) || 0).toLocaleString('ja-JP');
+    }
+
+    function ensureChart(canvasId, config) {
+      var canvas = App.ui.byId(canvasId);
+      if (!canvas || !window.Chart) return null;
+      if (instances[canvasId]) {
+        instances[canvasId].destroy();
+      }
+      instances[canvasId] = new Chart(canvas, config);
+      return instances[canvasId];
+    }
+
+    function defaultOptions(extra) {
+      return Object.assign({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 180 },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, boxHeight: 10, color: '#6B7280', font: { size: 12 } }
+          },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                var label = context.dataset && context.dataset.label ? context.dataset.label + ': ' : '';
+                return label + (context.dataset && context.dataset.money ? money(context.raw) : App.helpers.number(context.raw));
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { color: '#F3F4F6' }, ticks: { color: '#6B7280' } },
+          y: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280' } }
+        }
+      }, extra || {});
+    }
+
     App.charts = {
+      renderMoneyCombo: function (canvasId, items) {
+        ensureChart(canvasId, {
+          type: 'bar',
+          data: {
+            labels: (items || []).map(function (item) { return String(item.month || '').replace('/', '.'); }),
+            datasets: [
+              { type: 'bar', label: '売上', data: (items || []).map(function (item) { return item.sales || 0; }), backgroundColor: '#111827', borderRadius: 4, money: true },
+              { type: 'line', label: '粗利', data: (items || []).map(function (item) { return item.profit || 0; }), borderColor: '#166534', backgroundColor: '#166534', tension: 0.32, pointRadius: 2, money: true }
+            ]
+          },
+          options: defaultOptions({
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#6B7280' } },
+              y: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280', callback: money } }
+            }
+          })
+        });
+      },
+
+      renderDoughnut: function (canvasId, items) {
+        ensureChart(canvasId, {
+          type: 'doughnut',
+          data: {
+            labels: (items || []).map(function (item) { return item.label; }),
+            datasets: [{ data: (items || []).map(function (item) { return item.count || 0; }), backgroundColor: palette, borderColor: '#FFFFFF', borderWidth: 2 }]
+          },
+          options: defaultOptions({ cutout: '68%', scales: {} })
+        });
+      },
+
+      renderHorizontalBars: function (canvasId, items, valueKey) {
+        ensureChart(canvasId, {
+          type: 'bar',
+          data: {
+            labels: (items || []).map(function (item) { return item.label || item.name; }),
+            datasets: [{ label: valueKey === 'count' ? '件数' : '売上', data: (items || []).map(function (item) { return item[valueKey || 'sales'] || 0; }), backgroundColor: '#111827', borderRadius: 4, money: valueKey !== 'count' }]
+          },
+          options: defaultOptions({
+            indexAxis: 'y',
+            scales: {
+              x: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280', callback: money } },
+              y: { grid: { display: false }, ticks: { color: '#6B7280' } }
+            }
+          })
+        });
+      },
+
+      renderPipeline: function (canvasId, items) {
+        ensureChart(canvasId, {
+          type: 'bar',
+          data: {
+            labels: (items || []).map(function (item) { return item.label; }),
+            datasets: [{ label: 'パイプライン', data: (items || []).map(function (item) { return item.sales || 0; }), backgroundColor: palette, borderRadius: 4, money: true }]
+          },
+          options: defaultOptions({
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#6B7280' } },
+              y: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280', callback: money } }
+            }
+          })
+        });
+      },
+
       renderTrend: function (targetId, items) {
         var target = App.ui.byId(targetId);
         if (!items || !items.length) {
           target.innerHTML = App.ui.renderStateBlock('データがありません。', '案件が登録されると月次推移が表示されます。', 'info');
           return;
         }
+
+        target.innerHTML = '<canvas id="' + App.helpers.escape(targetId + 'Canvas') + '"></canvas>';
+        this.renderMoneyCombo(targetId + 'Canvas', items);
+        return;
 
         var width = 760;
         var height = 320;

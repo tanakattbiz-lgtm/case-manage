@@ -228,7 +228,7 @@
         }).join('') || '<span class="row-sub">絞り込み条件はありません。</span>';
 
         if (App.state.projects.loading && !App.state.projects.items.length) {
-          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + App.ui.renderSkeletonList(3) + '</td></tr>';
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="8">' + App.ui.renderSkeletonList(3) + '</td></tr>';
           App.ui.byId('projectsMobileList').innerHTML = App.ui.renderSkeletonList(3);
           App.ui.byId('projectsSummary').textContent = '読み込み中です。';
           return;
@@ -242,7 +242,7 @@
             offline ? 'cloud-off' : 'error',
             '<button class="btn btn-secondary" type="button" data-action="reload-projects">再試行</button>'
           );
-          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + errorHtml + '</td></tr>';
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="8">' + errorHtml + '</td></tr>';
           App.ui.byId('projectsMobileList').innerHTML = errorHtml;
           App.ui.byId('projectsSummary').textContent = '取得に失敗しました。';
           return;
@@ -255,18 +255,21 @@
 
         if (!App.state.projects.items.length) {
           var emptyHtml = App.ui.renderStateBlock('一致する案件はありません。', '条件を見直すか、新しい案件を追加してください。', 'info');
-          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="7">' + emptyHtml + '</td></tr>';
+          App.ui.byId('projectsTableBody').innerHTML = '<tr><td colspan="8">' + emptyHtml + '</td></tr>';
           App.ui.byId('projectsMobileList').innerHTML = emptyHtml;
         } else {
           App.ui.byId('projectsTableBody').innerHTML = App.state.projects.items.map(function (project) {
+            var targetDate = App.helpers.parseDate(project.targetDate);
+            var overdue = targetDate && targetDate.getTime() < Date.now() && project.status !== '完了';
             return ''
               + '<tr data-project-select="' + App.helpers.escape(project.id) + '"' + (project.id === App.state.projects.selectedId ? ' class="is-selected"' : '') + '>'
+              + '<td><span class="mono-text">' + App.helpers.escape(project.id) + '</span></td>'
               + '<td><strong>' + App.helpers.escape(project.name) + '</strong></td>'
               + '<td>' + App.helpers.escape(project.clientName || '未設定') + '</td>'
               + '<td><span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span></td>'
               + '<td class="num">' + App.helpers.escape(App.helpers.currency(project.sales)) + '</td>'
               + '<td class="num">' + App.helpers.escape(App.helpers.currency(project.profit)) + '</td>'
-              + '<td>' + App.helpers.escape(App.helpers.dateLabel(project.targetDate)) + '</td>'
+              + '<td>' + (overdue ? '<span class="status-pill stopped">期限超過 ' : '<span>') + App.helpers.escape(App.helpers.dateLabel(project.targetDate)) + '</span></td>'
               + '<td class="actions-cell"><div class="list-actions">'
               + (App.canEdit() ? '<button class="btn btn-secondary btn-small" type="button" data-project-action="edit" data-project-id="' + App.helpers.escape(project.id) + '">編集</button>' : '')
               + (App.canEdit() ? '<button class="btn btn-danger btn-small" type="button" data-project-action="delete" data-project-id="' + App.helpers.escape(project.id) + '">削除</button>' : '')

@@ -378,7 +378,18 @@
     });
 
     frame.addEventListener("error", showSlowState);
-    retryButton.addEventListener("click", () => window.location.reload());
+    retryButton.addEventListener("click", () => {
+      settled = false;
+      supportActions.hidden = true;
+      progressLabel.textContent = "retrying";
+      loaderText.innerHTML = "再接続しています。<br>数秒お待ちください。";
+      loaderHint.textContent = "画面全体は再読み込みせず、アプリフレームだけを再取得します。";
+      loader.classList.remove("is-hidden");
+      loader.setAttribute("aria-busy", "true");
+      frame.classList.remove("is-ready");
+      frame.src = frame.src;
+      window.setTimeout(showSlowState, 6500);
+    });
 
     window.setTimeout(showSlowState, 6500);
   </script>

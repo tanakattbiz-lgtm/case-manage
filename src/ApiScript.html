@@ -59,7 +59,23 @@
 
         return new Promise(function (resolve, reject) {
           var runner = google.script.run
-            .withSuccessHandler(resolve)
+            .withSuccessHandler(function (result) {
+              if (result && typeof result === 'object' && Object.prototype.hasOwnProperty.call(result, 'ok')) {
+                if (result.ok) {
+                  resolve(result.data);
+                  return;
+                }
+                var apiError = result.error || { code: 'APP_ERROR', message: '処理に失敗しました。' };
+                if (config.secure && (apiError.code === 'AUTH_REQUIRED' || apiError.code === 'AUTH_EXPIRED')) {
+                  if (App.auth && typeof App.auth.handleSessionLoss === 'function') {
+                    App.auth.handleSessionLoss(apiError.message);
+                  }
+                }
+                reject(apiError);
+                return;
+              }
+              resolve(result);
+            })
             .withFailureHandler(function (error) {
               var normalized = normalizeError(error);
               if (config.secure && (normalized.code === 'AUTH_REQUIRED' || normalized.code === 'AUTH_EXPIRED')) {
@@ -120,24 +136,24 @@
         },
         dashboard: {
           get: function (filter) {
-            return read('getDashboard', [filter], { cacheKey: 'dashboard:' + JSON.stringify(filter || {}) });
+            return read('api_getDashboardData', [filter], { cacheKey: 'dashboard:' + JSON.stringify(filter || {}) });
           }
         },
         projects: {
           list: function (query) {
-            return read('getProjects', [query || {}], { cacheKey: 'projects:list:' + JSON.stringify(query || {}) });
+            return read('api_searchCases', [query || {}], { cacheKey: 'projects:list:' + JSON.stringify(query || {}) });
           },
           detail: function (projectId) {
-            return read('getProjectDetail', [projectId], { cacheKey: 'projects:detail:' + String(projectId || '') });
+            return read('api_getCaseDetail', [{ caseId: projectId }], { cacheKey: 'projects:detail:' + String(projectId || '') });
           },
           create: function (payload) {
-            return call('addProject', [payload]);
+            return call('api_saveCase', [payload]);
           },
           update: function (payload) {
-            return call('updateProject', [payload]);
+            return call('api_saveCase', [payload]);
           },
           remove: function (projectId) {
-            return call('deleteProject', [projectId]);
+            return call('api_deleteCase', [{ caseId: projectId }]);
           }
         },
         clients: {
@@ -179,5 +195,15 @@
         }
       };
     })();
+
+    window.ApiClient = {
+      getInitialData: function () { return App.api.rpc('api_getInitialData', []); },
+      searchCases: function (condition) { return App.api.rpc('api_searchCases', [condition || {}]); },
+      getCaseDetail: function (caseId) { return App.api.rpc('api_getCaseDetail', [{ caseId: caseId }]); },
+      saveCase: function (payload) { return App.api.rpc('api_saveCase', [payload || {}]); },
+      deleteCase: function (caseId) { return App.api.rpc('api_deleteCase', [{ caseId: caseId }]); },
+      getDashboardData: function () { return App.api.rpc('api_getDashboardData', [App.state.dashboard.filter || {}]); },
+      getReportData: function (condition) { return App.api.rpc('api_getReportData', [condition || {}]); }
+    };
   })(window.App);
 </script>

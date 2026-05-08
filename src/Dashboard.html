@@ -56,11 +56,33 @@
     <section class="surface section-card">
       <div class="section-head">
         <div>
+          <h3>ステータス別案件数</h3>
+          <p>現在の案件構成をドーナツグラフで表示します。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="dashboardStatusChart"></canvas></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
           <h3>主要クライアント</h3>
           <p>完了案件ベースの売上上位を表示しています。</p>
         </div>
       </div>
       <div class="ranking-list" id="dashboardRanking"></div>
+    </section>
+  </div>
+
+  <div class="dashboard-grid dashboard-grid-secondary">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <h3>担当者別案件数</h3>
+          <p>現行データでは顧客別上位を代替表示します。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="dashboardOwnerChart"></canvas></div>
     </section>
 
     <section class="surface section-card">

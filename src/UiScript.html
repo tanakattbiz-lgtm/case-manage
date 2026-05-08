@@ -522,6 +522,7 @@
       if (view === 'dashboard') return App.dashboard.ensureLoaded(force);
       if (view === 'projects') return App.projects.ensureLoaded(force);
       if (view === 'clients') return App.clients.ensureLoaded(force);
+      if (view === 'reports') return App.reports.ensureLoaded(force);
       if (view === 'users') return App.users.ensureLoaded(force);
       return null;
     };
@@ -560,6 +561,7 @@
       App.dashboard.bindEvents();
       App.projects.bindEvents();
       App.clients.bindEvents();
+      App.reports.bindEvents();
       App.users.bindEvents();
       App.ui.setPageMeta('dashboard');
       App.ui.updatePrimaryAction();

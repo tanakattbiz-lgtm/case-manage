@@ -27,6 +27,11 @@
           title: 'クライアント管理',
           subtitle: '顧客情報をすばやく検索できます。'
         },
+        reports: {
+          eyebrow: '分析',
+          title: 'レポート',
+          subtitle: '売上、利益、件数、ステータスをまとめて確認できます。'
+        },
         users: {
           eyebrow: '管理',
           title: '認証管理',
@@ -245,6 +250,14 @@
         formSnapshot: '',
         formMode: 'create'
       },
+      reports: {
+        condition: App.defaultDashboardFilter(),
+        data: null,
+        loading: false,
+        stale: false,
+        error: '',
+        loadedKey: ''
+      },
       users: {
         filters: App.defaultUserFilters(),
         page: 1,
@@ -333,6 +346,14 @@
         detailError: '',
         formSnapshot: '',
         formMode: 'create'
+      };
+      App.state.reports = {
+        condition: App.defaultDashboardFilter(),
+        data: null,
+        loading: false,
+        stale: false,
+        error: '',
+        loadedKey: ''
       };
       App.state.users = {
         filters: App.defaultUserFilters(),

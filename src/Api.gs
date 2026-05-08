@@ -1,0 +1,138 @@
+function apiSuccess_(data) {
+  return { ok: true, data: data == null ? null : data };
+}
+
+function apiFailure_(error) {
+  const normalized = normalizeApiError_(error);
+  return {
+    ok: false,
+    error: {
+      code: normalized.code,
+      message: normalized.message,
+      detail: normalized.detail,
+    },
+  };
+}
+
+function normalizeApiError_(error) {
+  const raw = String(error && error.message ? error.message : error || 'APP_ERROR: エラーが発生しました。');
+  const separator = raw.indexOf(':');
+  if (separator > 0) {
+    return {
+      code: raw.slice(0, separator).trim() || 'APP_ERROR',
+      message: raw.slice(separator + 1).trim() || 'エラーが発生しました。',
+      detail: raw,
+    };
+  }
+  return {
+    code: 'APP_ERROR',
+    message: raw,
+    detail: raw,
+  };
+}
+
+function api_getInitialData(sessionToken) {
+  try {
+    const sessionContext = requireReadAccess_(sessionToken);
+    const dashboard = getDashboard(sessionToken, {});
+    return apiSuccess_({
+      user: sanitizeUser_(sessionContext.user),
+      permissions: getRolePermissions_(sessionContext.user['ロール']),
+      master: {
+        clients: getClientOptions(sessionToken),
+        projectStatuses: PROJECT_STATUS_LIST,
+      },
+      dashboard: dashboard,
+      fetchedAt: nowDateTimeStr_(),
+    });
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_searchCases(sessionToken, condition) {
+  try {
+    return apiSuccess_(getProjects(sessionToken, condition || {}));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_getCaseDetail(sessionToken, payload) {
+  try {
+    const input = payload || {};
+    return apiSuccess_(getProjectDetail(sessionToken, input.caseId || input.projectId || input.id));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_saveCase(sessionToken, payload) {
+  try {
+    const input = payload || {};
+    const result = input.id ? updateProject(sessionToken, input) : addProject(sessionToken, input);
+    return apiSuccess_(result);
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_deleteCase(sessionToken, payload) {
+  try {
+    const input = payload || {};
+    return apiSuccess_(deleteProject(sessionToken, input.caseId || input.projectId || input.id));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_getDashboardData(sessionToken, condition) {
+  try {
+    return apiSuccess_(getDashboard(sessionToken, condition || {}));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function api_getReportData(sessionToken, condition) {
+  try {
+    requireReadAccess_(sessionToken);
+    const normalizedFilter = normalizeDashboardFilter_(condition || {});
+    const projects = listProjectDtos_().filter(function (project) {
+      return isProjectInDashboardPeriod_(project, normalizedFilter);
+    });
+    return apiSuccess_(buildReportData_(projects, normalizedFilter));
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
+function buildReportData_(projects, filter) {
+  const dashboard = buildDashboardSummary_(projects || [], { mode: 'all', year: '', month: '', label: '全期間' });
+  const statusDistribution = PROJECT_STATUS_LIST.map(function (status) {
+    return {
+      label: status,
+      count: dashboard.statusCount[status] || 0,
+      sales: dashboard.statusSales[status] || 0,
+    };
+  });
+  const clientSales = dashboard.clientRanking.map(function (client) {
+    return {
+      label: client.name,
+      sales: client.sales,
+      profit: client.profit,
+      count: client.count,
+    };
+  });
+
+  return {
+    filter: filter,
+    summary: dashboard.summary,
+    monthly: dashboard.monthly,
+    statusDistribution: statusDistribution,
+    clientSales: clientSales,
+    ownerPerformance: clientSales,
+    overdueTrend: [],
+    fetchedAt: nowDateTimeStr_(),
+  };
+}
