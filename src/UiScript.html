@@ -450,13 +450,17 @@
 
           var closeButton = event.target.closest('[data-modal-close]');
           if (closeButton) {
+            event.preventDefault();
+            event.stopPropagation();
             if (closeButton.dataset.modalClose === 'detailModal') {
               self.closeDetailPane();
               return;
             }
-            event.preventDefault();
-            event.stopPropagation();
-            self.closeModal(closeButton.dataset.modalClose);
+            if (closeButton.dataset.modalClose === 'confirmDialog' || closeButton.dataset.modalClose === 'messageDialog') {
+              self.closeModal(closeButton.dataset.modalClose);
+              return;
+            }
+            self.closeModal(closeButton.dataset.modalClose, true);
           }
 
           var assistButton = event.target.closest('[data-assist-context]');
