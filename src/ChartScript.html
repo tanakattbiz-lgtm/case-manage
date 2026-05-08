@@ -11,6 +11,10 @@
       var canvas = App.ui.byId(canvasId);
       if (!canvas || !window.Chart) return null;
       if (instances[canvasId]) {
+        if (instances[canvasId].canvas !== canvas) {
+          instances[canvasId].destroy();
+          delete instances[canvasId];
+        } else
         if (instances[canvasId].config.type === config.type) {
           instances[canvasId].data = config.data;
           instances[canvasId].options = config.options;
