@@ -64,7 +64,7 @@
         });
 
         App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
-        ['projectName', 'projectClientId', 'projectStatus', 'projectCompletedAt', 'projectSales', 'projectProfit', 'projectNote'].forEach(function (id) {
+        ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectProfit', 'projectNote'].forEach(function (id) {
           App.ui.byId(id).addEventListener('input', function () {
             self.updateProfitHint();
           });
@@ -404,7 +404,7 @@
           name: App.ui.byId('projectName').value,
           clientId: App.ui.byId('projectClientId').value,
           status: App.ui.byId('projectStatus').value,
-          completedAt: App.ui.byId('projectCompletedAt').value,
+          targetDate: App.ui.byId('projectTargetDate').value,
           sales: App.ui.byId('projectSales').value,
           profit: App.ui.byId('projectProfit').value,
           note: App.ui.byId('projectNote').value
@@ -424,7 +424,7 @@
         App.ui.byId('projectName').value = project ? project.name : '';
         App.ui.byId('projectClientId').value = project ? project.clientId : '';
         App.ui.byId('projectStatus').value = project ? project.status : '商談中';
-        App.ui.byId('projectCompletedAt').value = project ? App.helpers.serverDateToInput(project.completedAt) : '';
+        App.ui.byId('projectTargetDate').value = project ? App.helpers.serverDateToInput(project.targetDate || project.completedAt) : '';
         App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
         App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
         App.ui.byId('projectNote').value = project ? project.note : '';
@@ -480,7 +480,7 @@
           name: App.ui.byId('projectName').value.trim(),
           clientId: App.ui.byId('projectClientId').value,
           status: App.ui.byId('projectStatus').value,
-          completedAt: App.helpers.inputToServerDate(App.ui.byId('projectCompletedAt').value),
+          completedAt: App.helpers.inputToServerDate(App.ui.byId('projectTargetDate').value),
           sales: App.ui.byId('projectSales').value === '' ? 0 : Number(App.ui.byId('projectSales').value),
           profit: App.ui.byId('projectProfit').value === '' ? null : Number(App.ui.byId('projectProfit').value),
           note: App.ui.byId('projectNote').value
