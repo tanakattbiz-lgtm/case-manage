@@ -1,9 +1,9 @@
 <section class="view" id="view-reports" data-view-panel="reports">
   <div class="view-header">
     <div>
-      <div class="overline">レポート</div>
-      <h2>売上・利益・案件分布</h2>
-      <p>グラフ用データをまとめて取得し、画面内で描画します。</p>
+      <div class="overline">分析</div>
+      <h2>レポート</h2>
+      <p>売上・利益・パイプライン・クライアントを多角的に分析します。</p>
     </div>
     <div class="toolbar-row">
       <div class="segmented" id="reportModeButtons">
@@ -18,14 +18,20 @@
     </div>
   </div>
 
-  <div class="kpi-grid" id="reportMetrics"></div>
+  <!-- KPI カード（6枚） -->
+  <div class="kpi-grid kpi-grid-6" id="reportMetrics"></div>
 
-  <div class="chart-grid">
+  <!-- インサイト -->
+  <div id="reportAlerts"></div>
+
+  <!-- 月別売上・粗利（広め）+ ステータス分布 -->
+  <div class="report-grid-main">
     <section class="surface section-card">
       <div class="section-head">
         <div>
+          <div class="section-label">月次推移</div>
           <h3>月別売上・粗利</h3>
-          <p>金額は3桁区切りで表示します。</p>
+          <p>完了案件ベースの月次集計です。</p>
         </div>
       </div>
       <div class="chart-canvas-wrap"><canvas id="reportSalesProfitChart"></canvas></div>
@@ -34,31 +40,74 @@
     <section class="surface section-card">
       <div class="section-head">
         <div>
+          <div class="section-label">分布</div>
           <h3>ステータス別分布</h3>
           <p>案件数の構成比です。</p>
         </div>
       </div>
       <div class="chart-canvas-wrap"><canvas id="reportStatusChart"></canvas></div>
     </section>
+  </div>
 
+  <!-- 利益率・平均商談規模トレンド + 顧客別売上 -->
+  <div class="report-grid-equal">
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>顧客別売上</h3>
-          <p>上位顧客の売上と粗利です。</p>
+          <div class="section-label">パフォーマンス</div>
+          <h3>利益率 × 平均商談規模の推移</h3>
+          <p>月ごとの収益性と規模感を同時に確認できます。</p>
         </div>
       </div>
-      <div class="chart-canvas-wrap"><canvas id="reportClientChart"></canvas></div>
+      <div class="chart-canvas-wrap"><canvas id="reportPerformanceChart"></canvas></div>
     </section>
 
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>受注確度別パイプライン</h3>
-          <p>現行データではステータスを確度の代替指標として表示します。</p>
+          <div class="section-label">クライアント</div>
+          <h3>顧客別売上ランキング</h3>
+          <p>完了案件ベースの上位顧客です。</p>
+        </div>
+      </div>
+      <div class="chart-canvas-wrap"><canvas id="reportClientChart"></canvas></div>
+    </section>
+  </div>
+
+  <!-- パイプラインファネル + パイプライン価値チャート -->
+  <div class="report-grid-equal">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">パイプライン</div>
+          <h3>案件ファネル</h3>
+          <p>各ステージの案件数と売上規模。</p>
+        </div>
+      </div>
+      <div id="reportFunnel"></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">パイプライン</div>
+          <h3>ステータス別売上規模</h3>
+          <p>現行ステータスの案件価値をバーで表示します。</p>
         </div>
       </div>
       <div class="chart-canvas-wrap"><canvas id="reportPipelineChart"></canvas></div>
     </section>
   </div>
+
+  <!-- 顧客詳細テーブル（全幅） -->
+  <section class="surface section-card report-grid-full">
+    <div class="section-head">
+      <div>
+        <div class="section-label">顧客分析</div>
+        <h3>顧客別詳細レポート</h3>
+        <p>件数・売上・平均商談規模・利益率を一覧表示します。</p>
+      </div>
+    </div>
+    <div id="reportClientTable"></div>
+  </section>
 </section>

@@ -106,6 +106,9 @@ function buildDashboardSummary_(projects, filter) {
     clientRanking: clientRanking,
     recent: buildRecentProjects_(filtered),
     insights: buildDashboardInsights_(summary, clientRanking, statusCount),
+    staleItems: buildStaleItems_(filtered),
+    funnel: buildFunnelData_(statusCount, statusSales),
+    comparison: buildPeriodComparison_(projects, filter),
   };
 }
 
@@ -206,16 +209,110 @@ function buildRecentProjects_(projects) {
 
 function buildDashboardInsights_(summary, clientRanking, statusCount) {
   const items = [];
-  if (summary.pipelineSales > 0) items.push('進行中と商談中のパイプライン売上が残っています。');
-  if (clientRanking[0]) items.push('最大クライアントは「' + clientRanking[0].name + '」です。');
-  if (summary.avgLeadDays > 0) items.push('平均リードタイムは ' + summary.avgLeadDays + ' 日です。');
-  if ((statusCount[PROJECT_STATUSES.pending] || 0) + (statusCount[PROJECT_STATUSES.stopped] || 0) > 0) {
-    items.push('保留・停止案件の棚卸し余地があります。');
+
+  if (summary.pipelineSales > 0) {
+    items.push({ type: 'info', text: 'パイプライン合計 ' + formatCurrencyShort_(summary.pipelineSales) + ' が進行中・商談中にあります。' });
   }
+
+  const leadCount = statusCount[PROJECT_STATUSES.lead] || 0;
+  const activeCount = statusCount[PROJECT_STATUSES.active] || 0;
+  if (leadCount > 0 && activeCount === 0) {
+    items.push({ type: 'warning', text: '商談中案件が ' + leadCount + ' 件あります。進行中に移行できていません。' });
+  }
+
+  if (clientRanking[0]) {
+    const topShare = summary.totalSales > 0 ? Math.round((clientRanking[0].sales / summary.totalSales) * 100) : 0;
+    if (topShare > 50) {
+      items.push({ type: 'warning', text: '「' + clientRanking[0].name + '」への売上集中度が ' + topShare + '% と高い状態です。' });
+    } else {
+      items.push({ type: 'success', text: '最大クライアント「' + clientRanking[0].name + '」（' + formatCurrencyShort_(clientRanking[0].sales) + '）。利益率 ' + clientRanking[0].margin + '%。' });
+    }
+  }
+
+  if (summary.avgLeadDays > 0) {
+    const comment = summary.avgLeadDays > 60 ? '短縮余地があります。' : '標準的な商談期間です。';
+    items.push({ type: summary.avgLeadDays > 60 ? 'warning' : 'info', text: '平均リードタイムは ' + summary.avgLeadDays + ' 日です。' + comment });
+  }
+
+  if (summary.avgMargin > 0) {
+    const comment = summary.avgMargin >= 30 ? '良好な利益率です。' : summary.avgMargin < 15 ? '利益率の改善余地があります。' : '安定した利益率です。';
+    items.push({ type: summary.avgMargin >= 30 ? 'success' : (summary.avgMargin < 15 ? 'warning' : 'info'), text: '確定利益率は ' + summary.avgMargin + '%。' + comment });
+  }
+
+  const holdCount = (statusCount[PROJECT_STATUSES.pending] || 0) + (statusCount[PROJECT_STATUSES.stopped] || 0);
+  if (holdCount > 0) {
+    items.push({ type: 'warning', text: '保留・停止中の案件が ' + holdCount + ' 件あります。棚卸しを検討してください。' });
+  }
+
+  if (summary.avgDealSize > 0) {
+    items.push({ type: 'info', text: '平均商談規模は ' + formatCurrencyShort_(summary.avgDealSize) + ' です。' });
+  }
+
   if (items.length === 0) {
-    items.push('案件データが増えると、月次推移とクライアント比率が自動で可視化されます。');
+    items.push({ type: 'info', text: '案件データが増えると月次推移とクライアント比率が自動で可視化されます。' });
   }
   return items;
+}
+
+function formatCurrencyShort_(value) {
+  const num = Math.round(Number(value) || 0);
+  if (num >= 100000000) return '約 ' + (Math.round(num / 10000000) / 10) + ' 億円';
+  if (num >= 10000) return '約 ' + Math.round(num / 10000) + ' 万円';
+  return '¥' + String(num).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function buildStaleItems_(projects) {
+  const now = new Date();
+  const STALE_DAYS = 21;
+  return projects
+    .filter(function (project) {
+      if (project.status !== PROJECT_STATUSES.active && project.status !== PROJECT_STATUSES.lead) return false;
+      const updated = parseDateValue_(project.updatedAt || project.createdAt);
+      if (!updated) return false;
+      return Math.floor((now.getTime() - updated.getTime()) / 86400000) >= STALE_DAYS;
+    })
+    .sort(function (a, b) {
+      const la = parseDateValue_(a.updatedAt || a.createdAt);
+      const lb = parseDateValue_(b.updatedAt || b.createdAt);
+      return (la ? la.getTime() : 0) - (lb ? lb.getTime() : 0);
+    })
+    .slice(0, 6)
+    .map(function (project) {
+      const updated = parseDateValue_(project.updatedAt || project.createdAt);
+      const daysSince = updated ? Math.floor((now.getTime() - updated.getTime()) / 86400000) : 0;
+      return { id: project.id, name: project.name, clientName: project.clientName, status: project.status, sales: project.sales, daysSince: daysSince };
+    });
+}
+
+function buildFunnelData_(statusCount, statusSales) {
+  return [
+    { label: '商談中', count: statusCount[PROJECT_STATUSES.lead] || 0, sales: statusSales[PROJECT_STATUSES.lead] || 0 },
+    { label: '進行中', count: statusCount[PROJECT_STATUSES.active] || 0, sales: statusSales[PROJECT_STATUSES.active] || 0 },
+    { label: '完了', count: statusCount[PROJECT_STATUSES.completed] || 0, sales: statusSales[PROJECT_STATUSES.completed] || 0 },
+  ];
+}
+
+function buildPeriodComparison_(allProjects, filter) {
+  if (filter.mode === 'all') return null;
+  let prevFilter;
+  if (filter.mode === 'month') {
+    const d = new Date(Number(filter.year), Number(filter.month) - 2, 1);
+    prevFilter = { mode: 'month', year: String(d.getFullYear()), month: String(d.getMonth() + 1).padStart(2, '0') };
+  } else {
+    prevFilter = { mode: 'year', year: String(Number(filter.year) - 1), month: '' };
+  }
+  const prev = allProjects.filter(function (p) { return isProjectInDashboardPeriod_(p, prevFilter); });
+  const prevCompleted = prev.filter(function (p) { return p.status === PROJECT_STATUSES.completed; });
+  const prevSales = prevCompleted.reduce(function (s, p) { return s + (Number(p.sales) || 0); }, 0);
+  const prevProfit = prevCompleted.reduce(function (s, p) { return s + (Number(p.profit) || 0); }, 0);
+  const prevActive = prev.filter(function (p) { return p.status === PROJECT_STATUSES.active; }).reduce(function (s, p) { return s + (Number(p.sales) || 0); }, 0);
+  const prevLead = prev.filter(function (p) { return p.status === PROJECT_STATUSES.lead; }).reduce(function (s, p) { return s + (Number(p.sales) || 0); }, 0);
+  return {
+    totalSales: prevSales,
+    totalProfit: prevProfit,
+    avgMargin: prevSales > 0 ? Math.round((prevProfit / prevSales) * 100) : 0,
+    pipelineSales: prevActive + prevLead,
+  };
 }
 
 function isProjectInDashboardPeriod_(project, filter) {

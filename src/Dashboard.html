@@ -2,8 +2,8 @@
   <div class="view-header">
     <div>
       <div class="overline">概要</div>
-      <h2>状況をひと目で把握</h2>
-      <p>売上と進捗を上から順に確認できます。</p>
+      <h2>ダッシュボード</h2>
+      <p id="dashboardPeriodLabel">期間を読み込み中です。</p>
     </div>
     <div class="toolbar-row">
       <div class="segmented" id="dashboardModeButtons">
@@ -28,14 +28,20 @@
     </div>
   </div>
 
+  <!-- KPI カード（5枚） -->
   <div class="kpi-grid" id="dashboardMetrics"></div>
 
+  <!-- 要確認アラート（更新停滞案件） -->
+  <div id="dashboardAlerts"></div>
+
+  <!-- メイン：月次推移 + ステータスサマリー -->
   <div class="dashboard-grid dashboard-grid-primary">
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>売上と利益の推移</h3>
-          <p id="dashboardPeriodLabel">期間を読み込み中です。</p>
+          <div class="section-label">推移</div>
+          <h3>売上・利益の月次推移</h3>
+          <p>完了案件ベースの月次売上と利益。</p>
         </div>
       </div>
       <div class="chart-shell" id="dashboardTrend"></div>
@@ -44,20 +50,47 @@
     <section class="surface section-card">
       <div class="section-head">
         <div>
+          <div class="section-label">ステータス</div>
           <h3>ステータス別サマリー</h3>
-          <p>カードを選ぶと案件一覧を絞り込みます。</p>
+          <p>クリックで案件一覧を絞り込めます。</p>
         </div>
       </div>
       <div class="status-grid" id="dashboardStatusGrid"></div>
     </section>
   </div>
 
+  <!-- セカンダリ：パイプラインファネル + 主要クライアント -->
   <div class="dashboard-grid dashboard-grid-secondary">
     <section class="surface section-card">
       <div class="section-head">
         <div>
+          <div class="section-label">パイプライン</div>
+          <h3>案件ファネル</h3>
+          <p>商談中→進行中→完了の流れを可視化。</p>
+        </div>
+      </div>
+      <div id="dashboardFunnel"></div>
+    </section>
+
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">クライアント</div>
+          <h3>主要クライアント</h3>
+          <p>完了案件ベースの売上上位。</p>
+        </div>
+      </div>
+      <div class="ranking-list" id="dashboardRanking"></div>
+    </section>
+  </div>
+
+  <!-- セカンダリ：ステータスドーナツ + 担当別 -->
+  <div class="dashboard-grid dashboard-grid-secondary">
+    <section class="surface section-card">
+      <div class="section-head">
+        <div>
+          <div class="section-label">分布</div>
           <h3>ステータス別案件数</h3>
-          <p>現在の案件構成をドーナツグラフで表示します。</p>
         </div>
       </div>
       <div class="chart-canvas-wrap"><canvas id="dashboardStatusChart"></canvas></div>
@@ -66,42 +99,22 @@
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>主要クライアント</h3>
-          <p>完了案件ベースの売上上位を表示しています。</p>
-        </div>
-      </div>
-      <div class="ranking-list" id="dashboardRanking"></div>
-    </section>
-  </div>
-
-  <div class="dashboard-grid dashboard-grid-secondary">
-    <section class="surface section-card">
-      <div class="section-head">
-        <div>
-          <h3>担当者別案件数</h3>
-          <p>現行データでは顧客別上位を代替表示します。</p>
+          <div class="section-label">クライアント</div>
+          <h3>顧客別案件件数</h3>
         </div>
       </div>
       <div class="chart-canvas-wrap"><canvas id="dashboardOwnerChart"></canvas></div>
     </section>
-
-    <section class="surface section-card">
-      <div class="section-head">
-        <div>
-          <h3>最近の完了案件</h3>
-          <p>最新の完了案件から確認できます。</p>
-        </div>
-      </div>
-      <div class="stack-list" id="dashboardRecent"></div>
-    </section>
   </div>
 
+  <!-- テーシャリ：インサイト + 最近の完了 -->
   <div class="dashboard-grid dashboard-grid-tertiary">
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>インサイト</h3>
-          <p>判断に必要なポイントだけを短く要約しています。</p>
+          <div class="section-label">インサイト</div>
+          <h3>自動分析レポート</h3>
+          <p>判断に役立つポイントを自動抽出しています。</p>
         </div>
       </div>
       <div class="insight-list" id="dashboardInsights"></div>
@@ -110,11 +123,12 @@
     <section class="surface section-card">
       <div class="section-head">
         <div>
-          <h3>運用メモ</h3>
-          <p>運用メモを表示します。</p>
+          <div class="section-label">最近</div>
+          <h3>最近の完了案件</h3>
+          <p>完了日が新しい順に表示します。</p>
         </div>
       </div>
-      <div class="stack-list" id="dashboardPwaCard"></div>
+      <div class="stack-list" id="dashboardRecent"></div>
     </section>
   </div>
 </section>

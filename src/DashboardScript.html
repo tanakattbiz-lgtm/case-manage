@@ -102,18 +102,37 @@
         try {
           await this.ensureLoaded(true);
           App.ui.toast('ダッシュボードを更新しました。', 'success');
-        } catch (error) {
-        }
+        } catch (error) {}
       },
 
-      metricCard: function (title, value, caption, icon) {
-        var svg = icon ? '<div class="metric-icon" style="color: var(--accent); margin-bottom: 8px;"><svg class="icon icon-24" aria-hidden="true"><use href="#icon-' + icon + '"></use></svg></div>' : '';
+      /* ── ヘルパー ── */
+      deltaBadge: function (current, prev) {
+        if (!prev || prev === 0) return '';
+        var delta = Math.round(((current - prev) / Math.abs(prev)) * 100);
+        if (Math.abs(delta) < 1) return '<span class="delta-badge delta-flat">—</span>';
+        var cls = delta >= 0 ? 'delta-up' : 'delta-down';
+        var arrow = delta >= 0 ? '▲' : '▼';
+        return '<span class="delta-badge ' + cls + '">' + arrow + ' ' + Math.abs(delta) + '%</span>';
+      },
+
+      deltaBadgePt: function (current, prev) {
+        if (!prev && prev !== 0) return '';
+        var delta = current - prev;
+        if (Math.abs(delta) < 1) return '<span class="delta-badge delta-flat">—</span>';
+        var cls = delta >= 0 ? 'delta-up' : 'delta-down';
+        var arrow = delta >= 0 ? '▲' : '▼';
+        return '<span class="delta-badge ' + cls + '">' + arrow + ' ' + Math.abs(delta) + 'pt</span>';
+      },
+
+      metricCard: function (title, value, caption, badge) {
         return ''
           + '<div class="surface metric-card">'
-          + svg
+          + '<div class="metric-card-header">'
           + '<strong>' + App.helpers.escape(title) + '</strong>'
+          + (badge || '')
+          + '</div>'
           + '<div class="metric">' + App.helpers.escape(value) + '</div>'
-          + '<span>' + App.helpers.escape(caption) + '</span>'
+          + '<footer>' + App.helpers.escape(caption) + '</footer>'
           + '</div>';
       },
 
@@ -127,27 +146,105 @@
         );
       },
 
+      renderFunnel: function (container, funnel) {
+        if (!funnel || !funnel.length) {
+          container.innerHTML = App.ui.renderStateBlock('データがありません。', '', 'info');
+          return;
+        }
+        var maxCount = Math.max.apply(null, funnel.map(function (s) { return s.count; }).concat([1]));
+        var colorClass = ['funnel-lead', 'funnel-active', 'funnel-done'];
+        var html = '<div class="funnel">';
+        funnel.forEach(function (step, i) {
+          var pct = maxCount > 0 ? Math.max(8, Math.round((step.count / maxCount) * 100)) : 8;
+          var convHtml = '';
+          if (i > 0 && funnel[i - 1].count > 0) {
+            var convRate = Math.round((step.count / funnel[i - 1].count) * 100);
+            convHtml = '<div class="funnel-convert">↓ 転換率 ' + convRate + '%</div>';
+          }
+          html += ''
+            + (i > 0 ? convHtml : '')
+            + '<div class="funnel-step">'
+            + '<div class="funnel-bar-wrap">'
+            + '<div class="funnel-bar-fill ' + colorClass[i] + '" style="width:' + pct + '%">'
+            + step.count + '件'
+            + '</div>'
+            + '</div>'
+            + '<div class="funnel-meta">'
+            + '<strong>' + App.helpers.escape(step.label) + '</strong>'
+            + '<span>' + App.helpers.currency(step.sales) + '</span>'
+            + '</div>'
+            + '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      },
+
+      renderAlerts: function (container, staleItems) {
+        if (!staleItems || !staleItems.length) {
+          container.innerHTML = '';
+          return;
+        }
+        var html = ''
+          + '<div class="attention-bar">'
+          + '<div class="attention-bar-header">'
+          + '<svg class="icon icon-16" aria-hidden="true"><use href="#icon-warning"></use></svg>'
+          + '<strong>要確認 ' + staleItems.length + '件</strong>'
+          + '<span>21日以上更新されていない進行中・商談中の案件</span>'
+          + '</div>'
+          + '<div class="attention-items">'
+          + staleItems.map(function (item) {
+              return ''
+                + '<div class="attention-item">'
+                + '<div class="attention-item-body">'
+                + '<div class="attention-item-name">' + App.helpers.escape(item.name) + '</div>'
+                + '<div class="attention-item-sub">'
+                + '<span>' + App.helpers.escape(item.clientName || '—') + '</span>'
+                + '<span class="status-pill ' + App.helpers.projectStatusClass(item.status) + '">' + App.helpers.escape(item.status) + '</span>'
+                + '</div>'
+                + '</div>'
+                + '<span class="days-badge">' + item.daysSince + '日</span>'
+                + '</div>';
+            }).join('')
+          + '</div>'
+          + '</div>';
+        container.innerHTML = html;
+      },
+
       render: function () {
         var data = App.state.dashboard.data;
         if (!data) return this.renderError();
 
-        App.ui.byId('dashboardPeriodLabel').textContent = data.filter.label + (App.state.dashboard.stale ? ' / キャッシュ表示' : '');
+        App.ui.byId('dashboardPeriodLabel').textContent = data.filter.label + (App.state.dashboard.stale ? ' ／ キャッシュ表示' : '');
+
+        /* ── KPI カード ── */
+        var comp = data.comparison || {};
+        var compLabel = data.filter.mode === 'month' ? '前月比' : (data.filter.mode === 'year' ? '前年比' : '');
         App.ui.byId('dashboardMetrics').innerHTML = [
-          this.metricCard('予測売上', App.helpers.currency(data.summary.forecastSales), '完了・進行中・商談中を含む', 'folder'),
-          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ', 'success'),
-          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ', 'chart'),
-          this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '完了案件平均', 'percent')
+          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ' + (compLabel ? ' / ' + compLabel : ''),
+            comp.totalSales != null ? this.deltaBadge(data.summary.totalSales, comp.totalSales) : ''),
+          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ' + (compLabel ? ' / ' + compLabel : ''),
+            comp.totalProfit != null ? this.deltaBadge(data.summary.totalProfit, comp.totalProfit) : ''),
+          this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '確定案件平均' + (compLabel ? ' / ' + compLabel : ''),
+            comp.avgMargin != null ? this.deltaBadgePt(data.summary.avgMargin, comp.avgMargin) : ''),
+          this.metricCard('パイプライン', App.helpers.currency(data.summary.pipelineSales), '進行中 + 商談中' + (compLabel ? ' / ' + compLabel : ''),
+            comp.pipelineSales != null ? this.deltaBadge(data.summary.pipelineSales, comp.pipelineSales) : ''),
+          this.metricCard('平均リードタイム', data.summary.avgLeadDays > 0 ? data.summary.avgLeadDays + ' 日' : '—', '受注〜完了の平均日数', ''),
         ].join('');
 
+        /* ── 要確認アラート ── */
+        this.renderAlerts(App.ui.byId('dashboardAlerts'), data.staleItems);
+
+        /* ── ステータスサマリー ── */
         App.ui.byId('dashboardStatusGrid').innerHTML = App.constants.projectStatuses.map(function (status) {
           return ''
             + '<button class="status-card" type="button" data-dashboard-status="' + App.helpers.escape(status) + '">'
-            + '<div>' + App.helpers.escape(status) + '</div>'
+            + '<div class="status-card-label">' + App.helpers.escape(status) + '</div>'
             + '<strong class="metric">' + App.helpers.number(data.statusCount[status] || 0) + '</strong>'
-            + '<span>' + App.helpers.currency(data.statusSales[status] || 0) + '</span>'
+            + '<div class="status-card-sales">' + App.helpers.currency(data.statusSales[status] || 0) + '</div>'
             + '</button>';
         }).join('');
 
+        /* ── チャート ── */
         App.charts.renderTrend('dashboardTrend', data.monthly);
         App.charts.renderDoughnut('dashboardStatusChart', App.constants.projectStatuses.map(function (status) {
           return { label: status, count: data.statusCount[status] || 0, sales: data.statusSales[status] || 0 };
@@ -156,36 +253,55 @@
           return { label: item.name, count: item.count || 0 };
         }), 'count');
 
+        /* ── ファネル ── */
+        this.renderFunnel(App.ui.byId('dashboardFunnel'), data.funnel);
+
+        /* ── クライアントランキング ── */
         App.ui.byId('dashboardRanking').innerHTML = data.clientRanking.length
           ? data.clientRanking.map(function (item) {
-              var width = Math.max(8, Math.round(((Number(item.sales) || 0) / Math.max(1, data.clientRanking[0].sales || 1)) * 100));
+              var width = Math.max(6, Math.round(((Number(item.sales) || 0) / Math.max(1, data.clientRanking[0].sales || 1)) * 100));
               return ''
                 + '<div class="ranking-row">'
-                + '<div class="row-head"><div><strong>' + App.helpers.escape(item.name) + '</strong><div class="row-sub">売上 ' + App.helpers.escape(App.helpers.currency(item.sales)) + ' / 利益率 ' + App.helpers.escape(App.helpers.pct(item.margin)) + '</div></div></div>'
+                + '<div class="ranking-row-head">'
+                + '<div>'
+                + '<div class="ranking-row-name">' + App.helpers.escape(item.name) + '</div>'
+                + '<div class="ranking-row-sub">' + App.helpers.currency(item.sales) + ' ／ 利益率 ' + item.margin + '%</div>'
+                + '</div>'
+                + '<span class="delta-badge delta-flat">' + item.count + '件</span>'
+                + '</div>'
                 + '<div class="ranking-bar"><span style="width:' + width + '%;"></span></div>'
                 + '</div>';
             }).join('')
-          : App.ui.renderStateBlock('データがありません。', '完了案件が増えると上位クライアントが表示されます。', 'info');
+          : App.ui.renderStateBlock('データがありません。', '完了案件が増えると表示されます。', 'info');
 
+        /* ── インサイト ── */
+        App.ui.byId('dashboardInsights').innerHTML = (data.insights || []).map(function (item) {
+          var type = (item && item.type) ? item.type : 'info';
+          var text = (item && item.text) ? item.text : String(item || '');
+          return ''
+            + '<div class="insight-item ' + type + '">'
+            + '<span class="insight-dot"></span>'
+            + '<span>' + App.helpers.escape(text) + '</span>'
+            + '</div>';
+        }).join('');
+
+        /* ── 最近の完了案件 ── */
         App.ui.byId('dashboardRecent').innerHTML = data.recent.length
           ? data.recent.map(function (project) {
               return ''
                 + '<div class="recent-row">'
-                + '<div class="row-head"><div><strong>' + App.helpers.escape(project.name) + '</strong><div class="row-sub">' + App.helpers.escape(project.clientName || 'クライアント未設定') + '</div></div><span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span></div>'
-                + '<div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(project.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(project.profit)) + '</span><span>完了日 ' + App.helpers.escape(App.helpers.dateLabel(project.completedAt)) + '</span></div>'
+                + '<div class="row-head">'
+                + '<div><strong>' + App.helpers.escape(project.name) + '</strong><div class="row-sub">' + App.helpers.escape(project.clientName || '—') + '</div></div>'
+                + '<span class="status-pill ' + App.helpers.projectStatusClass(project.status) + '">' + App.helpers.escape(project.status) + '</span>'
+                + '</div>'
+                + '<div class="stats-row">'
+                + '<span>売上 ' + App.helpers.currency(project.sales) + '</span>'
+                + '<span>利益 ' + App.helpers.currency(project.profit) + '</span>'
+                + '<span>完了 ' + App.helpers.dateLabel(project.completedAt) + '</span>'
+                + '</div>'
                 + '</div>';
             }).join('')
           : App.ui.renderStateBlock('完了案件はまだありません。', '案件を完了にするとここへ表示されます。', 'info');
-
-        App.ui.byId('dashboardInsights').innerHTML = (data.insights || []).map(function (text) {
-          return '<div class="insight-item"><strong>•</strong><span>' + App.helpers.escape(text) + '</span></div>';
-        }).join('');
-
-        App.ui.byId('dashboardPwaCard').innerHTML = ''
-          + '<div class="list-row">'
-          + '<div class="row-head"><div><strong>確認ポイント</strong><div class="row-sub">案件の更新状況を日次で確認してください。</div></div></div>'
-          + '<div class="stats-row"><span>最終更新: ' + (App.state.ui.lastSyncAt ? App.helpers.dateTimeLabel(App.state.ui.lastSyncAt) : '未更新') + '</span></div>'
-          + '</div>';
       }
     };
   })(window.App);

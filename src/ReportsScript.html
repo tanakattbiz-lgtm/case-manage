@@ -72,8 +72,102 @@
         );
       },
 
-      metricCard: function (title, value, caption) {
-        return '<div class="surface metric-card"><strong>' + App.helpers.escape(title) + '</strong><div class="metric">' + App.helpers.escape(value) + '</div><span>' + App.helpers.escape(caption) + '</span></div>';
+      metricCard: function (title, value, caption, badge) {
+        return ''
+          + '<div class="surface metric-card">'
+          + '<div class="metric-card-header">'
+          + '<strong>' + App.helpers.escape(title) + '</strong>'
+          + (badge || '')
+          + '</div>'
+          + '<div class="metric">' + App.helpers.escape(value) + '</div>'
+          + '<footer>' + App.helpers.escape(caption) + '</footer>'
+          + '</div>';
+      },
+
+      renderFunnel: function (container, funnel) {
+        if (!funnel || !funnel.length) {
+          container.innerHTML = App.ui.renderStateBlock('データがありません。', '', 'info');
+          return;
+        }
+        var maxCount = Math.max.apply(null, funnel.map(function (s) { return s.count; }).concat([1]));
+        var colorClass = ['funnel-lead', 'funnel-active', 'funnel-done'];
+        var html = '<div class="funnel">';
+        funnel.forEach(function (step, i) {
+          var pct = maxCount > 0 ? Math.max(8, Math.round((step.count / maxCount) * 100)) : 8;
+          var convHtml = '';
+          if (i > 0 && funnel[i - 1].count > 0) {
+            var convRate = Math.round((step.count / funnel[i - 1].count) * 100);
+            convHtml = '<div class="funnel-convert">↓ 転換率 ' + convRate + '%</div>';
+          }
+          html += ''
+            + (i > 0 ? convHtml : '')
+            + '<div class="funnel-step">'
+            + '<div class="funnel-bar-wrap">'
+            + '<div class="funnel-bar-fill ' + colorClass[i] + '" style="width:' + pct + '%">'
+            + step.count + '件'
+            + '</div>'
+            + '</div>'
+            + '<div class="funnel-meta">'
+            + '<strong>' + App.helpers.escape(step.label) + '</strong>'
+            + '<span>' + App.helpers.currency(step.sales) + '</span>'
+            + '</div>'
+            + '</div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      },
+
+      renderClientTable: function (container, clientTable) {
+        if (!clientTable || !clientTable.length) {
+          container.innerHTML = App.ui.renderStateBlock('顧客データがありません。', '案件を完了にすると顧客分析が表示されます。', 'info');
+          return;
+        }
+        var rankClasses = ['gold', 'silver', 'bronze'];
+        var html = '<div style="overflow-x:auto"><table class="client-table"><thead><tr>'
+          + '<th>順位</th>'
+          + '<th>顧客名</th>'
+          + '<th class="num">件数</th>'
+          + '<th class="num">売上</th>'
+          + '<th class="num">粗利</th>'
+          + '<th class="num">平均商談規模</th>'
+          + '<th class="num">利益率</th>'
+          + '</tr></thead><tbody>';
+
+        clientTable.forEach(function (client, i) {
+          var rankCls = rankClasses[i] || '';
+          var marginCls = client.margin >= 30 ? 'margin-high' : (client.margin >= 15 ? 'margin-mid' : 'margin-low');
+          html += '<tr>'
+            + '<td><span class="client-rank ' + rankCls + '">' + (i + 1) + '</span></td>'
+            + '<td><strong>' + App.helpers.escape(client.name) + '</strong></td>'
+            + '<td class="num">' + App.helpers.number(client.count) + '</td>'
+            + '<td class="num">' + App.helpers.currency(client.sales) + '</td>'
+            + '<td class="num">' + App.helpers.currency(client.profit) + '</td>'
+            + '<td class="num">' + App.helpers.currency(client.avgDeal) + '</td>'
+            + '<td class="num"><span class="margin-pill ' + marginCls + '">' + client.margin + '%</span></td>'
+            + '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+      },
+
+      renderInsights: function (container, insights) {
+        if (!insights || !insights.length) {
+          container.innerHTML = '';
+          return;
+        }
+        var html = '<div class="insight-list">';
+        html += insights.map(function (item) {
+          var type = (item && item.type) ? item.type : 'info';
+          var text = (item && item.text) ? item.text : String(item || '');
+          return ''
+            + '<div class="insight-item ' + type + '">'
+            + '<span class="insight-dot"></span>'
+            + '<span>' + App.helpers.escape(text) + '</span>'
+            + '</div>';
+        }).join('');
+        html += '</div>';
+        container.innerHTML = html;
       },
 
       render: function () {
@@ -84,17 +178,32 @@
           button.classList.toggle('is-active', button.dataset.reportMode === App.state.reports.condition.mode);
         });
 
+        /* ── KPI カード（6枚） ── */
+        var s = data.summary;
         App.ui.byId('reportMetrics').innerHTML = [
-          this.metricCard('案件数', App.helpers.number(data.summary.totalCount), data.filter.label),
-          this.metricCard('売上', App.helpers.currency(data.summary.totalSales), '完了案件'),
-          this.metricCard('粗利', App.helpers.currency(data.summary.totalProfit), '完了案件'),
-          this.metricCard('平均粗利率', App.helpers.pct(data.summary.avgMargin), '完了案件平均')
+          this.metricCard('総案件数', App.helpers.number(s.totalCount), data.filter.label, ''),
+          this.metricCard('確定売上', App.helpers.currency(s.totalSales), '完了案件', ''),
+          this.metricCard('確定粗利', App.helpers.currency(s.totalProfit), '完了案件', ''),
+          this.metricCard('平均利益率', App.helpers.pct(s.avgMargin), '確定案件平均', ''),
+          this.metricCard('平均商談規模', s.avgDealSize > 0 ? App.helpers.currency(s.avgDealSize) : '—', '完了案件1件あたり', ''),
+          this.metricCard('平均リードタイム', s.avgLeadDays > 0 ? s.avgLeadDays + ' 日' : '—', '受注〜完了の平均', ''),
         ].join('');
 
+        /* ── インサイト ── */
+        this.renderInsights(App.ui.byId('reportAlerts'), data.insights);
+
+        /* ── チャート ── */
         App.charts.renderMoneyCombo('reportSalesProfitChart', data.monthly || []);
         App.charts.renderDoughnut('reportStatusChart', data.statusDistribution || []);
+        App.charts.renderPerformanceCombo('reportPerformanceChart', data.marginTrend || []);
         App.charts.renderHorizontalBars('reportClientChart', data.clientSales || [], 'sales');
         App.charts.renderPipeline('reportPipelineChart', data.statusDistribution || []);
+
+        /* ── ファネル ── */
+        this.renderFunnel(App.ui.byId('reportFunnel'), data.funnel);
+
+        /* ── 顧客テーブル ── */
+        this.renderClientTable(App.ui.byId('reportClientTable'), data.clientTable);
       }
     };
   })(window.App);

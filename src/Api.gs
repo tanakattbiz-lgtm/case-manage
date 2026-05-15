@@ -160,12 +160,37 @@ function buildReportData_(projects, filter) {
     };
   });
 
+  const clientTable = dashboard.clientRanking.map(function (client) {
+    return {
+      name: client.name,
+      count: client.count,
+      sales: client.sales,
+      profit: client.profit,
+      avgDeal: client.count > 0 ? Math.round(client.sales / client.count) : 0,
+      margin: client.margin,
+    };
+  });
+
+  const marginTrend = (dashboard.monthly || []).map(function (m) {
+    return {
+      month: m.month,
+      margin: m.sales > 0 ? Math.round((m.profit / m.sales) * 100) : 0,
+      avgDeal: m.completedCount > 0 ? Math.round(m.sales / m.completedCount) : 0,
+      completedCount: m.completedCount || 0,
+    };
+  });
+
   return {
     filter: filter,
     summary: dashboard.summary,
     monthly: dashboard.monthly,
     statusDistribution: statusDistribution,
     clientSales: clientSales,
+    clientTable: clientTable,
+    marginTrend: marginTrend,
+    funnel: dashboard.funnel || [],
+    staleItems: dashboard.staleItems || [],
+    insights: dashboard.insights || [],
     ownerPerformance: clientSales,
     overdueTrend: [],
     fetchedAt: nowDateTimeStr_(),

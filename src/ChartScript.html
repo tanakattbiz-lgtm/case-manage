@@ -152,6 +152,106 @@
         });
       },
 
+      renderMarginLine: function (canvasId, items) {
+        return ensureChart(canvasId, {
+          type: 'line',
+          data: {
+            labels: (items || []).map(function (item) { return String(item.month || '').replace('/', '.'); }),
+            datasets: [{
+              label: '利益率 (%)',
+              data: (items || []).map(function (item) { return item.margin || 0; }),
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16,185,129,0.08)',
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 6,
+            }]
+          },
+          options: Object.assign(defaultOptions({}), {
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#6B7280' } },
+              y: {
+                grid: { color: '#E5E7EB' },
+                min: 0,
+                max: 100,
+                ticks: { color: '#6B7280', callback: function (v) { return v + '%'; } }
+              }
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: function (ctx) { return '利益率: ' + ctx.raw + '%'; } } }
+            }
+          })
+        });
+      },
+
+      renderPerformanceCombo: function (canvasId, items) {
+        return ensureChart(canvasId, {
+          type: 'line',
+          data: {
+            labels: (items || []).map(function (item) { return String(item.month || '').replace('/', '.'); }),
+            datasets: [
+              {
+                label: '利益率 (%)',
+                data: (items || []).map(function (item) { return item.margin || 0; }),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16,185,129,0.06)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                yAxisID: 'yMargin',
+              },
+              {
+                label: '平均商談規模',
+                data: (items || []).map(function (item) { return item.avgDeal || 0; }),
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99,102,241,0.06)',
+                fill: false,
+                tension: 0.4,
+                pointRadius: 3,
+                yAxisID: 'yDeal',
+                money: true,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 180 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, color: '#6B7280', font: { size: 12 } } },
+              tooltip: {
+                callbacks: {
+                  label: function (ctx) {
+                    if (ctx.datasetIndex === 0) return '利益率: ' + ctx.raw + '%';
+                    return '平均商談規模: ' + money(ctx.raw);
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#6B7280' } },
+              yMargin: {
+                type: 'linear',
+                position: 'left',
+                min: 0,
+                max: 100,
+                grid: { color: '#E5E7EB' },
+                ticks: { color: '#10b981', callback: function (v) { return v + '%'; } }
+              },
+              yDeal: {
+                type: 'linear',
+                position: 'right',
+                grid: { display: false },
+                ticks: { color: '#6366f1', callback: money }
+              }
+            }
+          }
+        });
+      },
+
       renderTrend: function (targetId, items) {
         var target = App.ui.byId(targetId);
         if (!items || !items.length) {
