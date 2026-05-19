@@ -644,17 +644,12 @@
         if (App.ui.byId('projectIntegrationProjectId').value.trim() === App.ui.byId('projectId').value.trim()) {
           errors.projectIntegrationProjectId = '親案件IDに自分自身は指定できません。';
         }
-        if (Number(App.ui.byId('projectDepositAmount').value) > 0 && !App.ui.byId('projectDepositReceivedAt').value) {
-          errors.projectDepositReceivedAt = '着手金を売上計上する入金日を入力してください。';
-        }
         (App.state.projects.childDrafts || []).forEach(function (draft, index) {
           var label = '子案件' + (index + 1);
           if (!String(draft.name || '').trim()) {
             errors.projectChildList = label + 'の案件名を入力してください。';
           } else if (!String(draft.phaseName || '').trim()) {
             errors.projectChildList = label + 'のフェーズ名を入力してください。';
-          } else if (Number(draft.depositAmount) > 0 && !draft.depositReceivedAt) {
-            errors.projectChildList = label + 'の着手金入金日を入力してください。';
           }
         });
         return errors;
