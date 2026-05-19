@@ -32,6 +32,10 @@ function buildDashboardSummary_(projects, filter) {
   const filtered = projects.filter(function (project) {
     return isProjectInDashboardPeriod_(project, filter);
   });
+  const revenueProjects = filterRevenueProjects_(projects);
+  const filteredRevenue = revenueProjects.filter(function (project) {
+    return isProjectInDashboardPeriod_(project, filter);
+  });
   const statusCount = {};
   const statusSales = {};
   PROJECT_STATUS_LIST.forEach(function (status) {
@@ -44,10 +48,14 @@ function buildDashboardSummary_(projects, filter) {
   const leadTimes = [];
 
   filtered.forEach(function (project) {
+    const status = normalizeProjectStatus_(project.status);
+    statusCount[status] = (statusCount[status] || 0) + 1;
+  });
+
+  filteredRevenue.forEach(function (project) {
     const sales = Number(project.sales) || 0;
     const profit = Number(project.profit) || 0;
     const status = normalizeProjectStatus_(project.status);
-    statusCount[status] = (statusCount[status] || 0) + 1;
     statusSales[status] = (statusSales[status] || 0) + sales;
 
     const bucketKey = getMonthlyBucketKey_(project);
@@ -94,7 +102,7 @@ function buildDashboardSummary_(projects, filter) {
     }
   });
 
-  const summary = buildDashboardMetrics_(filtered, statusCount, leadTimes);
+  const summary = buildDashboardMetrics_(filtered, filteredRevenue, statusCount, leadTimes);
   const clientRanking = buildClientRanking_(clientMap);
 
   return {
@@ -104,11 +112,11 @@ function buildDashboardSummary_(projects, filter) {
     statusSales: statusSales,
     monthly: buildMonthlySeries_(monthlyMap),
     clientRanking: clientRanking,
-    recent: buildRecentProjects_(filtered),
+    recent: buildRecentProjects_(filteredRevenue),
     insights: buildDashboardInsights_(summary, clientRanking, statusCount),
     staleItems: buildStaleItems_(filtered),
     funnel: buildFunnelData_(statusCount, statusSales),
-    comparison: buildPeriodComparison_(projects, filter),
+    comparison: buildPeriodComparison_(revenueProjects, filter),
   };
 }
 
@@ -132,27 +140,27 @@ function buildMonthlySeries_(monthlyMap) {
   return items;
 }
 
-function buildDashboardMetrics_(projects, statusCount, leadTimes) {
-  const completedProjects = projects.filter(function (project) {
+function buildDashboardMetrics_(projects, revenueProjects, statusCount, leadTimes) {
+  const completedProjects = revenueProjects.filter(function (project) {
     return project.status === PROJECT_STATUSES.completed;
   });
   const totalSales = completedProjects.reduce(function (sum, project) { return sum + (Number(project.sales) || 0); }, 0);
   const totalProfit = completedProjects.reduce(function (sum, project) { return sum + (Number(project.profit) || 0); }, 0);
-  const activeSales = projects
+  const activeSales = revenueProjects
     .filter(function (project) { return project.status === PROJECT_STATUSES.active; })
     .reduce(function (sum, project) { return sum + (Number(project.sales) || 0); }, 0);
-  const proposalSales = projects
+  const proposalSales = revenueProjects
     .filter(function (project) { return project.status === PROJECT_STATUSES.lead; })
     .reduce(function (sum, project) { return sum + (Number(project.sales) || 0); }, 0);
   const forecastSales = totalSales + activeSales + proposalSales;
-  const forecastProfit = projects
+  const forecastProfit = revenueProjects
     .filter(function (project) {
       return project.status === PROJECT_STATUSES.completed
         || project.status === PROJECT_STATUSES.active
         || project.status === PROJECT_STATUSES.lead;
     })
     .reduce(function (sum, project) { return sum + (Number(project.profit) || 0); }, 0);
-  const completedCount = statusCount[PROJECT_STATUSES.completed] || 0;
+  const completedCount = completedProjects.length;
   const actionCount = (statusCount[PROJECT_STATUSES.lead] || 0) + (statusCount[PROJECT_STATUSES.active] || 0);
 
   return {

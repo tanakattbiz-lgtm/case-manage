@@ -211,13 +211,17 @@ function buildProjectListSummary_(filteredItems, totalItems) {
     statusCount[status] = 0;
   });
 
-  const sales = filteredItems.reduce(function (sum, project) {
+  const revenueProjects = filterRevenueProjects_(filteredItems);
+  filteredItems.forEach(function (project) {
     const status = normalizeProjectStatus_(project.status);
     statusCount[status] = (statusCount[status] || 0) + 1;
+  });
+
+  const sales = revenueProjects.reduce(function (sum, project) {
     return sum + (Number(project.sales) || 0);
   }, 0);
 
-  const profit = filteredItems.reduce(function (sum, project) {
+  const profit = revenueProjects.reduce(function (sum, project) {
     return sum + (Number(project.profit) || 0);
   }, 0);
 
@@ -274,6 +278,21 @@ function compareProjectPhaseOrder_(a, b) {
   const phaseA = normalizeString_(a.phaseName);
   const phaseB = normalizeString_(b.phaseName);
   return phaseA.localeCompare(phaseB, 'ja') || String(a.id || '').localeCompare(String(b.id || ''), 'ja');
+}
+
+function filterRevenueProjects_(projects) {
+  const hasChildMap = buildProjectHasChildMap_(projects || []);
+  return (projects || []).filter(function (project) {
+    return !hasChildMap[project.id];
+  });
+}
+
+function buildProjectHasChildMap_(projects) {
+  return (projects || []).reduce(function (map, project) {
+    const parentId = normalizeString_(project.parentProjectId || project.integrationProjectId);
+    if (parentId) map[parentId] = true;
+    return map;
+  }, {});
 }
 
 function projectPayloadToRecord_(payload, options) {

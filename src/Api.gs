@@ -133,17 +133,14 @@ function api_getReportData(sessionToken, condition) {
   try {
     requireReadAccess_(sessionToken);
     const normalizedFilter = normalizeDashboardFilter_(condition || {});
-    const projects = listProjectDtos_().filter(function (project) {
-      return isProjectInDashboardPeriod_(project, normalizedFilter);
-    });
-    return apiSuccess_(buildReportData_(projects, normalizedFilter));
+    return apiSuccess_(buildReportData_(listProjectDtos_(), normalizedFilter));
   } catch (error) {
     return apiFailure_(error);
   }
 }
 
 function buildReportData_(projects, filter) {
-  const dashboard = buildDashboardSummary_(projects || [], { mode: 'all', year: '', month: '', label: '全期間' });
+  const dashboard = buildDashboardSummary_(projects || [], filter);
   const statusDistribution = PROJECT_STATUS_LIST.map(function (status) {
     return {
       label: status,
