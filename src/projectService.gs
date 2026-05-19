@@ -26,9 +26,18 @@ function getProjectDetail(sessionToken, projectId) {
   }
 
   const clientRecord = project.clientId ? findClientRecordById_(project.clientId) : null;
-  const relatedProjects = listProjectDtos_()
+  const allProjects = listProjectDtos_();
+  const relatedProjects = allProjects
     .filter(function (item) {
-      return item.id !== project.id && item.clientId && item.clientId === project.clientId;
+      if (item.id === project.id) return false;
+      const sameClient = item.clientId && item.clientId === project.clientId;
+      const childPhase = item.parentProjectId && item.parentProjectId === project.id;
+      const parentProject = project.parentProjectId && item.id === project.parentProjectId;
+      const siblingPhase = project.parentProjectId && item.parentProjectId === project.parentProjectId;
+      return sameClient || childPhase || parentProject || siblingPhase;
+    })
+    .sort(function (a, b) {
+      return getProjectRelationRank_(project, a) - getProjectRelationRank_(project, b);
     })
     .slice(0, FIXED_VALUES.lists.detailRelatedLimit);
 
@@ -163,6 +172,9 @@ function filterProjectDtos_(items, query) {
         project.clientName,
         project.note,
         project.status,
+        project.splitType,
+        project.parentProjectId,
+        project.phaseName,
       ].join(' ').toLowerCase();
       if (joined.indexOf(normalizedQuery) === -1) return false;
     }
@@ -249,6 +261,13 @@ function buildProjectHistory_(project) {
   });
 }
 
+function getProjectRelationRank_(baseProject, candidate) {
+  if (candidate.parentProjectId && candidate.parentProjectId === baseProject.id) return 0;
+  if (baseProject.parentProjectId && candidate.id === baseProject.parentProjectId) return 0;
+  if (baseProject.parentProjectId && candidate.parentProjectId === baseProject.parentProjectId) return 1;
+  return 2;
+}
+
 function projectPayloadToRecord_(payload, options) {
   const input = payload || {};
   const settings = options || {};
@@ -271,6 +290,17 @@ function projectPayloadToRecord_(payload, options) {
     : Number(requestedProfit || 0);
 
   const status = normalizeProjectStatus_(input.status);
+  const splitType = normalizeProjectSplitType_(input.splitType);
+  const parentProjectId = splitType === PROJECT_SPLIT_TYPES.phase ? normalizeString_(input.parentProjectId) : '';
+  if (parentProjectId && parentProjectId === settings.id) {
+    throwAppError_('PROJECT_PARENT_INVALID', '親案件IDに自分自身は指定できません。');
+  }
+
+  const phaseName = splitType === PROJECT_SPLIT_TYPES.normal ? '' : normalizeString_(input.phaseName).slice(0, 80);
+  const depositAmount = splitType === PROJECT_SPLIT_TYPES.normal
+    ? 0
+    : Number(normalizeNonNegativeNumber_(input.depositAmount, 0)) || 0;
+
   let completedAt = normalizeDateInput_(input.completedAt);
   if (status === PROJECT_STATUSES.completed && !completedAt) {
     completedAt = nowDateStr_();
@@ -284,6 +314,10 @@ function projectPayloadToRecord_(payload, options) {
     '売上': sales,
     '利益': resolvedProfit,
     'ステータス': status,
+    '分割区分': splitType,
+    '親案件ID': parentProjectId,
+    'フェーズ名': phaseName,
+    '着手金': depositAmount,
     '完了日': completedAt,
     '備考': normalizeTextArea_(input.note, 1000),
     '登録日': settings.createdAt,
@@ -305,6 +339,10 @@ function projectRecordToDto_(record) {
     profit: profit,
     marginRate: sales > 0 ? Math.round((profit / sales) * 100) : 0,
     status: normalizeProjectStatus_(record['ステータス']),
+    splitType: normalizeProjectSplitType_(record['分割区分']),
+    parentProjectId: record['親案件ID'] || '',
+    phaseName: record['フェーズ名'] || '',
+    depositAmount: Number(record['着手金']) || 0,
     completedAt: record['完了日'] || '',
     targetDate: record['完了日'] || record['登録日'] || '',
     note: record['備考'] || '',
@@ -323,4 +361,11 @@ function normalizeProjectStatus_(status) {
 function normalizeOptionalProjectStatus_(status) {
   const normalized = normalizeString_(status);
   return PROJECT_STATUS_LIST.indexOf(normalized) >= 0 ? normalized : '';
+}
+
+function normalizeProjectSplitType_(splitType) {
+  const normalized = normalizeString_(splitType);
+  return PROJECT_SPLIT_TYPE_LIST.indexOf(normalized) >= 0
+    ? normalized
+    : PROJECT_SPLIT_TYPES.normal;
 }

@@ -23,6 +23,9 @@ function getSheet_(sheetName) {
   if (sheetName === SHEET_NAMES.clients) {
     migrateLegacyClientSheet_(sheet);
   }
+  if (sheetName === SHEET_NAMES.projects) {
+    migrateLegacyProjectSheet_(sheet);
+  }
 
   ensureSheetHeaders_(sheet, definition.headers);
   if (definition.hidden) {
@@ -71,6 +74,30 @@ function migrateLegacyClientSheet_(sheet) {
 
   sheet.insertColumnAfter(2);
   sheet.getRange(1, 3).setValue('既定利益率');
+}
+
+function migrateLegacyProjectSheet_(sheet) {
+  const legacyHeaders = [
+    'ID',
+    '案件名',
+    'クライアントID',
+    'クライアント名',
+    '売上',
+    '利益',
+    'ステータス',
+    '完了日',
+    '備考',
+    '登録日',
+    '更新日',
+  ];
+  const currentHeaders = sheet.getRange(1, 1, 1, legacyHeaders.length).getValues()[0];
+  const isLegacy = legacyHeaders.every(function (header, index) {
+    return currentHeaders[index] === header;
+  });
+  if (!isLegacy) return;
+
+  sheet.insertColumnsAfter(7, 4);
+  sheet.getRange(1, 8, 1, 4).setValues([['分割区分', '親案件ID', 'フェーズ名', '着手金']]);
 }
 
 function getProjectsSheet_() {

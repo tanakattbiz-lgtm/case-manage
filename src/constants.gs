@@ -26,6 +26,10 @@ const PROJECT_COLUMNS = Object.freeze([
   '売上',
   '利益',
   'ステータス',
+  '分割区分',
+  '親案件ID',
+  'フェーズ名',
+  '着手金',
   '完了日',
   '備考',
   '登録日',
@@ -122,6 +126,18 @@ const PROJECT_STATUS_LIST = Object.freeze([
   PROJECT_STATUSES.completed,
   PROJECT_STATUSES.stopped,
   PROJECT_STATUSES.pending,
+]);
+
+const PROJECT_SPLIT_TYPES = Object.freeze({
+  normal: '通常案件',
+  parent: '分割親案件',
+  phase: 'フェーズ案件',
+});
+
+const PROJECT_SPLIT_TYPE_LIST = Object.freeze([
+  PROJECT_SPLIT_TYPES.normal,
+  PROJECT_SPLIT_TYPES.parent,
+  PROJECT_SPLIT_TYPES.phase,
 ]);
 
 const FIXED_VALUES = Object.freeze({

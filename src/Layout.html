@@ -370,6 +370,42 @@
       <section class="form-section">
         <div class="section-head">
           <div>
+            <h4>分割・フェーズ</h4>
+            <p>大きい案件だけ、親案件やフェーズ、着手金を管理できます。</p>
+          </div>
+        </div>
+        <div class="field-grid field-grid-2">
+          <label class="field">
+            <span class="field-label">分割区分</span>
+            <select class="select" id="projectSplitType">
+              <option value="通常案件">通常案件</option>
+              <option value="分割親案件">分割親案件</option>
+              <option value="フェーズ案件">フェーズ案件</option>
+            </select>
+            <span class="field-error" data-field-error="projectSplitType"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">親案件ID</span>
+            <input class="input" type="text" id="projectParentProjectId" placeholder="フェーズ案件の場合のみ">
+            <span class="field-error" data-field-error="projectParentProjectId"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">フェーズ名</span>
+            <input class="input" type="text" id="projectPhaseName" placeholder="例: Phase 1 / 要件定義">
+            <span class="field-error" data-field-error="projectPhaseName"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">着手金</span>
+            <input class="input" type="number" min="0" id="projectDepositAmount" placeholder="100000">
+            <span class="field-error" data-field-error="projectDepositAmount"></span>
+          </label>
+        </div>
+        <div class="inline-note" id="projectSplitHint">通常案件では分割情報は保存されません。</div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-head">
+          <div>
             <h4>補足情報</h4>
             <p>次回対応や URL など、一覧では見切れる情報を保存できます。</p>
           </div>
