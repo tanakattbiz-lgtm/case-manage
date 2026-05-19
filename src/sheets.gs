@@ -78,6 +78,7 @@ function migrateLegacyClientSheet_(sheet) {
 
 function migrateLegacyProjectSheet_(sheet) {
   migrateDraftProjectSplitSheet_(sheet);
+  migrateProjectIntegrationSheet_(sheet);
 
   const legacyHeaders = [
     'ID',
@@ -99,7 +100,7 @@ function migrateLegacyProjectSheet_(sheet) {
   if (!isLegacy) return;
 
   sheet.insertColumnsAfter(7, 3);
-  sheet.getRange(1, 8, 1, 3).setValues([['統合案件ID', 'フェーズ名', '着手金']]);
+  sheet.getRange(1, 8, 1, 3).setValues([['親案件ID', 'フェーズ名', '着手金']]);
 }
 
 function migrateDraftProjectSplitSheet_(sheet) {
@@ -123,7 +124,14 @@ function migrateDraftProjectSplitSheet_(sheet) {
   if (!isDraft) return;
 
   sheet.deleteColumn(8);
-  sheet.getRange(1, 8).setValue('統合案件ID');
+  sheet.getRange(1, 8).setValue('親案件ID');
+}
+
+function migrateProjectIntegrationSheet_(sheet) {
+  const headers = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0];
+  const integrationColumnIndex = headers.indexOf('統合案件ID') + 1;
+  if (!integrationColumnIndex) return;
+  sheet.getRange(1, integrationColumnIndex).setValue('親案件ID');
 }
 
 function getProjectsSheet_() {

@@ -146,10 +146,10 @@
         return 'pending';
       },
       projectIntegrationMeta: function (project) {
-        if (!project || (!project.integrationProjectId && !project.phaseName && !Number(project.depositAmount))) return '';
+        if (!project || (!project.parentProjectId && !project.integrationProjectId && !project.phaseName && !Number(project.depositAmount))) return '';
         var parts = [];
         if (project.phaseName) parts.push(project.phaseName);
-        if (project.integrationProjectId) parts.push('統合 ' + project.integrationProjectId);
+        if (project.parentProjectId || project.integrationProjectId) parts.push('親 ' + (project.parentProjectId || project.integrationProjectId));
         if (Number(project.depositAmount) > 0) parts.push('着手金 ' + this.currency(project.depositAmount));
         return parts.join(' / ');
       },

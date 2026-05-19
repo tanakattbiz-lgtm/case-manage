@@ -370,14 +370,14 @@
       <section class="form-section">
         <div class="section-head">
           <div>
-            <h4>案件統合</h4>
-            <p>Phase 1、Phase 2 など別々に登録した案件を同じまとまりで表示できます。</p>
+            <h4>親子フェーズ</h4>
+            <p>親案件は総額、子案件はフェーズ別の内訳として管理できます。</p>
           </div>
         </div>
         <div class="field-grid field-grid-2">
           <label class="field">
-            <span class="field-label">統合案件ID</span>
-            <input class="input" type="text" id="projectIntegrationProjectId" placeholder="例: Phase 1 の案件ID">
+            <span class="field-label">親案件ID</span>
+            <input class="input" type="text" id="projectIntegrationProjectId" placeholder="子フェーズの場合のみ入力">
             <span class="field-error" data-field-error="projectIntegrationProjectId"></span>
           </label>
           <label class="field">
@@ -391,7 +391,7 @@
             <span class="field-error" data-field-error="projectDepositAmount"></span>
           </label>
         </div>
-        <div class="inline-note" id="projectIntegrationHint">未入力なら単独案件です。統合したい案件同士で同じ統合案件IDを入れると、詳細でまとまります。</div>
+        <div class="inline-note" id="projectIntegrationHint">親案件は空欄で総額を登録します。子フェーズは親案件IDを入れると、詳細で内訳としてまとまります。</div>
       </section>
 
       <section class="form-section">

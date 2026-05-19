@@ -223,6 +223,7 @@ function caseListDtoToApiRow_(project) {
     assignee: '',
     amount: project.sales,
     grossProfit: project.profit,
+    parentProjectId: project.parentProjectId,
     integrationProjectId: project.integrationProjectId,
     phaseName: project.phaseName,
     depositAmount: project.depositAmount,

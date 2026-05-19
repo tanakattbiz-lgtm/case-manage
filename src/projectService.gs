@@ -27,10 +27,10 @@ function getProjectDetail(sessionToken, projectId) {
 
   const clientRecord = project.clientId ? findClientRecordById_(project.clientId) : null;
   const allProjects = listProjectDtos_();
-  const integrationKey = getProjectIntegrationKey_(project);
+  const parentKey = getProjectParentKey_(project);
   const integratedProjects = allProjects
     .filter(function (item) {
-      return item.id !== project.id && integrationKey && getProjectIntegrationKey_(item) === integrationKey;
+      return item.id !== project.id && parentKey && getProjectParentKey_(item) === parentKey;
     })
     .sort(function (a, b) {
       return compareProjectPhaseOrder_(a, b);
@@ -39,7 +39,7 @@ function getProjectDetail(sessionToken, projectId) {
   const relatedProjects = allProjects
     .filter(function (item) {
       if (item.id === project.id) return false;
-      if (integrationKey && getProjectIntegrationKey_(item) === integrationKey) return false;
+      if (parentKey && getProjectParentKey_(item) === parentKey) return false;
       const sameClient = item.clientId && item.clientId === project.clientId;
       return sameClient;
     })
@@ -177,7 +177,7 @@ function filterProjectDtos_(items, query) {
         project.clientName,
         project.note,
         project.status,
-        project.integrationProjectId,
+        project.parentProjectId,
         project.phaseName,
       ].join(' ').toLowerCase();
       if (joined.indexOf(normalizedQuery) === -1) return false;
@@ -265,9 +265,9 @@ function buildProjectHistory_(project) {
   });
 }
 
-function getProjectIntegrationKey_(project) {
+function getProjectParentKey_(project) {
   if (!project) return '';
-  return normalizeString_(project.integrationProjectId || project.id);
+  return normalizeString_(project.parentProjectId || project.integrationProjectId || project.id);
 }
 
 function compareProjectPhaseOrder_(a, b) {
@@ -298,9 +298,9 @@ function projectPayloadToRecord_(payload, options) {
     : Number(requestedProfit || 0);
 
   const status = normalizeProjectStatus_(input.status);
-  const integrationProjectId = normalizeString_(input.integrationProjectId || input.parentProjectId);
-  if (integrationProjectId && integrationProjectId === settings.id) {
-    throwAppError_('PROJECT_INTEGRATION_INVALID', '統合案件IDに自分自身は指定できません。');
+  const parentProjectId = normalizeString_(input.parentProjectId || input.integrationProjectId);
+  if (parentProjectId && parentProjectId === settings.id) {
+    throwAppError_('PROJECT_PARENT_INVALID', '親案件IDに自分自身は指定できません。');
   }
   const phaseName = normalizeString_(input.phaseName).slice(0, 80);
   const depositAmount = Number(normalizeNonNegativeNumber_(input.depositAmount, 0)) || 0;
@@ -318,7 +318,7 @@ function projectPayloadToRecord_(payload, options) {
     '売上': sales,
     '利益': resolvedProfit,
     'ステータス': status,
-    '統合案件ID': integrationProjectId,
+    '親案件ID': parentProjectId,
     'フェーズ名': phaseName,
     '着手金': depositAmount,
     '完了日': completedAt,
@@ -342,7 +342,8 @@ function projectRecordToDto_(record) {
     profit: profit,
     marginRate: sales > 0 ? Math.round((profit / sales) * 100) : 0,
     status: normalizeProjectStatus_(record['ステータス']),
-    integrationProjectId: record['統合案件ID'] || record['親案件ID'] || '',
+    parentProjectId: record['親案件ID'] || record['統合案件ID'] || '',
+    integrationProjectId: record['親案件ID'] || record['統合案件ID'] || '',
     phaseName: record['フェーズ名'] || '',
     depositAmount: Number(record['着手金']) || 0,
     completedAt: record['完了日'] || '',

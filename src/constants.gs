@@ -26,7 +26,7 @@ const PROJECT_COLUMNS = Object.freeze([
   '売上',
   '利益',
   'ステータス',
-  '統合案件ID',
+  '親案件ID',
   'フェーズ名',
   '着手金',
   '完了日',
