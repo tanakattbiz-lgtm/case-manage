@@ -27,19 +27,23 @@ function getProjectDetail(sessionToken, projectId) {
 
   const clientRecord = project.clientId ? findClientRecordById_(project.clientId) : null;
   const allProjects = listProjectDtos_();
-  const parentKey = getProjectParentKey_(project);
+  const directParentId = getProjectDirectParentId_(project);
+  const parentKey = directParentId || project.id;
   const integratedProjects = allProjects
     .filter(function (item) {
-      return item.id !== project.id && parentKey && getProjectParentKey_(item) === parentKey;
+      if (item.id === project.id) return false;
+      if (directParentId && item.id === directParentId) return true;
+      return parentKey && getProjectDirectParentId_(item) === parentKey;
     })
     .sort(function (a, b) {
-      return compareProjectPhaseOrder_(a, b);
+      return compareProjectPhaseOrder_(parentKey, a, b);
     });
 
   const relatedProjects = allProjects
     .filter(function (item) {
       if (item.id === project.id) return false;
-      if (parentKey && getProjectParentKey_(item) === parentKey) return false;
+      if (item.id === directParentId) return false;
+      if (parentKey && getProjectDirectParentId_(item) === parentKey) return false;
       const sameClient = item.clientId && item.clientId === project.clientId;
       return sameClient;
     })
@@ -269,12 +273,14 @@ function buildProjectHistory_(project) {
   });
 }
 
-function getProjectParentKey_(project) {
+function getProjectDirectParentId_(project) {
   if (!project) return '';
-  return normalizeString_(project.parentProjectId || project.integrationProjectId || project.id);
+  return normalizeString_(project.parentProjectId || project.integrationProjectId);
 }
 
-function compareProjectPhaseOrder_(a, b) {
+function compareProjectPhaseOrder_(parentKey, a, b) {
+  if (a.id === parentKey && b.id !== parentKey) return -1;
+  if (b.id === parentKey && a.id !== parentKey) return 1;
   const phaseA = normalizeString_(a.phaseName);
   const phaseB = normalizeString_(b.phaseName);
   return phaseA.localeCompare(phaseB, 'ja') || String(a.id || '').localeCompare(String(b.id || ''), 'ja');

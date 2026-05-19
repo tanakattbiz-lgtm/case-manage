@@ -462,9 +462,9 @@
         var phaseSection = (phaseProjects.length > 1 || project.parentProjectId || project.integrationProjectId || project.phaseName)
           ? '<section class="detail-section"><h4>フェーズ内訳</h4>'
             + '<div class="stats-row"><span>親案件ID ' + App.helpers.escape(parentId) + '</span><span>親総額 ' + App.helpers.escape(App.helpers.currency((phaseProjects.find(function (item) { return item.id === parentId; }) || project).sales)) + '</span><span>子案件合計 ' + App.helpers.escape(App.helpers.currency(childSalesTotal)) + '</span><span>着手金合計 ' + App.helpers.escape(App.helpers.currency(childDepositTotal)) + '</span></div>'
-            + phaseProjects.map(function (item) {
+            + (childProjects.length ? childProjects.map(function (item) {
               return '<div class="list-row"><div class="row-head"><div><strong>' + App.helpers.escape(item.name) + '</strong><div class="row-sub">' + App.helpers.escape(item.phaseName || 'フェーズ未設定') + '</div>' + App.projects.renderIntegrationBadge(item) + '</div><span class="status-pill ' + App.helpers.projectStatusClass(item.status) + '">' + App.helpers.escape(item.status) + '</span></div><div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(item.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(item.profit)) + '</span><span>着手金 ' + App.helpers.escape(App.helpers.currency(item.depositAmount)) + '</span><span>入金 ' + App.helpers.escape(App.helpers.dateLabel(item.depositReceivedAt)) + '</span></div></div>';
-            }).join('') + '</section>'
+            }).join('') : '<p>子案件はまだありません。</p>') + '</section>'
           : '';
         var integrationSection = (project.parentProjectId || project.integrationProjectId || project.phaseName || Number(project.depositAmount) > 0)
           ? '<section class="detail-section"><h4>親子フェーズ</h4><dl class="detail-grid">'
