@@ -676,6 +676,9 @@
           DataLoader.invalidateReports();
           App.ui.toast(childDrafts.length ? '親案件と子案件を保存しました。' : '案件を保存しました。', 'success');
           await this.ensureLoaded(true);
+          if (parentProjectId) {
+            await this.openDetail(parentProjectId, true);
+          }
         } catch (error) {
           App.ui.toast(error.message || '案件の保存に失敗しました。', 'error');
         } finally {
