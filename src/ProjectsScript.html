@@ -235,18 +235,46 @@
         return '<div class="row-sub project-integration-meta">' + App.helpers.escape(meta) + '</div>';
       },
 
+      defaultTargetDateInput: function () {
+        var date = new Date();
+        date.setDate(date.getDate() + 14);
+        return [
+          date.getFullYear(),
+          String(date.getMonth() + 1).padStart(2, '0'),
+          String(date.getDate()).padStart(2, '0')
+        ].join('-');
+      },
+
       createChildDraft: function () {
         var index = (App.state.projects.childDrafts || []).length + 1;
         return {
           key: 'child-' + Date.now() + '-' + Math.floor(Math.random() * 100000),
+          id: '',
           name: '',
           phaseName: 'Phase ' + index,
           sales: '',
           profit: '',
           status: '商談中',
-          completedAt: '',
+          completedAt: this.defaultTargetDateInput(),
           depositAmount: '',
-          depositReceivedAt: ''
+          depositReceivedAt: '',
+          note: ''
+        };
+      },
+
+      childDraftFromProject: function (project) {
+        return {
+          key: 'child-existing-' + String(project.id || '') + '-' + Date.now(),
+          id: project.id || '',
+          name: project.name || '',
+          phaseName: project.phaseName || '',
+          sales: project.sales === '' || project.sales == null ? '' : String(project.sales),
+          profit: project.profit === '' || project.profit == null ? '' : String(project.profit),
+          status: project.status || '商談中',
+          completedAt: App.helpers.serverDateToInput(project.completedAt || project.targetDate),
+          depositAmount: Number(project.depositAmount) > 0 ? String(project.depositAmount) : '',
+          depositReceivedAt: App.helpers.serverDateToInput(project.depositReceivedAt),
+          note: project.note || ''
         };
       },
 
@@ -273,13 +301,14 @@
         var drafts = App.state.projects.childDrafts || [];
         var target = App.ui.byId('projectChildList');
         App.ui.byId('projectChildHint').textContent = drafts.length
-          ? drafts.length + '件の子案件を親案件保存後に作成します。'
+          ? drafts.length + '件の子案件をこの画面で編集できます。'
           : '子案件を追加しない場合は、通常どおり親案件だけ保存されます。';
         target.innerHTML = drafts.length ? drafts.map(function (draft, index) {
           var key = App.helpers.escape(draft.key);
+          var isExisting = Boolean(draft.id);
           return ''
             + '<div class="phase-child-row">'
-            + '<div class="phase-child-row-head"><strong>子案件 ' + App.helpers.escape(index + 1) + '</strong><button class="icon-btn" type="button" data-child-action="remove" data-child-key="' + key + '" aria-label="子案件を削除"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg></button></div>'
+            + '<div class="phase-child-row-head"><div><strong>子案件 ' + App.helpers.escape(index + 1) + '</strong>' + (isExisting ? '<div class="row-sub mono-text">' + App.helpers.escape(draft.id) + '</div>' : '') + '</div>' + (!isExisting ? '<button class="icon-btn" type="button" data-child-action="remove" data-child-key="' + key + '" aria-label="子案件を削除"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg></button>' : '') + '</div>'
             + '<div class="field-grid field-grid-2">'
             + '<label class="field"><span class="field-label">子案件名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="name" value="' + App.helpers.escape(draft.name) + '" placeholder="例: Web制作 Phase 1"></label>'
             + '<label class="field"><span class="field-label">フェーズ名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="phaseName" value="' + App.helpers.escape(draft.phaseName) + '" placeholder="Phase 1"></label>'
@@ -290,11 +319,27 @@
                 return '<option value="' + App.helpers.escape(status) + '"' + (draft.status === status ? ' selected' : '') + '>' + App.helpers.escape(status) + '</option>';
               }).join('')
             + '</select></label>'
-            + '<label class="field"><span class="field-label">完了日</span><input class="input" type="date" data-child-key="' + key + '" data-child-field="completedAt" value="' + App.helpers.escape(draft.completedAt) + '"></label>'
+            + '<label class="field"><span class="field-label">期限</span><input class="input" type="date" data-child-key="' + key + '" data-child-field="completedAt" value="' + App.helpers.escape(draft.completedAt) + '"></label>'
             + '<label class="field"><span class="field-label">着手金</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="depositAmount" value="' + App.helpers.escape(draft.depositAmount) + '" placeholder="250000"></label>'
             + '<label class="field"><span class="field-label">着手金入金日</span><input class="input" type="date" data-child-key="' + key + '" data-child-field="depositReceivedAt" value="' + App.helpers.escape(draft.depositReceivedAt) + '"></label>'
             + '</div></div>';
         }).join('') : '';
+      },
+
+      loadChildDraftsForForm: async function (projectId) {
+        if (!projectId) return;
+        App.ui.byId('projectChildHint').textContent = '子案件を読み込み中です。';
+        try {
+          var detail = await DataLoader.getCaseDetail(projectId, { forceRefresh: true });
+          var children = (detail.integratedProjects || []).filter(function (item) {
+            return item.id !== projectId && (item.parentProjectId || item.integrationProjectId) === projectId;
+          });
+          App.state.projects.childDrafts = children.map(this.childDraftFromProject.bind(this));
+          this.renderChildDrafts();
+          App.state.projects.formSnapshot = this.serializeForm();
+        } catch (error) {
+          App.ui.byId('projectChildHint').textContent = '子案件の読み込みに失敗しました。保存前に詳細画面を再読み込みしてください。';
+        }
       },
 
       render: function () {
@@ -531,7 +576,7 @@
         return App.state.projects.formSnapshot && App.state.projects.formSnapshot !== this.serializeForm();
       },
 
-      openModal: function (project) {
+      openModal: async function (project) {
         this.renderClientOptions();
         App.state.projects.formMode = project ? 'edit' : 'create';
         App.ui.resetFieldErrors(App.ui.byId('projectForm'));
@@ -540,7 +585,7 @@
         App.ui.byId('projectName').value = project ? project.name : '';
         App.ui.byId('projectClientId').value = project ? project.clientId : '';
         App.ui.byId('projectStatus').value = project ? project.status : '商談中';
-        App.ui.byId('projectTargetDate').value = project ? App.helpers.serverDateToInput(project.targetDate || project.completedAt) : '';
+        App.ui.byId('projectTargetDate').value = project ? App.helpers.serverDateToInput(project.targetDate || project.completedAt) : this.defaultTargetDateInput();
         App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
         App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
         App.ui.byId('projectIntegrationProjectId').value = project ? (project.parentProjectId || project.integrationProjectId || '') : '';
@@ -554,6 +599,9 @@
         this.updateFormHints();
         App.state.projects.formSnapshot = this.serializeForm();
         App.ui.openModal('projectModal');
+        if (project && !App.ui.byId('projectChildSection').hidden) {
+          await this.loadChildDraftsForForm(project.id);
+        }
       },
 
       updateFormHints: function () {
@@ -654,6 +702,7 @@
           for (var i = 0; i < childDrafts.length; i += 1) {
             var child = childDrafts[i];
             await ApiClient.saveCase({
+              id: child.id || '',
               name: String(child.name || '').trim(),
               clientId: payload.clientId,
               status: child.status || '商談中',
@@ -665,7 +714,7 @@
               phaseName: String(child.phaseName || '').trim(),
               depositAmount: child.depositAmount === '' ? 0 : Number(child.depositAmount),
               depositReceivedAt: App.helpers.inputToServerDate(child.depositReceivedAt),
-              note: ''
+              note: child.note || ''
             });
           }
           await App.ui.closeModal('projectModal', true);
