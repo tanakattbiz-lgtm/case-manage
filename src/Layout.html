@@ -367,7 +367,7 @@
         <div class="inline-note" id="projectProfitHint">既定利益率と売上から自動計算します。</div>
       </section>
 
-      <section class="form-section">
+      <section class="form-section" id="projectChildSection">
         <div class="section-head">
           <div>
             <h4>親子フェーズ</h4>
@@ -397,6 +397,22 @@
           </label>
         </div>
         <div class="inline-note" id="projectIntegrationHint">親案件は空欄で総額を登録します。子フェーズは親案件IDを入れると、詳細で内訳としてまとまります。</div>
+      </section>
+
+      <section class="form-section">
+        <div class="section-head">
+          <div>
+            <h4>子案件</h4>
+            <p>親案件を保存すると、ここで追加したフェーズ案件もまとめて作成されます。</p>
+          </div>
+          <button class="btn btn-secondary btn-small" type="button" id="projectAddChild">
+            <svg class="icon icon-16" aria-hidden="true"><use href="#icon-add"></use></svg>
+            <span>子案件を追加</span>
+          </button>
+        </div>
+        <div class="phase-child-list" id="projectChildList"></div>
+        <span class="field-error" data-field-error="projectChildList"></span>
+        <div class="inline-note" id="projectChildHint">子案件を追加しない場合は、通常どおり親案件だけ保存されます。</div>
       </section>
 
       <section class="form-section">

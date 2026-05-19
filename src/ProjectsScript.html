@@ -64,6 +64,21 @@
         });
 
         App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
+        App.ui.byId('projectAddChild').addEventListener('click', function () {
+          self.addChildDraft();
+        });
+        App.ui.byId('projectChildList').addEventListener('click', function (event) {
+          var removeButton = event.target.closest('[data-child-action="remove"]');
+          if (removeButton) self.removeChildDraft(removeButton.dataset.childKey);
+        });
+        App.ui.byId('projectChildList').addEventListener('input', function (event) {
+          var field = event.target.closest('[data-child-field]');
+          if (field) self.updateChildDraft(field.dataset.childKey, field.dataset.childField, field.value);
+        });
+        App.ui.byId('projectChildList').addEventListener('change', function (event) {
+          var field = event.target.closest('[data-child-field]');
+          if (field) self.updateChildDraft(field.dataset.childKey, field.dataset.childField, field.value);
+        });
         ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectProfit', 'projectIntegrationProjectId', 'projectPhaseName', 'projectDepositAmount', 'projectDepositReceivedAt', 'projectNote'].forEach(function (id) {
           App.ui.byId(id).addEventListener('input', function () {
             self.updateFormHints();
@@ -218,6 +233,68 @@
         var meta = App.helpers.projectIntegrationMeta(project);
         if (!meta) return '';
         return '<div class="row-sub project-integration-meta">' + App.helpers.escape(meta) + '</div>';
+      },
+
+      createChildDraft: function () {
+        var index = (App.state.projects.childDrafts || []).length + 1;
+        return {
+          key: 'child-' + Date.now() + '-' + Math.floor(Math.random() * 100000),
+          name: '',
+          phaseName: 'Phase ' + index,
+          sales: '',
+          profit: '',
+          status: '商談中',
+          completedAt: '',
+          depositAmount: '',
+          depositReceivedAt: ''
+        };
+      },
+
+      addChildDraft: function () {
+        App.state.projects.childDrafts = (App.state.projects.childDrafts || []).concat([this.createChildDraft()]);
+        this.renderChildDrafts();
+      },
+
+      removeChildDraft: function (key) {
+        App.state.projects.childDrafts = (App.state.projects.childDrafts || []).filter(function (draft) {
+          return draft.key !== key;
+        });
+        this.renderChildDrafts();
+      },
+
+      updateChildDraft: function (key, field, value) {
+        (App.state.projects.childDrafts || []).forEach(function (draft) {
+          if (draft.key === key) draft[field] = value;
+        });
+        App.state.projects.formSnapshot = App.state.projects.formSnapshot || '';
+      },
+
+      renderChildDrafts: function () {
+        var drafts = App.state.projects.childDrafts || [];
+        var target = App.ui.byId('projectChildList');
+        App.ui.byId('projectChildHint').textContent = drafts.length
+          ? drafts.length + '件の子案件を親案件保存後に作成します。'
+          : '子案件を追加しない場合は、通常どおり親案件だけ保存されます。';
+        target.innerHTML = drafts.length ? drafts.map(function (draft, index) {
+          var key = App.helpers.escape(draft.key);
+          return ''
+            + '<div class="phase-child-row">'
+            + '<div class="phase-child-row-head"><strong>子案件 ' + App.helpers.escape(index + 1) + '</strong><button class="icon-btn" type="button" data-child-action="remove" data-child-key="' + key + '" aria-label="子案件を削除"><svg class="icon icon-20" aria-hidden="true"><use href="#icon-close"></use></svg></button></div>'
+            + '<div class="field-grid field-grid-2">'
+            + '<label class="field"><span class="field-label">子案件名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="name" value="' + App.helpers.escape(draft.name) + '" placeholder="例: Web制作 Phase 1"></label>'
+            + '<label class="field"><span class="field-label">フェーズ名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="phaseName" value="' + App.helpers.escape(draft.phaseName) + '" placeholder="Phase 1"></label>'
+            + '<label class="field"><span class="field-label">売上</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="sales" value="' + App.helpers.escape(draft.sales) + '" placeholder="500000"></label>'
+            + '<label class="field"><span class="field-label">利益</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="profit" value="' + App.helpers.escape(draft.profit) + '" placeholder="空欄なら自動計算"></label>'
+            + '<label class="field"><span class="field-label">ステータス</span><select class="select" data-child-key="' + key + '" data-child-field="status">'
+            + App.constants.projectStatuses.map(function (status) {
+                return '<option value="' + App.helpers.escape(status) + '"' + (draft.status === status ? ' selected' : '') + '>' + App.helpers.escape(status) + '</option>';
+              }).join('')
+            + '</select></label>'
+            + '<label class="field"><span class="field-label">完了日</span><input class="input" type="date" data-child-key="' + key + '" data-child-field="completedAt" value="' + App.helpers.escape(draft.completedAt) + '"></label>'
+            + '<label class="field"><span class="field-label">着手金</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="depositAmount" value="' + App.helpers.escape(draft.depositAmount) + '" placeholder="250000"></label>'
+            + '<label class="field"><span class="field-label">着手金入金日</span><input class="input" type="date" data-child-key="' + key + '" data-child-field="depositReceivedAt" value="' + App.helpers.escape(draft.depositReceivedAt) + '"></label>'
+            + '</div></div>';
+        }).join('') : '';
       },
 
       render: function () {
@@ -445,7 +522,8 @@
           phaseName: App.ui.byId('projectPhaseName').value,
           depositAmount: App.ui.byId('projectDepositAmount').value,
           depositReceivedAt: App.ui.byId('projectDepositReceivedAt').value,
-          note: App.ui.byId('projectNote').value
+          note: App.ui.byId('projectNote').value,
+          childDrafts: App.state.projects.childDrafts || []
         });
       },
 
@@ -470,6 +548,9 @@
         App.ui.byId('projectDepositAmount').value = project && Number(project.depositAmount) > 0 ? String(project.depositAmount) : '';
         App.ui.byId('projectDepositReceivedAt').value = project ? App.helpers.serverDateToInput(project.depositReceivedAt) : '';
         App.ui.byId('projectNote').value = project ? project.note : '';
+        App.state.projects.childDrafts = [];
+        App.ui.byId('projectChildSection').hidden = Boolean(project && (project.parentProjectId || project.integrationProjectId));
+        this.renderChildDrafts();
         this.updateFormHints();
         App.state.projects.formSnapshot = this.serializeForm();
         App.ui.openModal('projectModal');
@@ -518,6 +599,16 @@
         if (Number(App.ui.byId('projectDepositAmount').value) > 0 && !App.ui.byId('projectDepositReceivedAt').value) {
           errors.projectDepositReceivedAt = '着手金を売上計上する入金日を入力してください。';
         }
+        (App.state.projects.childDrafts || []).forEach(function (draft, index) {
+          var label = '子案件' + (index + 1);
+          if (!String(draft.name || '').trim()) {
+            errors.projectChildList = label + 'の案件名を入力してください。';
+          } else if (!String(draft.phaseName || '').trim()) {
+            errors.projectChildList = label + 'のフェーズ名を入力してください。';
+          } else if (Number(draft.depositAmount) > 0 && !draft.depositReceivedAt) {
+            errors.projectChildList = label + 'の着手金入金日を入力してください。';
+          }
+        });
         return errors;
       },
 
@@ -557,13 +648,33 @@
 
         App.ui.setBusy('projectSubmit', true, '保存中...', '保存する');
         try {
-          await ApiClient.saveCase(payload);
+          var result = await ApiClient.saveCase(payload);
+          var parentProjectId = payload.id || (result && result.id) || '';
+          var childDrafts = App.state.projects.childDrafts || [];
+          for (var i = 0; i < childDrafts.length; i += 1) {
+            var child = childDrafts[i];
+            await ApiClient.saveCase({
+              name: String(child.name || '').trim(),
+              clientId: payload.clientId,
+              status: child.status || '商談中',
+              completedAt: App.helpers.inputToServerDate(child.completedAt),
+              sales: child.sales === '' ? 0 : Number(child.sales),
+              profit: child.profit === '' ? null : Number(child.profit),
+              parentProjectId: parentProjectId,
+              integrationProjectId: parentProjectId,
+              phaseName: String(child.phaseName || '').trim(),
+              depositAmount: child.depositAmount === '' ? 0 : Number(child.depositAmount),
+              depositReceivedAt: App.helpers.inputToServerDate(child.depositReceivedAt),
+              note: ''
+            });
+          }
           await App.ui.closeModal('projectModal', true);
           App.state.projects.formSnapshot = '';
+          App.state.projects.childDrafts = [];
           App.state.dashboard.stale = true;
-          DataLoader.invalidateCases(payload.id);
+          DataLoader.invalidateCases(parentProjectId || payload.id);
           DataLoader.invalidateReports();
-          App.ui.toast('案件を保存しました。', 'success');
+          App.ui.toast(childDrafts.length ? '親案件と子案件を保存しました。' : '案件を保存しました。', 'success');
           await this.ensureLoaded(true);
         } catch (error) {
           App.ui.toast(error.message || '案件の保存に失敗しました。', 'error');
