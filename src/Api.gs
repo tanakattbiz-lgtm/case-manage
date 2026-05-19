@@ -41,7 +41,6 @@ function api_getInitialData(sessionToken) {
       master: {
         clients: getClientOptions(sessionToken),
         projectStatuses: PROJECT_STATUS_LIST,
-        projectSplitTypes: PROJECT_SPLIT_TYPE_LIST,
       },
       dashboard: dashboard,
       fetchedAt: nowDateTimeStr_(),
@@ -224,8 +223,7 @@ function caseListDtoToApiRow_(project) {
     assignee: '',
     amount: project.sales,
     grossProfit: project.profit,
-    splitType: project.splitType,
-    parentProjectId: project.parentProjectId,
+    integrationProjectId: project.integrationProjectId,
     phaseName: project.phaseName,
     depositAmount: project.depositAmount,
     dueDate: project.targetDate,

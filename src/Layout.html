@@ -370,24 +370,15 @@
       <section class="form-section">
         <div class="section-head">
           <div>
-            <h4>分割・フェーズ</h4>
-            <p>大きい案件だけ、親案件やフェーズ、着手金を管理できます。</p>
+            <h4>案件統合</h4>
+            <p>Phase 1、Phase 2 など別々に登録した案件を同じまとまりで表示できます。</p>
           </div>
         </div>
         <div class="field-grid field-grid-2">
           <label class="field">
-            <span class="field-label">分割区分</span>
-            <select class="select" id="projectSplitType">
-              <option value="通常案件">通常案件</option>
-              <option value="分割親案件">分割親案件</option>
-              <option value="フェーズ案件">フェーズ案件</option>
-            </select>
-            <span class="field-error" data-field-error="projectSplitType"></span>
-          </label>
-          <label class="field">
-            <span class="field-label">親案件ID</span>
-            <input class="input" type="text" id="projectParentProjectId" placeholder="フェーズ案件の場合のみ">
-            <span class="field-error" data-field-error="projectParentProjectId"></span>
+            <span class="field-label">統合案件ID</span>
+            <input class="input" type="text" id="projectIntegrationProjectId" placeholder="例: Phase 1 の案件ID">
+            <span class="field-error" data-field-error="projectIntegrationProjectId"></span>
           </label>
           <label class="field">
             <span class="field-label">フェーズ名</span>
@@ -400,7 +391,7 @@
             <span class="field-error" data-field-error="projectDepositAmount"></span>
           </label>
         </div>
-        <div class="inline-note" id="projectSplitHint">通常案件では分割情報は保存されません。</div>
+        <div class="inline-note" id="projectIntegrationHint">未入力なら単独案件です。統合したい案件同士で同じ統合案件IDを入れると、詳細でまとまります。</div>
       </section>
 
       <section class="form-section">

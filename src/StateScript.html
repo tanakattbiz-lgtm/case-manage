@@ -8,10 +8,9 @@
 
     App.constants = {
       storageKey: 'case-manage.auth.session',
-      cacheKey: 'case-manage.ui.cache.v2',
+      cacheKey: 'case-manage.ui.cache.v3',
       listPageSizes: [10, 20, 50],
       projectStatuses: ['商談中', '進行中', '完了', '停止', '保留'],
-      projectSplitTypes: ['通常案件', '分割親案件', 'フェーズ案件'],
       viewTitles: {
         dashboard: {
           eyebrow: '概要',
@@ -146,17 +145,11 @@
         if (status === '停止') return 'stopped';
         return 'pending';
       },
-      projectSplitLabel: function (project) {
-        var splitType = project && project.splitType ? project.splitType : '通常案件';
-        if (splitType === 'フェーズ案件') {
-          return project && project.phaseName ? project.phaseName : 'フェーズ';
-        }
-        return splitType;
-      },
-      projectSplitMeta: function (project) {
-        if (!project || !project.splitType || project.splitType === '通常案件') return '';
-        var parts = [this.projectSplitLabel(project)];
-        if (project.parentProjectId) parts.push('親 ' + project.parentProjectId);
+      projectIntegrationMeta: function (project) {
+        if (!project || (!project.integrationProjectId && !project.phaseName && !Number(project.depositAmount))) return '';
+        var parts = [];
+        if (project.phaseName) parts.push(project.phaseName);
+        if (project.integrationProjectId) parts.push('統合 ' + project.integrationProjectId);
         if (Number(project.depositAmount) > 0) parts.push('着手金 ' + this.currency(project.depositAmount));
         return parts.join(' / ');
       },

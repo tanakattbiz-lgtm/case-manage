@@ -27,23 +27,28 @@ function getProjectDetail(sessionToken, projectId) {
 
   const clientRecord = project.clientId ? findClientRecordById_(project.clientId) : null;
   const allProjects = listProjectDtos_();
+  const integrationKey = getProjectIntegrationKey_(project);
+  const integratedProjects = allProjects
+    .filter(function (item) {
+      return item.id !== project.id && integrationKey && getProjectIntegrationKey_(item) === integrationKey;
+    })
+    .sort(function (a, b) {
+      return compareProjectPhaseOrder_(a, b);
+    });
+
   const relatedProjects = allProjects
     .filter(function (item) {
       if (item.id === project.id) return false;
+      if (integrationKey && getProjectIntegrationKey_(item) === integrationKey) return false;
       const sameClient = item.clientId && item.clientId === project.clientId;
-      const childPhase = item.parentProjectId && item.parentProjectId === project.id;
-      const parentProject = project.parentProjectId && item.id === project.parentProjectId;
-      const siblingPhase = project.parentProjectId && item.parentProjectId === project.parentProjectId;
-      return sameClient || childPhase || parentProject || siblingPhase;
-    })
-    .sort(function (a, b) {
-      return getProjectRelationRank_(project, a) - getProjectRelationRank_(project, b);
+      return sameClient;
     })
     .slice(0, FIXED_VALUES.lists.detailRelatedLimit);
 
   return {
     project: project,
     client: clientRecord ? clientRecordToDto_(clientRecord) : null,
+    integratedProjects: integratedProjects,
     relatedProjects: relatedProjects,
     history: buildProjectHistory_(project),
   };
@@ -172,8 +177,7 @@ function filterProjectDtos_(items, query) {
         project.clientName,
         project.note,
         project.status,
-        project.splitType,
-        project.parentProjectId,
+        project.integrationProjectId,
         project.phaseName,
       ].join(' ').toLowerCase();
       if (joined.indexOf(normalizedQuery) === -1) return false;
@@ -261,11 +265,15 @@ function buildProjectHistory_(project) {
   });
 }
 
-function getProjectRelationRank_(baseProject, candidate) {
-  if (candidate.parentProjectId && candidate.parentProjectId === baseProject.id) return 0;
-  if (baseProject.parentProjectId && candidate.id === baseProject.parentProjectId) return 0;
-  if (baseProject.parentProjectId && candidate.parentProjectId === baseProject.parentProjectId) return 1;
-  return 2;
+function getProjectIntegrationKey_(project) {
+  if (!project) return '';
+  return normalizeString_(project.integrationProjectId || project.id);
+}
+
+function compareProjectPhaseOrder_(a, b) {
+  const phaseA = normalizeString_(a.phaseName);
+  const phaseB = normalizeString_(b.phaseName);
+  return phaseA.localeCompare(phaseB, 'ja') || String(a.id || '').localeCompare(String(b.id || ''), 'ja');
 }
 
 function projectPayloadToRecord_(payload, options) {
@@ -290,16 +298,12 @@ function projectPayloadToRecord_(payload, options) {
     : Number(requestedProfit || 0);
 
   const status = normalizeProjectStatus_(input.status);
-  const splitType = normalizeProjectSplitType_(input.splitType);
-  const parentProjectId = splitType === PROJECT_SPLIT_TYPES.phase ? normalizeString_(input.parentProjectId) : '';
-  if (parentProjectId && parentProjectId === settings.id) {
-    throwAppError_('PROJECT_PARENT_INVALID', '親案件IDに自分自身は指定できません。');
+  const integrationProjectId = normalizeString_(input.integrationProjectId || input.parentProjectId);
+  if (integrationProjectId && integrationProjectId === settings.id) {
+    throwAppError_('PROJECT_INTEGRATION_INVALID', '統合案件IDに自分自身は指定できません。');
   }
-
-  const phaseName = splitType === PROJECT_SPLIT_TYPES.normal ? '' : normalizeString_(input.phaseName).slice(0, 80);
-  const depositAmount = splitType === PROJECT_SPLIT_TYPES.normal
-    ? 0
-    : Number(normalizeNonNegativeNumber_(input.depositAmount, 0)) || 0;
+  const phaseName = normalizeString_(input.phaseName).slice(0, 80);
+  const depositAmount = Number(normalizeNonNegativeNumber_(input.depositAmount, 0)) || 0;
 
   let completedAt = normalizeDateInput_(input.completedAt);
   if (status === PROJECT_STATUSES.completed && !completedAt) {
@@ -314,8 +318,7 @@ function projectPayloadToRecord_(payload, options) {
     '売上': sales,
     '利益': resolvedProfit,
     'ステータス': status,
-    '分割区分': splitType,
-    '親案件ID': parentProjectId,
+    '統合案件ID': integrationProjectId,
     'フェーズ名': phaseName,
     '着手金': depositAmount,
     '完了日': completedAt,
@@ -339,8 +342,7 @@ function projectRecordToDto_(record) {
     profit: profit,
     marginRate: sales > 0 ? Math.round((profit / sales) * 100) : 0,
     status: normalizeProjectStatus_(record['ステータス']),
-    splitType: normalizeProjectSplitType_(record['分割区分']),
-    parentProjectId: record['親案件ID'] || '',
+    integrationProjectId: record['統合案件ID'] || record['親案件ID'] || '',
     phaseName: record['フェーズ名'] || '',
     depositAmount: Number(record['着手金']) || 0,
     completedAt: record['完了日'] || '',
@@ -361,11 +363,4 @@ function normalizeProjectStatus_(status) {
 function normalizeOptionalProjectStatus_(status) {
   const normalized = normalizeString_(status);
   return PROJECT_STATUS_LIST.indexOf(normalized) >= 0 ? normalized : '';
-}
-
-function normalizeProjectSplitType_(splitType) {
-  const normalized = normalizeString_(splitType);
-  return PROJECT_SPLIT_TYPE_LIST.indexOf(normalized) >= 0
-    ? normalized
-    : PROJECT_SPLIT_TYPES.normal;
 }
