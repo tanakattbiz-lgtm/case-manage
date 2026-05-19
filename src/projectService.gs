@@ -218,11 +218,11 @@ function buildProjectListSummary_(filteredItems, totalItems) {
   });
 
   const sales = revenueProjects.reduce(function (sum, project) {
-    return sum + (Number(project.sales) || 0);
+    return sum + sumProjectRecognizedSales_(project);
   }, 0);
 
   const profit = revenueProjects.reduce(function (sum, project) {
-    return sum + (Number(project.profit) || 0);
+    return sum + sumProjectRecognizedProfit_(project);
   }, 0);
 
   return {
@@ -295,6 +295,66 @@ function buildProjectHasChildMap_(projects) {
   }, {});
 }
 
+function buildProjectRevenueEvents_(projects) {
+  return (projects || []).reduce(function (events, project) {
+    return events.concat(buildProjectRevenueEventsForProject_(project));
+  }, []);
+}
+
+function buildProjectRevenueEventsForProject_(project) {
+  const sales = Number(project && project.sales) || 0;
+  const profit = Number(project && project.profit) || 0;
+  if (!project || sales <= 0) return [];
+
+  const events = [];
+  const depositAmount = Math.min(Number(project.depositAmount) || 0, sales);
+  if (depositAmount > 0 && project.depositReceivedAt) {
+    events.push(buildProjectRevenueEvent_(project, 'deposit', project.depositReceivedAt, depositAmount, profit, sales));
+  }
+
+  if (project.status === PROJECT_STATUSES.completed && project.completedAt) {
+    const remainingAmount = Math.max(0, sales - (project.depositReceivedAt ? depositAmount : 0));
+    if (remainingAmount > 0) {
+      events.push(buildProjectRevenueEvent_(project, 'completion', project.completedAt, remainingAmount, profit, sales));
+    }
+  }
+
+  return events;
+}
+
+function buildProjectRevenueEvent_(project, type, date, amount, projectProfit, projectSales) {
+  return {
+    project: project,
+    projectId: project.id,
+    type: type,
+    date: date,
+    amount: Math.round(Number(amount) || 0),
+    profit: projectSales > 0 ? Math.round((Number(projectProfit) || 0) * (Number(amount) || 0) / projectSales) : 0,
+    status: project.status,
+    clientName: project.clientName || '未設定',
+  };
+}
+
+function sumProjectRecognizedSales_(project) {
+  return buildProjectRevenueEventsForProject_(project).reduce(function (sum, event) {
+    return sum + (Number(event.amount) || 0);
+  }, 0);
+}
+
+function sumProjectRecognizedProfit_(project) {
+  return buildProjectRevenueEventsForProject_(project).reduce(function (sum, event) {
+    return sum + (Number(event.profit) || 0);
+  }, 0);
+}
+
+function getProjectRemainingRevenueAmount_(project) {
+  return Math.max(0, (Number(project && project.sales) || 0) - sumProjectRecognizedSales_(project));
+}
+
+function getProjectRemainingProfitAmount_(project) {
+  return Math.max(0, (Number(project && project.profit) || 0) - sumProjectRecognizedProfit_(project));
+}
+
 function projectPayloadToRecord_(payload, options) {
   const input = payload || {};
   const settings = options || {};
@@ -323,6 +383,7 @@ function projectPayloadToRecord_(payload, options) {
   }
   const phaseName = normalizeString_(input.phaseName).slice(0, 80);
   const depositAmount = Number(normalizeNonNegativeNumber_(input.depositAmount, 0)) || 0;
+  const depositReceivedAt = normalizeDateInput_(input.depositReceivedAt);
 
   let completedAt = normalizeDateInput_(input.completedAt);
   if (status === PROJECT_STATUSES.completed && !completedAt) {
@@ -340,6 +401,7 @@ function projectPayloadToRecord_(payload, options) {
     '親案件ID': parentProjectId,
     'フェーズ名': phaseName,
     '着手金': depositAmount,
+    '着手金入金日': depositReceivedAt,
     '完了日': completedAt,
     '備考': normalizeTextArea_(input.note, 1000),
     '登録日': settings.createdAt,
@@ -365,6 +427,7 @@ function projectRecordToDto_(record) {
     integrationProjectId: record['親案件ID'] || record['統合案件ID'] || '',
     phaseName: record['フェーズ名'] || '',
     depositAmount: Number(record['着手金']) || 0,
+    depositReceivedAt: record['着手金入金日'] || '',
     completedAt: record['完了日'] || '',
     targetDate: record['完了日'] || record['登録日'] || '',
     note: record['備考'] || '',

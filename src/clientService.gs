@@ -130,8 +130,10 @@ function normalizeClientListQuery_(query) {
 }
 
 function buildClientStatsMap_(projects) {
-  const revenueProjectMap = filterRevenueProjects_(projects || []).reduce(function (map, project) {
-    map[project.id] = true;
+  const recognizedMap = buildProjectRevenueEvents_(filterRevenueProjects_(projects || [])).reduce(function (map, event) {
+    if (!map[event.projectId]) map[event.projectId] = { sales: 0, profit: 0 };
+    map[event.projectId].sales += Number(event.amount) || 0;
+    map[event.projectId].profit += Number(event.profit) || 0;
     return map;
   }, {});
 
@@ -152,9 +154,9 @@ function buildClientStatsMap_(projects) {
     bucket.projectCount += 1;
     if (project.status === PROJECT_STATUSES.active) bucket.activeProjectCount += 1;
     if (project.status === PROJECT_STATUSES.completed) bucket.completedProjectCount += 1;
-    if (revenueProjectMap[project.id]) {
-      bucket.salesTotal += Number(project.sales) || 0;
-      bucket.profitTotal += Number(project.profit) || 0;
+    if (recognizedMap[project.id]) {
+      bucket.salesTotal += Number(recognizedMap[project.id].sales) || 0;
+      bucket.profitTotal += Number(recognizedMap[project.id].profit) || 0;
     }
 
     const currentDate = parseDateValue_(bucket.lastProjectAt);

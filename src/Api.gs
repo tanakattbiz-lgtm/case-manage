@@ -224,6 +224,7 @@ function caseListDtoToApiRow_(project) {
     integrationProjectId: project.integrationProjectId,
     phaseName: project.phaseName,
     depositAmount: project.depositAmount,
+    depositReceivedAt: project.depositReceivedAt,
     dueDate: project.targetDate,
     updatedAt: project.updatedAt,
   };

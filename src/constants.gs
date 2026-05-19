@@ -29,6 +29,7 @@ const PROJECT_COLUMNS = Object.freeze([
   '親案件ID',
   'フェーズ名',
   '着手金',
+  '着手金入金日',
   '完了日',
   '備考',
   '登録日',

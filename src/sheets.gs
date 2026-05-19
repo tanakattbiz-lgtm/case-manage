@@ -79,6 +79,7 @@ function migrateLegacyClientSheet_(sheet) {
 function migrateLegacyProjectSheet_(sheet) {
   migrateDraftProjectSplitSheet_(sheet);
   migrateProjectIntegrationSheet_(sheet);
+  migrateProjectDepositDateColumn_(sheet);
 
   const legacyHeaders = [
     'ID',
@@ -99,8 +100,9 @@ function migrateLegacyProjectSheet_(sheet) {
   });
   if (!isLegacy) return;
 
-  sheet.insertColumnsAfter(7, 3);
-  sheet.getRange(1, 8, 1, 3).setValues([['親案件ID', 'フェーズ名', '着手金']]);
+  sheet.insertColumnsAfter(7, 4);
+  sheet.getRange(1, 8, 1, 4).setValues([['親案件ID', 'フェーズ名', '着手金', '着手金入金日']]);
+  migrateProjectDepositDateColumn_(sheet);
 }
 
 function migrateDraftProjectSplitSheet_(sheet) {
@@ -125,6 +127,7 @@ function migrateDraftProjectSplitSheet_(sheet) {
 
   sheet.deleteColumn(8);
   sheet.getRange(1, 8).setValue('親案件ID');
+  migrateProjectDepositDateColumn_(sheet);
 }
 
 function migrateProjectIntegrationSheet_(sheet) {
@@ -132,6 +135,16 @@ function migrateProjectIntegrationSheet_(sheet) {
   const integrationColumnIndex = headers.indexOf('統合案件ID') + 1;
   if (!integrationColumnIndex) return;
   sheet.getRange(1, integrationColumnIndex).setValue('親案件ID');
+  migrateProjectDepositDateColumn_(sheet);
+}
+
+function migrateProjectDepositDateColumn_(sheet) {
+  const headers = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0];
+  if (headers.indexOf('着手金入金日') >= 0) return;
+  const depositColumnIndex = headers.indexOf('着手金') + 1;
+  if (!depositColumnIndex) return;
+  sheet.insertColumnAfter(depositColumnIndex);
+  sheet.getRange(1, depositColumnIndex + 1).setValue('着手金入金日');
 }
 
 function getProjectsSheet_() {

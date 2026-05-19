@@ -182,8 +182,8 @@
         var s = data.summary;
         App.ui.byId('reportMetrics').innerHTML = [
           this.metricCard('総案件数', App.helpers.number(s.totalCount), data.filter.label, ''),
-          this.metricCard('確定売上', App.helpers.currency(s.totalSales), '完了案件', ''),
-          this.metricCard('確定粗利', App.helpers.currency(s.totalProfit), '完了案件', ''),
+          this.metricCard('確定売上', App.helpers.currency(s.totalSales), '着手金＋完了残額', ''),
+          this.metricCard('確定粗利', App.helpers.currency(s.totalProfit), '着手金＋完了残額', ''),
           this.metricCard('平均利益率', App.helpers.pct(s.avgMargin), '確定案件平均', ''),
           this.metricCard('平均商談規模', s.avgDealSize > 0 ? App.helpers.currency(s.avgDealSize) : '—', '完了案件1件あたり', ''),
           this.metricCard('平均リードタイム', s.avgLeadDays > 0 ? s.avgLeadDays + ' 日' : '—', '受注〜完了の平均', ''),

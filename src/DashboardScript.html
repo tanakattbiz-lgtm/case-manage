@@ -220,9 +220,9 @@
         var comp = data.comparison || {};
         var compLabel = data.filter.mode === 'month' ? '前月比' : (data.filter.mode === 'year' ? '前年比' : '');
         App.ui.byId('dashboardMetrics').innerHTML = [
-          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '完了案件のみ' + (compLabel ? ' / ' + compLabel : ''),
+          this.metricCard('確定売上', App.helpers.currency(data.summary.totalSales), '着手金＋完了残額' + (compLabel ? ' / ' + compLabel : ''),
             comp.totalSales != null ? this.deltaBadge(data.summary.totalSales, comp.totalSales) : ''),
-          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '完了案件のみ' + (compLabel ? ' / ' + compLabel : ''),
+          this.metricCard('確定利益', App.helpers.currency(data.summary.totalProfit), '着手金＋完了残額' + (compLabel ? ' / ' + compLabel : ''),
             comp.totalProfit != null ? this.deltaBadge(data.summary.totalProfit, comp.totalProfit) : ''),
           this.metricCard('平均利益率', App.helpers.pct(data.summary.avgMargin), '確定案件平均' + (compLabel ? ' / ' + compLabel : ''),
             comp.avgMargin != null ? this.deltaBadgePt(data.summary.avgMargin, comp.avgMargin) : ''),

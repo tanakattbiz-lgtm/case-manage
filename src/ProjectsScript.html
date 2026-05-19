@@ -64,7 +64,7 @@
         });
 
         App.ui.byId('projectForm').addEventListener('submit', this.submit.bind(this));
-        ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectProfit', 'projectIntegrationProjectId', 'projectPhaseName', 'projectDepositAmount', 'projectNote'].forEach(function (id) {
+        ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectProfit', 'projectIntegrationProjectId', 'projectPhaseName', 'projectDepositAmount', 'projectDepositReceivedAt', 'projectNote'].forEach(function (id) {
           App.ui.byId(id).addEventListener('input', function () {
             self.updateFormHints();
           });
@@ -381,12 +381,12 @@
           return item.id !== parentId;
         });
         var childSalesTotal = childProjects.reduce(function (sum, item) { return sum + (Number(item.sales) || 0); }, 0);
-        var childDepositTotal = childProjects.reduce(function (sum, item) { return sum + (Number(item.depositAmount) || 0); }, 0);
+        var childDepositTotal = childProjects.reduce(function (sum, item) { return sum + (item.depositReceivedAt ? (Number(item.depositAmount) || 0) : 0); }, 0);
         var phaseSection = (phaseProjects.length > 1 || project.parentProjectId || project.integrationProjectId || project.phaseName)
           ? '<section class="detail-section"><h4>フェーズ内訳</h4>'
             + '<div class="stats-row"><span>親案件ID ' + App.helpers.escape(parentId) + '</span><span>親総額 ' + App.helpers.escape(App.helpers.currency((phaseProjects.find(function (item) { return item.id === parentId; }) || project).sales)) + '</span><span>子案件合計 ' + App.helpers.escape(App.helpers.currency(childSalesTotal)) + '</span><span>着手金合計 ' + App.helpers.escape(App.helpers.currency(childDepositTotal)) + '</span></div>'
             + phaseProjects.map(function (item) {
-              return '<div class="list-row"><div class="row-head"><div><strong>' + App.helpers.escape(item.name) + '</strong><div class="row-sub">' + App.helpers.escape(item.phaseName || 'フェーズ未設定') + '</div>' + App.projects.renderIntegrationBadge(item) + '</div><span class="status-pill ' + App.helpers.projectStatusClass(item.status) + '">' + App.helpers.escape(item.status) + '</span></div><div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(item.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(item.profit)) + '</span><span>着手金 ' + App.helpers.escape(App.helpers.currency(item.depositAmount)) + '</span></div></div>';
+              return '<div class="list-row"><div class="row-head"><div><strong>' + App.helpers.escape(item.name) + '</strong><div class="row-sub">' + App.helpers.escape(item.phaseName || 'フェーズ未設定') + '</div>' + App.projects.renderIntegrationBadge(item) + '</div><span class="status-pill ' + App.helpers.projectStatusClass(item.status) + '">' + App.helpers.escape(item.status) + '</span></div><div class="stats-row"><span>売上 ' + App.helpers.escape(App.helpers.currency(item.sales)) + '</span><span>利益 ' + App.helpers.escape(App.helpers.currency(item.profit)) + '</span><span>着手金 ' + App.helpers.escape(App.helpers.currency(item.depositAmount)) + '</span><span>入金 ' + App.helpers.escape(App.helpers.dateLabel(item.depositReceivedAt)) + '</span></div></div>';
             }).join('') + '</section>'
           : '';
         var integrationSection = (project.parentProjectId || project.integrationProjectId || project.phaseName || Number(project.depositAmount) > 0)
@@ -394,6 +394,7 @@
               + '<div class="detail-item"><dt>親案件ID</dt><dd>' + App.helpers.escape(project.parentProjectId || project.integrationProjectId || '未設定') + '</dd></div>'
               + '<div class="detail-item"><dt>フェーズ名</dt><dd>' + App.helpers.escape(project.phaseName || '未設定') + '</dd></div>'
               + '<div class="detail-item"><dt>着手金</dt><dd>' + App.helpers.escape(App.helpers.currency(project.depositAmount)) + '</dd></div>'
+              + '<div class="detail-item"><dt>着手金入金日</dt><dd>' + App.helpers.escape(App.helpers.dateLabel(project.depositReceivedAt)) + '</dd></div>'
               + '</dl></section>'
           : '';
         target.innerHTML = ''
@@ -443,6 +444,7 @@
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value,
           phaseName: App.ui.byId('projectPhaseName').value,
           depositAmount: App.ui.byId('projectDepositAmount').value,
+          depositReceivedAt: App.ui.byId('projectDepositReceivedAt').value,
           note: App.ui.byId('projectNote').value
         });
       },
@@ -466,6 +468,7 @@
         App.ui.byId('projectIntegrationProjectId').value = project ? (project.parentProjectId || project.integrationProjectId || '') : '';
         App.ui.byId('projectPhaseName').value = project ? (project.phaseName || '') : '';
         App.ui.byId('projectDepositAmount').value = project && Number(project.depositAmount) > 0 ? String(project.depositAmount) : '';
+        App.ui.byId('projectDepositReceivedAt').value = project ? App.helpers.serverDateToInput(project.depositReceivedAt) : '';
         App.ui.byId('projectNote').value = project ? project.note : '';
         this.updateFormHints();
         App.state.projects.formSnapshot = this.serializeForm();
@@ -512,6 +515,9 @@
         if (App.ui.byId('projectIntegrationProjectId').value.trim() === App.ui.byId('projectId').value.trim()) {
           errors.projectIntegrationProjectId = '親案件IDに自分自身は指定できません。';
         }
+        if (Number(App.ui.byId('projectDepositAmount').value) > 0 && !App.ui.byId('projectDepositReceivedAt').value) {
+          errors.projectDepositReceivedAt = '着手金を売上計上する入金日を入力してください。';
+        }
         return errors;
       },
 
@@ -545,6 +551,7 @@
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value.trim(),
           phaseName: App.ui.byId('projectPhaseName').value.trim(),
           depositAmount: App.ui.byId('projectDepositAmount').value === '' ? 0 : Number(App.ui.byId('projectDepositAmount').value),
+          depositReceivedAt: App.helpers.inputToServerDate(App.ui.byId('projectDepositReceivedAt').value),
           note: App.ui.byId('projectNote').value
         };
 

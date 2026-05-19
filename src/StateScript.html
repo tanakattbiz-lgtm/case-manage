@@ -150,7 +150,7 @@
         var parts = [];
         if (project.phaseName) parts.push(project.phaseName);
         if (project.parentProjectId || project.integrationProjectId) parts.push('親 ' + (project.parentProjectId || project.integrationProjectId));
-        if (Number(project.depositAmount) > 0) parts.push('着手金 ' + this.currency(project.depositAmount));
+        if (Number(project.depositAmount) > 0) parts.push('着手金 ' + this.currency(project.depositAmount) + (project.depositReceivedAt ? ' 入金済' : ''));
         return parts.join(' / ');
       },
       userStatusClass: function (user) {
