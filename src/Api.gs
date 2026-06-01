@@ -199,13 +199,14 @@ function api_exportCasesAsCsv(sessionToken, condition) {
     requireReadAccess_(sessionToken);
     const normalized = normalizeCaseSearchCondition_(condition || {});
     const allItems = listProjectDtos_();
-    const filteredItems = filterProjectDtos_(allItems, normalizeProjectListQuery_(normalized));
+    const filteredItems = filterProjectDtos_(allItems, normalizeProjectListQuery_(normalized))
+      .filter(function (item) { return !item.parentProjectId; });
 
     const headers = [
       '案件ID', '案件名', 'クライアント名', 'ステータス',
       '売上(円)', '利益(円)', '粗利率(%)', 'フェーズ名',
       '着手金(円)', '着手金入金日', '完了日', '対象日',
-      '親案件ID', '備考', '登録日', '更新日',
+      '備考', '登録日', '更新日',
     ];
 
     const rows = filteredItems.map(function (item) {
@@ -222,7 +223,6 @@ function api_exportCasesAsCsv(sessionToken, condition) {
         item.depositReceivedAt || '',
         item.completedAt || '',
         item.targetDate || '',
-        item.parentProjectId || '',
         item.note || '',
         item.createdAt || '',
         item.updatedAt || '',
