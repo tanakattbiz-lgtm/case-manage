@@ -194,6 +194,68 @@ function buildReportData_(projects, filter) {
   };
 }
 
+function api_exportCasesAsCsv(sessionToken, condition) {
+  try {
+    requireReadAccess_(sessionToken);
+    const normalized = normalizeCaseSearchCondition_(condition || {});
+    const allItems = listProjectDtos_();
+    const filteredItems = filterProjectDtos_(allItems, normalizeProjectListQuery_(normalized))
+      .filter(function (item) { return !item.parentProjectId; });
+
+    const headers = [
+      '案件ID', '案件名', 'クライアント名', 'ステータス',
+      '売上(円)', '利益(円)', '粗利率(%)',
+      '完了日', '完了年月', '登録日', '登録年月', 'リードタイム(日)',
+      '対象日', '備考', '更新日',
+    ];
+
+    const rows = filteredItems.map(function (item) {
+      const completedDate = parseDateValue_(item.completedAt);
+      const createdDate = parseDateValue_(item.createdAt);
+      const completedYM = completedDate
+        ? completedDate.getFullYear() + '/' + String(completedDate.getMonth() + 1).padStart(2, '0')
+        : '';
+      const createdYM = createdDate
+        ? createdDate.getFullYear() + '/' + String(createdDate.getMonth() + 1).padStart(2, '0')
+        : '';
+      const leadDays = (completedDate && createdDate)
+        ? Math.ceil((completedDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+        : '';
+      return [
+        item.id,
+        item.name,
+        item.clientName,
+        item.status,
+        item.sales != null ? item.sales : '',
+        item.profit != null ? item.profit : '',
+        item.marginRate != null ? item.marginRate : '',
+        item.completedAt || '',
+        completedYM,
+        item.createdAt || '',
+        createdYM,
+        leadDays,
+        item.targetDate || '',
+        item.note || '',
+        item.updatedAt || '',
+      ];
+    });
+
+    const csv = [headers].concat(rows).map(function (row) {
+      return row.map(function (cell) {
+        var str = cell == null ? '' : String(cell);
+        if (str.indexOf(',') >= 0 || str.indexOf('"') >= 0 || str.indexOf('\n') >= 0 || str.indexOf('\r') >= 0) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      }).join(',');
+    }).join('\r\n');
+
+    return apiSuccess_({ csv: csv, count: filteredItems.length });
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
 function normalizeCaseSearchCondition_(condition) {
   const input = condition || {};
   return {
