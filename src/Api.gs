@@ -205,8 +205,7 @@ function api_exportCasesAsCsv(sessionToken, condition) {
     const headers = [
       '案件ID', '案件名', 'クライアント名', 'ステータス',
       '売上(円)', '利益(円)', '粗利率(%)', 'フェーズ名',
-      '着手金(円)', '着手金入金日', '完了日', '対象日',
-      '備考', '登録日', '更新日',
+      '完了日', '対象日', '備考', '登録日', '更新日',
     ];
 
     const rows = filteredItems.map(function (item) {
@@ -219,8 +218,6 @@ function api_exportCasesAsCsv(sessionToken, condition) {
         item.profit != null ? item.profit : '',
         item.marginRate != null ? item.marginRate : '',
         item.phaseName || '',
-        item.depositAmount != null ? item.depositAmount : '',
-        item.depositReceivedAt || '',
         item.completedAt || '',
         item.targetDate || '',
         item.note || '',
