@@ -75,6 +75,7 @@
           button.dataset.idleLabel = idleLabel || button.textContent.trim();
         }
         button.disabled = busy;
+        button.classList.toggle('is-loading', busy);
         var label = busy ? busyLabel : (idleLabel || button.dataset.idleLabel);
         var span = button.querySelector('span');
         if (span) {
