@@ -194,6 +194,57 @@ function buildReportData_(projects, filter) {
   };
 }
 
+function api_exportCasesAsCsv(sessionToken, condition) {
+  try {
+    requireReadAccess_(sessionToken);
+    const normalized = normalizeCaseSearchCondition_(condition || {});
+    const allItems = listProjectDtos_();
+    const filteredItems = filterProjectDtos_(allItems, normalizeProjectListQuery_(normalized));
+
+    const headers = [
+      '案件ID', '案件名', 'クライアント名', 'ステータス',
+      '売上(円)', '利益(円)', '粗利率(%)', 'フェーズ名',
+      '着手金(円)', '着手金入金日', '完了日', '対象日',
+      '親案件ID', '備考', '登録日', '更新日',
+    ];
+
+    const rows = filteredItems.map(function (item) {
+      return [
+        item.id,
+        item.name,
+        item.clientName,
+        item.status,
+        item.sales != null ? item.sales : '',
+        item.profit != null ? item.profit : '',
+        item.marginRate != null ? item.marginRate : '',
+        item.phaseName || '',
+        item.depositAmount != null ? item.depositAmount : '',
+        item.depositReceivedAt || '',
+        item.completedAt || '',
+        item.targetDate || '',
+        item.parentProjectId || '',
+        item.note || '',
+        item.createdAt || '',
+        item.updatedAt || '',
+      ];
+    });
+
+    const csv = [headers].concat(rows).map(function (row) {
+      return row.map(function (cell) {
+        var str = cell == null ? '' : String(cell);
+        if (str.indexOf(',') >= 0 || str.indexOf('"') >= 0 || str.indexOf('\n') >= 0 || str.indexOf('\r') >= 0) {
+          return '"' + str.replace(/"/g, '""') + '"';
+        }
+        return str;
+      }).join(',');
+    }).join('\r\n');
+
+    return apiSuccess_({ csv: csv, count: filteredItems.length });
+  } catch (error) {
+    return apiFailure_(error);
+  }
+}
+
 function normalizeCaseSearchCondition_(condition) {
   const input = condition || {};
   return {

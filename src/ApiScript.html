@@ -207,7 +207,8 @@
       getClientDetail: function (clientId) { return App.api.rpc('api_getClientDetail', [{ clientId: clientId }]); },
       saveClient: function (payload) { return payload && payload.id ? App.api.rpc('updateClient', [payload]) : App.api.rpc('addClient', [payload || {}]); },
       deleteClient: function (clientId) { return App.api.rpc('deleteClient', [clientId]); },
-      getReportData: function (condition) { return App.api.rpc('api_getReportData', [condition || {}]); }
+      getReportData: function (condition) { return App.api.rpc('api_getReportData', [condition || {}]); },
+      exportCasesAsCsv: function (condition) { return App.api.rpc('api_exportCasesAsCsv', [condition || {}]); }
     };
 
     window.Store = {

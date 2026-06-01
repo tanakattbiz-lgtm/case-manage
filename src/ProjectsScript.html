@@ -8,6 +8,10 @@
           App.ui.byId('projectsFilterCard').classList.toggle('is-open');
         });
 
+        App.ui.byId('projectsCsvExport').addEventListener('click', function () {
+          self.exportCsv();
+        });
+
         App.ui.byId('projectsFilterForm').addEventListener('submit', function (event) {
           event.preventDefault();
           self.applyFiltersFromForm();
@@ -87,6 +91,45 @@
             self.updateFormHints();
           });
         });
+      },
+
+      exportCsv: async function () {
+        var btn = App.ui.byId('projectsCsvExport');
+        if (btn.disabled) return;
+        btn.disabled = true;
+        var originalText = btn.querySelector('span').textContent;
+        btn.querySelector('span').textContent = '出力中...';
+        try {
+          var condition = {
+            query: App.state.projects.filters.query,
+            status: App.state.projects.filters.status,
+            clientId: App.state.projects.filters.clientId,
+            dateFrom: App.state.projects.filters.dateFrom,
+            dateTo: App.state.projects.filters.dateTo,
+            scope: App.state.projects.scope,
+          };
+          var result = await ApiClient.exportCasesAsCsv(condition);
+          var bom = '﻿';
+          var blob = new Blob([bom + result.csv], { type: 'text/csv;charset=utf-8;' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          var now = new Date();
+          var stamp = now.getFullYear()
+            + String(now.getMonth() + 1).padStart(2, '0')
+            + String(now.getDate()).padStart(2, '0');
+          a.href = url;
+          a.download = '案件一覧_' + stamp + '.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          App.ui.toast(result.count + '件をCSVに出力しました。', 'success');
+        } catch (error) {
+          App.ui.toast((error && error.message) || 'CSV出力に失敗しました。', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.querySelector('span').textContent = originalText;
+        }
       },
 
       findItem: function (projectId) {
