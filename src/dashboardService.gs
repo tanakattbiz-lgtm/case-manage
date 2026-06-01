@@ -47,21 +47,20 @@ function buildDashboardSummary_(projects, filter) {
     statusSales[status] = 0;
   });
 
+  projects.forEach(function (project) {
+    const status = normalizeProjectStatus_(project.status);
+    statusCount[status] = (statusCount[status] || 0) + 1;
+    statusSales[status] = (statusSales[status] || 0) + (Number(project.sales) || 0);
+  });
+
   const monthlyMap = {};
   const clientMap = {};
   const leadTimes = [];
-
-  filtered.forEach(function (project) {
-    const status = normalizeProjectStatus_(project.status);
-    statusCount[status] = (statusCount[status] || 0) + 1;
-  });
 
   filteredRevenueEvents.forEach(function (event) {
     const project = event.project;
     const sales = Number(event.amount) || 0;
     const profit = Number(event.profit) || 0;
-    const status = normalizeProjectStatus_(event.status);
-    statusSales[status] = (statusSales[status] || 0) + sales;
 
     const bucketKey = getMonthlyBucketKeyFromDate_(event.date);
     if (!monthlyMap[bucketKey]) {
