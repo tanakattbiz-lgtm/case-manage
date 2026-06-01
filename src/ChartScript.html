@@ -95,16 +95,42 @@
           data: {
             labels: (items || []).map(function (item) { return String(item.month || '').replace('/', '.'); }),
             datasets: [
-              { type: 'bar', label: '売上', data: (items || []).map(function (item) { return item.sales || 0; }), backgroundColor: '#111827', borderRadius: 4, money: true },
-              { type: 'line', label: '粗利', data: (items || []).map(function (item) { return item.profit || 0; }), borderColor: '#166534', backgroundColor: '#166534', tension: 0.32, pointRadius: 2, money: true }
+              { type: 'bar', label: '売上', data: (items || []).map(function (item) { return item.sales || 0; }), backgroundColor: '#374151', borderRadius: 4, yAxisID: 'ySales', money: true },
+              { type: 'line', label: '粗利', data: (items || []).map(function (item) { return item.profit || 0; }), borderColor: '#16a34a', backgroundColor: 'rgba(22,163,74,0.08)', fill: true, tension: 0.3, pointRadius: 3, borderWidth: 2, yAxisID: 'yProfit', money: true }
             ]
           },
-          options: defaultOptions({
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 180 },
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 10, boxHeight: 10, color: '#6B7280', font: { size: 12 } } },
+              tooltip: {
+                callbacks: {
+                  label: function (ctx) {
+                    var label = ctx.dataset && ctx.dataset.label ? ctx.dataset.label + ': ' : '';
+                    return label + money(ctx.raw);
+                  }
+                }
+              }
+            },
             scales: {
               x: { grid: { display: false }, ticks: { color: '#6B7280' } },
-              y: { grid: { color: '#E5E7EB' }, ticks: { color: '#6B7280', callback: money } }
+              ySales: {
+                type: 'linear',
+                position: 'left',
+                grid: { color: '#E5E7EB' },
+                ticks: { color: '#6B7280', callback: money }
+              },
+              yProfit: {
+                type: 'linear',
+                position: 'right',
+                grid: { display: false },
+                ticks: { color: '#16a34a', callback: money }
+              }
             }
-          })
+          }
         });
       },
 

@@ -641,7 +641,9 @@
         if (!App.ui.byId('projectName').value.trim()) {
           errors.projectName = '案件名を入力してください。';
         }
-        if (App.ui.byId('projectIntegrationProjectId').value.trim() === App.ui.byId('projectId').value.trim()) {
+        var parentIdVal = App.ui.byId('projectIntegrationProjectId').value.trim();
+        var selfIdVal = App.ui.byId('projectId').value.trim();
+        if (parentIdVal && parentIdVal === selfIdVal) {
           errors.projectIntegrationProjectId = '親案件IDに自分自身は指定できません。';
         }
         (App.state.projects.childDrafts || []).forEach(function (draft, index) {
