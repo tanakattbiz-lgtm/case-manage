@@ -1,20 +1,19 @@
 <style>
-  /* ── KPI グリッド ───────────────────────── */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 14px;
-  }
-
+  /* ── KPI grid ── */
+  .kpi-grid   { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
   .kpi-grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .kpi-grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 
   .metric-card {
     display: grid;
-    gap: 10px;
-    padding: 20px;
+    gap: 8px;
+    padding: 18px;
     position: relative;
     overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
   }
 
   .metric-card::before {
@@ -22,7 +21,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
-    background: linear-gradient(90deg, var(--accent), transparent);
+    background: var(--line-strong);
     opacity: 0.5;
   }
 
@@ -34,7 +33,7 @@
   }
 
   .metric-card-header strong {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -43,7 +42,8 @@
 
   .metric {
     font-family: var(--font-mono);
-    font-size: clamp(22px, 2.4vw, 30px);
+    font-size: clamp(20px, 2.2vw, 26px);
+    font-weight: 700;
     line-height: 1.1;
     color: var(--text);
     letter-spacing: -0.02em;
@@ -57,119 +57,73 @@
     gap: 6px;
   }
 
-  /* デルタバッジ */
+  /* ── Delta badge ── */
   .delta-badge {
     display: inline-flex;
     align-items: center;
     gap: 2px;
-    padding: 2px 7px;
-    border-radius: 999px;
+    padding: 2px 6px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
     font-family: var(--font-mono);
     white-space: nowrap;
   }
 
-  .delta-up {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-  }
+  .delta-up   { background: var(--success-soft); color: var(--success); }
+  .delta-down { background: var(--danger-soft);  color: var(--danger); }
+  .delta-flat { background: var(--bg);           color: var(--muted);  border: 1px solid var(--line); }
 
-  .delta-down {
-    background: rgba(239, 68, 68, 0.12);
-    color: #ef4444;
-  }
+  /* ── Dashboard grids ── */
+  .dashboard-grid          { display: grid; gap: 14px; }
+  .dashboard-grid-primary  { grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.9fr); }
+  .dashboard-grid-secondary,
+  .dashboard-grid-tertiary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-  .delta-flat {
-    background: rgba(161, 161, 170, 0.12);
-    color: var(--muted);
-  }
-
-  /* ── ダッシュボードグリッド ─────────────── */
-  .dashboard-grid {
-    display: grid;
-    gap: 16px;
-  }
-
-  .dashboard-grid-primary {
-    grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
-  }
-
-  .dashboard-grid-secondary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .dashboard-grid-tertiary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  /* ── セクションカード ─────────────────── */
-  .section-card {
-    padding: 24px;
-    display: grid;
-    gap: 20px;
-  }
-
-  .section-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .section-head h3 {
-    font-size: 15px;
-    font-weight: 700;
-  }
-
-  .section-head p {
-    font-size: 12px;
-    margin-top: 3px;
-  }
-
+  /* ── Section card (dashboard override) ── */
   .section-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--muted);
+    color: var(--faint);
+    margin-bottom: 2px;
   }
 
-  /* ── チャートシェル ────────────────────── */
-  .chart-shell {
-    min-height: 300px;
-    position: relative;
-  }
+  /* ── Chart shell ── */
+  .chart-shell { min-height: 260px; position: relative; }
 
-  .chart-canvas-wrap {
-    position: relative;
-    height: 240px;
-  }
+  .chart-canvas-wrap { position: relative; height: 220px; }
 
   .chart-canvas-wrap canvas {
     width: 100% !important;
     height: 100% !important;
   }
 
-  /* ── アテンション（要確認）バー ─────────── */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  /* ── Attention bar ── */
   .attention-bar {
     display: grid;
-    gap: 12px;
-    padding: 20px 24px;
+    gap: 10px;
+    padding: 16px;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(245, 158, 11, 0.25);
-    background: rgba(245, 158, 11, 0.06);
-    backdrop-filter: blur(12px);
+    border: 1px solid #FDE68A;
+    background: var(--warning-soft);
   }
 
   .attention-bar-header {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
 
   .attention-bar-header strong {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--warning);
   }
@@ -181,25 +135,22 @@
 
   .attention-items {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 8px;
   }
 
   .attention-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border-radius: 12px;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--line);
     background: var(--panel);
     min-width: 0;
   }
 
-  .attention-item-body {
-    flex: 1;
-    min-width: 0;
-  }
+  .attention-item-body { flex: 1; min-width: 0; }
 
   .attention-item-name {
     font-size: 13px;
@@ -213,7 +164,7 @@
     font-size: 11px;
     color: var(--muted);
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     margin-top: 2px;
   }
@@ -221,84 +172,77 @@
   .days-badge {
     display: inline-flex;
     align-items: center;
-    padding: 1px 8px;
-    border-radius: 999px;
+    padding: 1px 7px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
     font-family: var(--font-mono);
-    background: rgba(245, 158, 11, 0.15);
+    background: var(--warning-soft);
     color: var(--warning);
+    border: 1px solid #FDE68A;
     white-space: nowrap;
   }
 
-  /* ── ステータスグリッド ────────────────── */
+  /* ── Status grid ── */
   .status-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
 
   .status-card {
     display: grid;
-    gap: 6px;
+    gap: 5px;
     width: 100%;
-    padding: 14px 16px;
-    border-radius: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
     border: 1px solid var(--line);
-    background: var(--panel-muted);
+    background: var(--bg);
     color: var(--text);
     text-align: left;
-    transition: all var(--transition-snappy);
+    transition: background var(--ease-snap), border-color var(--ease-snap);
   }
 
   .status-card:hover {
-    background: rgba(99, 102, 241, 0.06);
-    border-color: rgba(99, 102, 241, 0.2);
-    transform: translateY(-1px);
+    background: var(--panel);
+    border-color: var(--line-strong);
   }
 
   .status-card-label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     font-weight: 600;
   }
 
-  .status-card .metric {
-    font-size: 22px;
-  }
+  .status-card .metric { font-size: 20px; }
 
   .status-card-sales {
-    font-size: 12px;
+    font-size: 11px;
     font-family: var(--font-mono);
     color: var(--muted);
   }
 
-  /* ── ファネル ─────────────────────────── */
-  .funnel {
-    display: grid;
-    gap: 8px;
-  }
+  /* ── Funnel ── */
+  .funnel { display: grid; gap: 8px; }
 
-  .funnel-step {
-    display: grid;
-    gap: 6px;
-  }
+  .funnel-step { display: grid; gap: 5px; }
 
   .funnel-bar-wrap {
-    height: 36px;
-    border-radius: 8px;
-    background: rgba(148, 163, 184, 0.08);
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    border: 1px solid var(--line);
     overflow: hidden;
     position: relative;
   }
 
   .funnel-bar-fill {
     height: 100%;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
-    padding: 0 12px;
-    font-size: 12px;
+    padding: 0 10px;
+    font-size: 11px;
     font-weight: 700;
     color: #fff;
     font-family: var(--font-mono);
@@ -306,21 +250,18 @@
     transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .funnel-bar-fill.funnel-lead  { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-  .funnel-bar-fill.funnel-active { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
-  .funnel-bar-fill.funnel-done   { background: linear-gradient(90deg, #10b981, #34d399); }
+  .funnel-bar-fill.funnel-lead   { background: #3B82F6; }
+  .funnel-bar-fill.funnel-active { background: #0EA5E9; }
+  .funnel-bar-fill.funnel-done   { background: #16A34A; }
 
   .funnel-meta {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
   }
 
-  .funnel-meta strong {
-    color: var(--text);
-    font-weight: 600;
-  }
+  .funnel-meta strong { color: var(--text); font-weight: 600; }
 
   .funnel-convert {
     display: flex;
@@ -331,19 +272,16 @@
     padding-left: 4px;
   }
 
-  /* ── ランキングリスト ─────────────────── */
-  .ranking-list {
-    display: grid;
-    gap: 8px;
-  }
+  /* ── Ranking list ── */
+  .ranking-list { display: grid; gap: 6px; }
 
   .ranking-row {
     display: grid;
-    gap: 8px;
-    padding: 14px 16px;
+    gap: 6px;
+    padding: 12px 14px;
     border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--panel-muted);
+    border-radius: var(--radius-md);
+    background: var(--panel);
   }
 
   .ranking-row-head {
@@ -353,22 +291,19 @@
     gap: 8px;
   }
 
-  .ranking-row-name {
-    font-size: 13px;
-    font-weight: 600;
-  }
+  .ranking-row-name { font-size: 13px; font-weight: 600; }
 
   .ranking-row-sub {
     font-size: 11px;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 1px;
     font-family: var(--font-mono);
   }
 
   .ranking-bar {
-    height: 6px;
+    height: 4px;
     border-radius: 999px;
-    background: rgba(148, 163, 184, 0.1);
+    background: var(--line);
     overflow: hidden;
   }
 
@@ -376,28 +311,26 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent), #818cf8);
+    background: var(--accent);
   }
 
-  /* ── インサイト ──────────────────────── */
-  .insight-list {
-    display: grid;
-    gap: 8px;
-  }
+  /* ── Insight list ── */
+  .insight-list { display: grid; gap: 6px; }
 
   .insight-item {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
-    border-radius: 12px;
+    gap: 9px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
     font-size: 13px;
     line-height: 1.5;
+    border: 1px solid transparent;
   }
 
-  .insight-item.info    { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15); }
-  .insight-item.success { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.15); }
-  .insight-item.warning { background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15); }
+  .insight-item.info    { background: var(--info-soft);    border-color: #BFDBFE; }
+  .insight-item.success { background: var(--success-soft); border-color: #BBF7D0; }
+  .insight-item.warning { background: var(--warning-soft); border-color: #FDE68A; }
 
   .insight-dot {
     width: 6px;
@@ -411,44 +344,41 @@
   .insight-item.success .insight-dot { background: var(--success); }
   .insight-item.warning .insight-dot { background: var(--warning); }
 
-  /* ── 最近の完了案件 ─────────────────── */
-  .stack-list {
-    display: grid;
-    gap: 8px;
-  }
+  /* ── Recent projects ── */
+  .stack-list { display: grid; gap: 6px; }
 
   .recent-row {
     display: grid;
-    gap: 8px;
-    padding: 14px 16px;
+    gap: 6px;
+    padding: 12px 14px;
     border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--panel-muted);
+    border-radius: var(--radius-md);
+    background: var(--panel);
   }
 
   .row-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
   }
 
   .row-sub {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   .stats-row {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
     font-size: 12px;
     color: var(--muted);
     font-family: var(--font-mono);
   }
 
-  /* ── 顧客テーブル ───────────────────── */
+  /* ── Client table ── */
   .client-table {
     width: 100%;
     border-collapse: collapse;
@@ -457,10 +387,10 @@
 
   .client-table th {
     text-align: left;
-    padding: 8px 12px;
-    font-size: 11px;
+    padding: 6px 10px;
+    font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--muted);
     border-bottom: 1px solid var(--line);
@@ -474,83 +404,73 @@
   }
 
   .client-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
     vertical-align: middle;
   }
 
   .client-table tr:last-child td { border-bottom: none; }
 
-  .client-table tr:hover td {
-    background: rgba(99,102,241,0.04);
-  }
+  .client-table tr:hover td { background: var(--bg); }
 
   .client-rank {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 22px;
-    height: 22px;
-    border-radius: 6px;
-    font-size: 11px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 700;
     font-family: var(--font-mono);
-    background: rgba(148,163,184,0.1);
+    background: var(--bg);
     color: var(--muted);
+    border: 1px solid var(--line);
   }
 
-  .client-rank.gold   { background: rgba(245,158,11,0.15); color: #d97706; }
-  .client-rank.silver { background: rgba(148,163,184,0.15); color: #9ca3af; }
-  .client-rank.bronze { background: rgba(194,120,72,0.15); color: #b45309; }
+  .client-rank.gold   { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  .client-rank.silver { background: #F8FAFC; color: #64748B; border-color: #CBD5E1; }
+  .client-rank.bronze { background: #FFF7ED; color: #C2410C; border-color: #FED7AA; }
 
   .margin-pill {
     display: inline-flex;
     align-items: center;
-    padding: 2px 8px;
-    border-radius: 999px;
+    padding: 1px 6px;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
     font-family: var(--font-mono);
   }
 
-  .margin-high   { background: rgba(16,185,129,0.12); color: #10b981; }
-  .margin-mid    { background: rgba(59,130,246,0.1); color: #3b82f6; }
-  .margin-low    { background: rgba(239,68,68,0.1); color: #ef4444; }
+  .margin-high { background: var(--success-soft); color: var(--success); }
+  .margin-mid  { background: var(--info-soft);    color: var(--info); }
+  .margin-low  { background: var(--danger-soft);  color: var(--danger); }
 
-  /* ── レポートグリッド ─────────────── */
-  .report-grid-main {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    gap: 16px;
-  }
+  /* ── Report grids ── */
+  .report-grid-main  { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 14px; }
+  .report-grid-equal { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .report-grid-full  { display: grid; gap: 14px; }
 
-  .report-grid-equal {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-
-  .report-grid-full {
-    display: grid;
-    gap: 16px;
-  }
-
-  /* ── レスポンシブ ─────────────────── */
+  /* ── Responsive ── */
   @media (max-width: 1280px) {
-    .kpi-grid       { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .kpi-grid-4     { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .kpi-grid-6     { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .dashboard-grid-primary  { grid-template-columns: 1fr; }
-    .report-grid-main { grid-template-columns: 1fr; }
+    .kpi-grid                    { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .kpi-grid-4                  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi-grid-6                  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .dashboard-grid-primary      { grid-template-columns: 1fr; }
+    .report-grid-main            { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 1100px) {
+    .chart-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 920px) {
-    .kpi-grid, .kpi-grid-4, .kpi-grid-6 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .kpi-grid, .kpi-grid-4, .kpi-grid-6   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .dashboard-grid-secondary,
     .dashboard-grid-tertiary,
     .report-grid-equal,
-    .status-grid { grid-template-columns: 1fr; }
-    .attention-items { grid-template-columns: 1fr; }
+    .status-grid                           { grid-template-columns: 1fr; }
+    .attention-items                       { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 600px) {

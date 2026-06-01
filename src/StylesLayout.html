@@ -1,323 +1,330 @@
 <style>
+  /* ── Sidebar ── */
   .sidebar {
     position: sticky;
     top: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 260px;
+    width: 228px;
     height: 100svh;
-    padding: 28px 20px;
-    border-radius: 0;
+    padding: 14px 10px;
+    background: var(--panel);
     border-right: 1px solid var(--line);
-    background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    flex-shrink: 0;
   }
 
   .sidebar-top,
-  .sidebar-bottom {
-    display: grid;
-    gap: 28px;
-  }
+  .sidebar-bottom { display: grid; gap: 20px; }
 
   .sidebar-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
+    padding: 4px 8px;
   }
 
   .sidebar-brand-mark {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--accent), #818cf8);
-    color: #ffffff;
-    box-shadow: var(--shadow-glow);
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--accent);
+    color: #FFFFFF;
+    flex-shrink: 0;
   }
 
   .sidebar-brand strong {
     display: block;
-    font-size: 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
   }
 
   .sidebar-brand span {
-    font-size: 12px;
-    color: var(--muted);
+    font-size: 11px;
+    color: var(--faint);
   }
 
+  /* ── Nav ── */
   .sidebar-nav,
-  .mobile-drawer-nav {
-    display: grid;
-    gap: 8px;
-  }
+  .mobile-drawer-nav { display: grid; gap: 1px; }
 
   .nav-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 9px;
     width: 100%;
-    padding: 12px;
-    border-radius: 16px;
+    padding: 7px 8px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--muted);
     text-align: left;
+    font-size: 13px;
+  }
+
+  .nav-btn:hover {
+    background: var(--bg);
+    color: var(--text);
   }
 
   .nav-btn.is-active {
-    background: var(--accent-soft);
-    color: var(--accent);
+    background: var(--bg);
+    color: var(--text);
   }
 
   .nav-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(148, 163, 184, 0.08);
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    flex-shrink: 0;
   }
 
   .nav-btn.is-active .nav-icon {
-    background: #eef2f7;
+    background: var(--panel);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    color: var(--accent);
   }
 
-  .nav-copy {
-    display: grid;
-    gap: 2px;
-    flex: 1;
-  }
+  .nav-copy { display: grid; gap: 0; flex: 1; }
 
   .nav-copy strong {
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 500;
   }
 
   .nav-copy small {
     color: inherit;
-    opacity: 0.8;
+    font-size: 11px;
+    opacity: 0.65;
   }
 
   .nav-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 28px;
-    height: 28px;
-    padding: 0 8px;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 5px;
     border-radius: 999px;
-    background: rgba(15, 23, 42, 0.06);
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
-  .sidebar-card {
-    padding: 16px;
+    background: var(--panel-muted);
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: rgba(255, 255, 255, 0.03);
-  }
-
-  .sidebar-card-title {
-    margin-bottom: 12px;
-    color: var(--text);
-    font-size: 13px;
+    color: var(--muted);
+    font-size: 11px;
     font-weight: 600;
   }
 
-  .sidebar-card-text {
-    margin-top: 10px;
-    font-size: 12px;
+  /* ── Sidebar cards ── */
+  .sidebar-card {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--bg);
   }
 
+  .sidebar-card-title {
+    margin-bottom: 8px;
+    color: var(--faint);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-card-text {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--faint);
+  }
+
+  /* ── App shell ── */
   .shell {
     display: flex;
     min-height: 100svh;
+    background: var(--bg);
   }
 
   .shell-main {
     flex: 1;
     min-width: 0;
-    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
   }
 
-  .mobile-header,
-  .mobile-tabbar,
-  .mobile-actionbar,
-  .mobile-drawer {
-    display: none;
-  }
-
+  /* ── Topbar ── */
   .topbar {
     position: sticky;
     top: 0;
     z-index: 20;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 28px;
-    padding: 24px var(--content-padding) 20px;
-    background: rgba(9, 9, 11, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    gap: 20px;
+    padding: 0 28px;
+    min-height: 52px;
+    background: var(--panel);
     border-bottom: 1px solid var(--line);
   }
 
   .topbar-copy {
-    display: grid;
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     min-width: 0;
   }
 
   .page-title {
-    font-size: clamp(24px, 3vw, 34px);
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--text);
   }
 
   .page-subtitle {
-    max-width: 760px;
-    font-size: 14px;
+    max-width: 440px;
+    font-size: 12px;
+    color: var(--faint);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .topbar-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    flex-shrink: 0;
   }
 
+  /* ── User chip ── */
   .user-chip {
     display: grid;
-    gap: 2px;
-    padding: 10px 14px;
+    gap: 1px;
+    padding: 5px 9px;
     border: 1px solid var(--line);
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
   }
 
-  .user-chip strong {
-    font-size: 13px;
-  }
+  .user-chip-vertical { margin-bottom: 16px; }
 
-  .user-chip span {
-    color: var(--muted);
-    font-size: 12px;
-  }
+  .user-chip strong { font-size: 12px; font-weight: 600; }
+  .user-chip span   { color: var(--faint); font-size: 11px; }
 
-  .user-chip-vertical {
-    margin-bottom: 20px;
-  }
-
+  /* ── Content area ── */
   .content-area {
+    flex: 1;
     display: grid;
-    gap: 28px;
-    padding: 28px var(--content-padding) 40px;
+    gap: 18px;
+    padding: 20px 28px 40px;
+    align-content: start;
   }
 
-  .view {
-    display: none;
-    gap: 28px;
-  }
-
-  .view.is-active {
-    display: grid;
-  }
+  .view { display: none; gap: 18px; }
+  .view.is-active { display: grid; }
 
   .view-header {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
+    gap: 12px;
     align-items: flex-start;
     flex-wrap: wrap;
   }
 
   .view-header h2 {
-    margin-bottom: 8px;
-    font-size: 30px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 3px;
   }
 
+  /* ── Section card ── */
   .section-card {
     display: grid;
-    gap: 20px;
-    padding: 24px;
+    gap: 14px;
+    padding: 18px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
   }
 
-  .section-space {
-    margin-top: 8px;
-  }
+  .section-space { margin-top: 4px; }
 
   .section-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
   .section-head h3,
   .section-head h4 {
-    margin-bottom: 6px;
-    font-size: 18px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
   }
 
+  /* ── Segmented control ── */
   .segmented {
     display: inline-flex;
-    padding: 4px;
-    background: rgba(0, 0, 0, 0.3);
+    padding: 3px;
+    background: var(--bg);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-sm);
+    gap: 2px;
   }
 
   .segment-btn {
-    padding: 0 14px;
-    border-radius: 10px;
+    padding: 0 10px;
+    border-radius: 4px;
     background: transparent;
     color: var(--muted);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
   }
 
   .segment-btn.is-active {
-    background: #f5f7fa;
+    background: var(--panel);
     color: var(--text);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
   }
 
+  /* ── Drawer backdrop ── */
   .drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(9, 9, 11, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.32);
     z-index: 70;
   }
 
-  .desktop-only {
-    display: block;
-  }
+  /* ── Mobile – hidden by default ── */
+  .mobile-header,
+  .mobile-tabbar,
+  .mobile-actionbar,
+  .mobile-drawer { display: none; }
 
-  .mobile-only {
-    display: none !important;
-  }
+  .desktop-only { display: block; }
+  .mobile-only  { display: none !important; }
 
+  /* ── Responsive ── */
   @media (max-width: 920px) {
-    :root {
-      --content-padding: 24px;
-    }
+    :root { --content-padding: 20px; }
 
-    .sidebar {
-      display: none;
-    }
+    .sidebar { display: none; }
 
     .mobile-header,
-    .mobile-tabbar {
-      display: flex;
-    }
+    .mobile-tabbar { display: flex; }
 
     .mobile-header {
       position: sticky;
@@ -325,36 +332,39 @@
       z-index: 30;
       align-items: center;
       justify-content: space-between;
-      padding: 12px var(--content-padding);
-      border-radius: 0;
-      border-left: 0;
-      border-right: 0;
-      box-shadow: none;
-      background: rgba(9, 9, 11, 0.7);
-      backdrop-filter: blur(20px);
+      padding: 0 16px;
+      min-height: 50px;
+      background: var(--panel);
       border-bottom: 1px solid var(--line);
+      border-radius: 0;
     }
 
     .mobile-header-copy {
       display: grid;
-      gap: 2px;
+      gap: 1px;
       text-align: center;
       flex: 1;
-      margin: 0 12px;
+      margin: 0 10px;
     }
+
+    .mobile-header-copy .overline { font-size: 10px; }
 
     .topbar {
       position: relative;
       top: auto;
-      padding-top: 18px;
+      padding: 14px 20px 10px;
       background: transparent;
-      backdrop-filter: none;
       border-bottom: 0;
+      min-height: auto;
     }
 
-    .topbar-actions {
-      display: none;
+    .topbar-copy {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
     }
+
+    .topbar-actions { display: none; }
 
     .mobile-drawer {
       position: fixed;
@@ -363,12 +373,14 @@
       z-index: 75;
       display: grid;
       align-content: start;
-      gap: 20px;
-      width: min(88vw, 360px);
+      gap: 14px;
+      width: min(80vw, 300px);
       height: 100svh;
-      padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
-      border-radius: 0 24px 24px 0;
-      box-shadow: var(--shadow-md);
+      padding: 18px 12px calc(18px + env(safe-area-inset-bottom));
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      box-shadow: var(--shadow-lg);
+      border-radius: 0;
     }
 
     .mobile-drawer-head,
@@ -376,100 +388,83 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
     }
 
     .mobile-drawer-foot {
       display: grid;
-      gap: 12px;
+      gap: 8px;
       margin-top: auto;
     }
 
     .mobile-tabbar {
       position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: calc(12px + env(safe-area-inset-bottom));
+      left: 10px;
+      right: 10px;
+      bottom: calc(8px + env(safe-area-inset-bottom));
       z-index: 40;
       align-items: center;
       justify-content: space-around;
-      gap: 8px;
-      padding: 8px;
-      border-radius: 20px;
+      gap: 4px;
+      padding: 5px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
       box-shadow: var(--shadow-md);
     }
 
     .nav-tab {
       display: grid;
       place-items: center;
-      gap: 4px;
+      gap: 3px;
       flex: 1;
-      padding: 8px 4px;
-      border-radius: 14px;
+      min-height: 44px;
+      border-radius: var(--radius-sm);
       background: transparent;
       color: var(--muted);
-      font-size: 11px;
-      font-weight: 600;
+      font-size: 10px;
+      font-weight: 500;
     }
 
     .nav-tab.is-active {
-      background: var(--select-bg);
-      color: var(--accent);
+      background: var(--bg);
+      color: var(--text);
     }
 
-    .status-banner {
-      margin: 0 20px;
-    }
+    .status-banner { margin: 0 16px; }
 
     .content-area {
-      gap: 28px;
-      padding: 16px var(--content-padding) 120px;
+      gap: 14px;
+      padding: 12px 20px 110px;
     }
 
-    .desktop-only {
-      display: none !important;
-    }
-
-    .mobile-only {
-      display: block !important;
-    }
+    .desktop-only { display: none !important; }
+    .mobile-only  { display: block !important; }
 
     .mobile-actionbar {
       position: fixed;
-      left: 12px;
-      right: 12px;
-      bottom: calc(92px + env(safe-area-inset-bottom));
+      left: 10px;
+      right: 10px;
+      bottom: calc(76px + env(safe-area-inset-bottom));
       z-index: 39;
       display: none;
-      padding: 10px;
-      border-radius: 20px;
+      padding: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
       box-shadow: var(--shadow-md);
     }
 
-    .mobile-actionbar.is-visible {
-      display: block;
-    }
+    .mobile-actionbar.is-visible { display: block; }
   }
 
   @media (max-width: 640px) {
-    :root {
-      --content-padding: 16px;
-    }
+    :root { --content-padding: 16px; }
 
-    .view-header h2 {
-      font-size: 24px;
-    }
-
-    .section-card {
-      padding: 16px;
-    }
-
-    .topbar {
-      padding-inline: 16px;
-    }
-
-    .status-banner {
-      margin-inline: 16px;
-    }
+    .view-header h2 { font-size: 18px; }
+    .section-card   { padding: 14px; }
+    .topbar         { padding-inline: 16px; }
+    .status-banner  { margin-inline: 16px; }
+    .content-area   { padding-inline: 16px; }
   }
 </style>
