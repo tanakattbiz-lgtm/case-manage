@@ -344,17 +344,22 @@
         <div class="section-head">
           <div>
             <h4>売上情報</h4>
-            <p>利益が未入力の場合はクライアントの既定利益率で補完します。</p>
+            <p>売上原価か利益を入力してください。両方空欄の場合はクライアントの既定利益率で補完します。</p>
           </div>
         </div>
-        <div class="field-grid field-grid-3">
+        <div class="field-grid field-grid-2">
           <label class="field">
             <span class="field-label">売上</span>
             <input class="input" type="number" min="0" id="projectSales" placeholder="300000">
             <span class="field-error" data-field-error="projectSales"></span>
           </label>
           <label class="field">
-            <span class="field-label">利益</span>
+            <span class="field-label">売上原価 <span class="field-label-sub">（経費・外注費）</span></span>
+            <input class="input" type="number" min="0" id="projectCost" placeholder="空欄可">
+            <span class="field-error" data-field-error="projectCost"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">利益 <span class="field-label-sub">（空欄なら原価または利益率から自動計算）</span></span>
             <input class="input" type="number" min="0" id="projectProfit" placeholder="空欄なら自動計算">
             <span class="field-error" data-field-error="projectProfit"></span>
           </label>

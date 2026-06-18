@@ -25,6 +25,7 @@ const PROJECT_COLUMNS = Object.freeze([
   'クライアント名',
   '売上',
   '利益',
+  '売上原価',
   'ステータス',
   '親案件ID',
   'フェーズ名',

@@ -76,10 +76,20 @@ function migrateLegacyClientSheet_(sheet) {
   sheet.getRange(1, 3).setValue('既定利益率');
 }
 
+function migrateProjectCostColumn_(sheet) {
+  const headers = sheet.getRange(1, 1, 1, Math.max(1, sheet.getLastColumn())).getValues()[0];
+  if (headers.indexOf('売上原価') >= 0) return;
+  const profitIndex = headers.indexOf('利益') + 1;
+  if (!profitIndex) return;
+  sheet.insertColumnAfter(profitIndex);
+  sheet.getRange(1, profitIndex + 1).setValue('売上原価');
+}
+
 function migrateLegacyProjectSheet_(sheet) {
   migrateDraftProjectSplitSheet_(sheet);
   migrateProjectIntegrationSheet_(sheet);
   migrateProjectDepositDateColumn_(sheet);
+  migrateProjectCostColumn_(sheet);
 
   const legacyHeaders = [
     'ID',
