@@ -50,7 +50,12 @@ function buildDashboardSummary_(projects, filter) {
   projects.forEach(function (project) {
     const status = normalizeProjectStatus_(project.status);
     statusCount[status] = (statusCount[status] || 0) + 1;
-    statusSales[status] = (statusSales[status] || 0) + (Number(project.sales) || 0);
+    // 進行中・商談中は着手金入金済み分を差し引いた残額で集計し、パイプライン指標と一致させる
+    const isPipelineStatus = status === PROJECT_STATUSES.active || status === PROJECT_STATUSES.lead;
+    const sales = isPipelineStatus
+      ? getProjectRemainingRevenueAmount_(project)
+      : (Number(project.sales) || 0);
+    statusSales[status] = (statusSales[status] || 0) + sales;
   });
 
   const monthlyMap = {};
