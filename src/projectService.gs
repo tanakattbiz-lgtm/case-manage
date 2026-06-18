@@ -376,11 +376,13 @@ function projectPayloadToRecord_(payload, options) {
   }
 
   const sales = Number(normalizeNonNegativeNumber_(input.sales, 0)) || 0;
+  const cost = Number(normalizeNonNegativeNumber_(input.cost, 0)) || 0;
   const requestedProfit = input.profit === '' || input.profit == null ? '' : normalizeNonNegativeNumber_(input.profit, 0);
-  const defaultProfitRate = clientRecord ? normalizeClientProfitRate_(clientRecord['既定利益率']) : '';
-  const resolvedProfit = requestedProfit === ''
-    ? (defaultProfitRate === '' ? sales : Math.round(sales * Number(defaultProfitRate) / 100))
-    : Number(requestedProfit || 0);
+  const commissionRate = clientRecord ? normalizeCommissionRate_(clientRecord['販売手数料']) : '';
+  const fee = commissionRate !== '' ? Math.round(sales * Number(commissionRate) / 100) : 0;
+  const resolvedProfit = requestedProfit !== ''
+    ? Number(requestedProfit || 0)
+    : Math.max(0, sales - fee - cost);
 
   const status = normalizeProjectStatus_(input.status);
   const parentProjectId = normalizeString_(input.parentProjectId || input.integrationProjectId);
@@ -403,6 +405,7 @@ function projectPayloadToRecord_(payload, options) {
     'クライアント名': clientRecord ? clientRecord['クライアント名'] : '',
     '売上': sales,
     '利益': resolvedProfit,
+    '売上原価': cost,
     'ステータス': status,
     '親案件ID': parentProjectId,
     'フェーズ名': phaseName,
@@ -418,6 +421,7 @@ function projectPayloadToRecord_(payload, options) {
 function projectRecordToDto_(record) {
   const sales = Number(record['売上']) || 0;
   const profit = Number(record['利益']) || 0;
+  const cost = Number(record['売上原価']) || 0;
 
   return {
     id: record.ID,
@@ -427,6 +431,7 @@ function projectRecordToDto_(record) {
     clientName: record['クライアント名'] || '',
     sales: sales,
     profit: profit,
+    cost: cost,
     marginRate: sales > 0 ? Math.round((profit / sales) * 100) : 0,
     status: normalizeProjectStatus_(record['ステータス']),
     parentProjectId: record['親案件ID'] || record['統合案件ID'] || '',

@@ -83,7 +83,7 @@
           var field = event.target.closest('[data-child-field]');
           if (field) self.updateChildDraft(field.dataset.childKey, field.dataset.childField, field.value);
         });
-        ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectProfit', 'projectIntegrationProjectId', 'projectPhaseName', 'projectDepositAmount', 'projectDepositReceivedAt', 'projectNote'].forEach(function (id) {
+        ['projectName', 'projectClientId', 'projectStatus', 'projectTargetDate', 'projectSales', 'projectCost', 'projectProfit', 'projectIntegrationProjectId', 'projectPhaseName', 'projectDepositAmount', 'projectDepositReceivedAt', 'projectNote'].forEach(function (id) {
           App.ui.byId(id).addEventListener('input', function () {
             self.updateFormHints();
           });
@@ -398,6 +398,7 @@
         App.ui.byId('projectsFilterToggle').disabled = loading;
         App.ui.qq('[data-action="reload-projects"], [data-action="reset-project-filters"], #projectsFilterForm button[type="submit"]')
           .forEach(function (button) { button.disabled = loading; });
+        App.ui.byId('projectsResultsCard').classList.toggle('is-busy', loading);
         App.ui.byId('projectsScopeLabel').textContent = App.state.projects.scope && App.state.projects.scope.label
           ? 'ダッシュボード連動中: ' + App.state.projects.scope.label + (App.state.projects.scope.status ? ' / ' + App.state.projects.scope.status : '')
           : '全案件を表示中です。';
@@ -427,9 +428,13 @@
         }
 
         var summary = App.state.projects.summary || { filteredItems: 0, totalItems: 0 };
-        App.ui.byId('projectsSummary').textContent =
-          summary.filteredItems + '件 / 全' + summary.totalItems + '件'
-          + (App.state.projects.stale ? ' / キャッシュ表示' : '');
+        if (loading) {
+          App.ui.byId('projectsSummary').innerHTML = '<span class="search-status">検索中です…</span>';
+        } else {
+          App.ui.byId('projectsSummary').textContent =
+            summary.filteredItems + '件 / 全' + summary.totalItems + '件'
+            + (App.state.projects.stale ? ' / キャッシュ表示' : '');
+        }
 
         if (!App.state.projects.items.length) {
           var emptyHtml = App.ui.renderStateBlock('一致する案件はありません。', '条件を見直すか、新しい案件を追加してください。', 'info');
@@ -575,7 +580,9 @@
           + '<div class="detail-item"><dt>案件名</dt><dd>' + App.helpers.escape(project.name) + '</dd></div>'
           + '<div class="detail-item"><dt>クライアント</dt><dd>' + App.helpers.escape(project.clientName || '未設定') + '</dd></div>'
           + '<div class="detail-item"><dt>売上</dt><dd>' + App.helpers.escape(App.helpers.currency(project.sales)) + '</dd></div>'
+          + '<div class="detail-item"><dt>売上原価</dt><dd>' + (Number(project.cost) > 0 ? App.helpers.escape(App.helpers.currency(project.cost)) : '—') + '</dd></div>'
           + '<div class="detail-item"><dt>利益</dt><dd>' + App.helpers.escape(App.helpers.currency(project.profit)) + '</dd></div>'
+          + '<div class="detail-item"><dt>利益率</dt><dd>' + App.helpers.escape(App.helpers.pct(project.marginRate)) + '</dd></div>'
           + '<div class="detail-item"><dt>登録日</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(project.createdAt)) + '</dd></div>'
           + '<div class="detail-item"><dt>更新日</dt><dd>' + App.helpers.escape(App.helpers.dateTimeLabel(project.updatedAt)) + '</dd></div>'
           + '</dl></section>'
@@ -604,6 +611,7 @@
           status: App.ui.byId('projectStatus').value,
           targetDate: App.ui.byId('projectTargetDate').value,
           sales: App.ui.byId('projectSales').value,
+          cost: App.ui.byId('projectCost').value,
           profit: App.ui.byId('projectProfit').value,
           parentProjectId: App.ui.byId('projectIntegrationProjectId').value,
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value,
@@ -630,6 +638,7 @@
         App.ui.byId('projectStatus').value = project ? project.status : '商談中';
         App.ui.byId('projectTargetDate').value = project ? App.helpers.serverDateToInput(project.targetDate || project.completedAt) : this.defaultTargetDateInput();
         App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
+        App.ui.byId('projectCost').value = project && Number(project.cost) > 0 ? String(project.cost) : '';
         App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
         App.ui.byId('projectIntegrationProjectId').value = project ? (project.parentProjectId || project.integrationProjectId || '') : '';
         App.ui.byId('projectPhaseName').value = project ? (project.phaseName || '') : '';
@@ -654,16 +663,25 @@
 
       updateProfitHint: function () {
         var sales = Number(App.ui.byId('projectSales').value) || 0;
+        var cost = Number(App.ui.byId('projectCost').value) || 0;
         var clientId = App.ui.byId('projectClientId').value;
         var profit = App.ui.byId('projectProfit').value;
         var client = (App.state.projects.clientOptions || []).find(function (item) { return item.id === clientId; }) || null;
-        var hint = '既定利益率と売上から自動計算します。';
+        var commissionRate = client && client.commissionRate !== '' ? Number(client.commissionRate) : 0;
+        var hint = '利益 = 売上 − 販売手数料 − 売上原価 で自動計算します。';
         if (profit !== '') {
-          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します。';
-        } else if (sales > 0 && client && client.defaultProfitRate !== '') {
-          hint = '自動計算予定: ' + App.helpers.currency(Math.round(sales * Number(client.defaultProfitRate) / 100)) + ' (' + client.defaultProfitRate + '%)';
+          var marginPct = sales > 0 ? Math.round((Number(profit) / sales) * 100) : 0;
+          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します（利益率 ' + marginPct + '%）。';
         } else if (sales > 0) {
-          hint = '既定利益率が未設定のため、利益は売上と同額で保存されます。';
+          var fee = commissionRate > 0 ? Math.round(sales * commissionRate / 100) : 0;
+          var calcProfit = Math.max(0, sales - fee - cost);
+          var calcMargin = Math.round((calcProfit / sales) * 100);
+          var parts = ['売上 ' + App.helpers.currency(sales)];
+          if (fee > 0) parts.push('手数料 −' + App.helpers.currency(fee) + ' (' + commissionRate + '%)');
+          if (cost > 0) parts.push('原価 −' + App.helpers.currency(cost));
+          hint = parts.join(' / ') + ' → 利益 ' + App.helpers.currency(calcProfit) + '（利益率 ' + calcMargin + '%）';
+        } else if (cost > 0) {
+          hint = '売上を入力すると利益を自動計算します。';
         }
         App.ui.byId('projectProfitHint').textContent = hint;
       },
@@ -725,6 +743,7 @@
           status: App.ui.byId('projectStatus').value,
           completedAt: App.helpers.inputToServerDate(App.ui.byId('projectTargetDate').value),
           sales: App.ui.byId('projectSales').value === '' ? 0 : Number(App.ui.byId('projectSales').value),
+          cost: App.ui.byId('projectCost').value === '' ? 0 : Number(App.ui.byId('projectCost').value),
           profit: App.ui.byId('projectProfit').value === '' ? null : Number(App.ui.byId('projectProfit').value),
           parentProjectId: App.ui.byId('projectIntegrationProjectId').value.trim(),
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value.trim(),
@@ -765,7 +784,9 @@
           DataLoader.invalidateReports();
           App.ui.toast(childDrafts.length ? '親案件と子案件を保存しました。' : '案件を保存しました。', 'success');
           await this.ensureLoaded(true);
-          if (parentProjectId) {
+          // すでに詳細を開いている案件を編集した場合のみ詳細を更新する。
+          // 新規登録時に詳細モーダルを勝手に開かない。
+          if (parentProjectId && App.state.projects.selectedId === parentProjectId) {
             await this.openDetail(parentProjectId, true);
           }
         } catch (error) {

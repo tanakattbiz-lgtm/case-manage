@@ -250,7 +250,7 @@
           + '<section class="detail-section"><h4>基本情報</h4><dl class="detail-grid">'
           + '<div class="detail-item"><dt>担当者</dt><dd>' + App.helpers.escape(client.contactName || '未設定') + '</dd></div>'
           + '<div class="detail-item"><dt>電話</dt><dd>' + App.helpers.escape(client.phone || '未設定') + '</dd></div>'
-          + '<div class="detail-item"><dt>既定利益率</dt><dd>' + App.helpers.escape(client.defaultProfitRate === '' ? '未設定' : String(client.defaultProfitRate) + '%') + '</dd></div>'
+          + '<div class="detail-item"><dt>販売手数料</dt><dd>' + App.helpers.escape(client.commissionRate === '' ? '未設定' : String(client.commissionRate) + '%') + '</dd></div>'
           + '<div class="detail-item"><dt>最終案件日</dt><dd>' + App.helpers.escape(App.helpers.dateLabel(client.lastProjectAt)) + '</dd></div>'
           + '<div class="detail-item"><dt>累計売上</dt><dd>' + App.helpers.escape(App.helpers.currency(client.salesTotal)) + '</dd></div>'
           + '<div class="detail-item"><dt>累計利益</dt><dd>' + App.helpers.escape(App.helpers.currency(client.profitTotal)) + '</dd></div>'
@@ -270,7 +270,7 @@
           contactName: App.ui.byId('clientContactName').value,
           email: App.ui.byId('clientEmail').value,
           phone: App.ui.byId('clientPhone').value,
-          defaultProfitRate: App.ui.byId('clientDefaultProfitRate').value,
+          commissionRate: App.ui.byId('clientCommissionRate').value,
           note: App.ui.byId('clientNote').value
         });
       },
@@ -288,7 +288,7 @@
         App.ui.byId('clientContactName').value = client ? client.contactName : '';
         App.ui.byId('clientEmail').value = client ? client.email : '';
         App.ui.byId('clientPhone').value = client ? client.phone : '';
-        App.ui.byId('clientDefaultProfitRate').value = client && client.defaultProfitRate !== '' ? String(client.defaultProfitRate) : '';
+        App.ui.byId('clientCommissionRate').value = client && client.commissionRate !== '' ? String(client.commissionRate) : '';
         App.ui.byId('clientNote').value = client ? client.note : '';
         App.state.clients.formSnapshot = this.serializeForm();
         App.ui.openModal('clientModal');
@@ -324,7 +324,7 @@
           contactName: App.ui.byId('clientContactName').value,
           email: App.ui.byId('clientEmail').value,
           phone: App.ui.byId('clientPhone').value,
-          defaultProfitRate: App.ui.byId('clientDefaultProfitRate').value === '' ? '' : Number(App.ui.byId('clientDefaultProfitRate').value),
+          commissionRate: App.ui.byId('clientCommissionRate').value === '' ? '' : Number(App.ui.byId('clientCommissionRate').value),
           note: App.ui.byId('clientNote').value
         };
 

@@ -286,6 +286,11 @@
     font-weight: 600;
   }
 
+  .field-label-sub {
+    font-weight: 400;
+    color: var(--muted);
+  }
+
   .required-dot {
     display: inline-flex;
     align-items: center;
@@ -579,6 +584,62 @@
     border-radius: var(--radius-lg);
     background: var(--panel);
     box-shadow: var(--shadow-sm);
+  }
+
+  /* ── 検索中インジケーター ── */
+  .search-progress {
+    height: 2px;
+    margin: -6px 0 14px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 160ms ease;
+  }
+
+  .is-busy > .search-progress { opacity: 1; }
+
+  .search-progress::before {
+    content: '';
+    display: block;
+    width: 38%;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transform: translateX(-120%);
+  }
+
+  .is-busy > .search-progress::before {
+    animation: search-progress-slide 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  .is-busy .data-table tbody,
+  .is-busy .mobile-card-list {
+    opacity: 0.5;
+    transition: opacity 160ms ease;
+    pointer-events: none;
+  }
+
+  .search-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .search-status::before {
+    content: '';
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes search-progress-slide {
+    0%   { transform: translateX(-120%); }
+    60%  { transform: translateX(260%); }
+    100% { transform: translateX(260%); }
   }
 
   /* ── Modal ── */

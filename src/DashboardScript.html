@@ -228,6 +228,8 @@
             comp.avgMargin != null ? this.deltaBadgePt(data.summary.avgMargin, comp.avgMargin) : ''),
           this.metricCard('パイプライン', App.helpers.currency(data.summary.pipelineSales), '進行中 + 商談中' + (compLabel ? ' / ' + compLabel : ''),
             comp.pipelineSales != null ? this.deltaBadge(data.summary.pipelineSales, comp.pipelineSales) : ''),
+          this.metricCard('想定利益', App.helpers.currency(data.summary.pipelineProfit), '進行中 + 商談中 ／ 利益率 ' + App.helpers.pct(data.summary.pipelineMargin),
+            comp.pipelineProfit != null ? this.deltaBadge(data.summary.pipelineProfit, comp.pipelineProfit) : ''),
           this.metricCard('平均リードタイム', data.summary.avgLeadDays > 0 ? data.summary.avgLeadDays + ' 日' : '—', '受注〜完了の平均日数', ''),
         ].join('');
 
