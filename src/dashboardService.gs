@@ -185,13 +185,14 @@ function buildDashboardMetrics_(projects, revenueProjects, revenueEvents, status
     .filter(function (project) { return project.status === PROJECT_STATUSES.lead; })
     .reduce(function (sum, project) { return sum + getProjectRemainingRevenueAmount_(project); }, 0);
   const forecastSales = totalSales + activeSales + proposalSales;
-  const forecastProfit = revenueProjects
+  const pipelineProfit = revenueProjects
     .filter(function (project) {
       return project.status === PROJECT_STATUSES.active || project.status === PROJECT_STATUSES.lead;
     })
     .reduce(function (sum, project) {
       return sum + getProjectRemainingProfitAmount_(project);
-    }, totalProfit);
+    }, 0);
+  const forecastProfit = totalProfit + pipelineProfit;
   const completedCount = completedProjects.length;
   const actionCount = (statusCount[PROJECT_STATUSES.lead] || 0) + (statusCount[PROJECT_STATUSES.active] || 0);
 
@@ -202,7 +203,10 @@ function buildDashboardMetrics_(projects, revenueProjects, revenueEvents, status
     activeSales: activeSales,
     proposalSales: proposalSales,
     pipelineSales: activeSales + proposalSales,
+    pipelineProfit: pipelineProfit,
+    pipelineMargin: (activeSales + proposalSales) > 0 ? Math.round((pipelineProfit / (activeSales + proposalSales)) * 100) : 0,
     forecastSales: forecastSales,
+    forecastProfit: forecastProfit,
     forecastMargin: forecastSales > 0 ? Math.round((forecastProfit / forecastSales) * 100) : 0,
     avgMargin: totalSales > 0 ? Math.round((totalProfit / totalSales) * 100) : 0,
     avgDealSize: completedCount > 0 ? Math.round(totalSales / completedCount) : 0,
@@ -347,13 +351,15 @@ function buildPeriodComparison_(allProjects, filter) {
   const prevSales = prevEvents.reduce(function (s, event) { return s + (Number(event.amount) || 0); }, 0);
   const prevProfit = prevEvents.reduce(function (s, event) { return s + (Number(event.profit) || 0); }, 0);
   const prev = allProjects.filter(function (p) { return isProjectInDashboardPeriod_(p, prevFilter); });
-  const prevActive = prev.filter(function (p) { return p.status === PROJECT_STATUSES.active; }).reduce(function (s, p) { return s + (Number(p.sales) || 0); }, 0);
-  const prevLead = prev.filter(function (p) { return p.status === PROJECT_STATUSES.lead; }).reduce(function (s, p) { return s + (Number(p.sales) || 0); }, 0);
+  const prevPipeline = prev.filter(function (p) { return p.status === PROJECT_STATUSES.active || p.status === PROJECT_STATUSES.lead; });
+  const prevPipelineSales = prevPipeline.reduce(function (s, p) { return s + getProjectRemainingRevenueAmount_(p); }, 0);
+  const prevPipelineProfit = prevPipeline.reduce(function (s, p) { return s + getProjectRemainingProfitAmount_(p); }, 0);
   return {
     totalSales: prevSales,
     totalProfit: prevProfit,
     avgMargin: prevSales > 0 ? Math.round((prevProfit / prevSales) * 100) : 0,
-    pipelineSales: prevActive + prevLead,
+    pipelineSales: prevPipelineSales,
+    pipelineProfit: prevPipelineProfit,
   };
 }
 
