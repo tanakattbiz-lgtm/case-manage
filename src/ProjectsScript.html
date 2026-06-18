@@ -356,7 +356,7 @@
             + '<label class="field"><span class="field-label">子案件名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="name" value="' + App.helpers.escape(draft.name) + '" placeholder="例: Web制作 Phase 1"></label>'
             + '<label class="field"><span class="field-label">フェーズ名</span><input class="input" type="text" data-child-key="' + key + '" data-child-field="phaseName" value="' + App.helpers.escape(draft.phaseName) + '" placeholder="Phase 1"></label>'
             + '<label class="field"><span class="field-label">売上</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="sales" value="' + App.helpers.escape(draft.sales) + '" placeholder="500000"></label>'
-            + '<label class="field"><span class="field-label">利益</span><input class="input" type="number" min="0" data-child-key="' + key + '" data-child-field="profit" value="' + App.helpers.escape(draft.profit) + '" placeholder="空欄なら自動計算"></label>'
+            + '<label class="field"><span class="field-label">利益 <span class="field-label-sub">（自動計算）</span></span><input class="input" type="number" data-child-key="' + key + '" data-child-field="profit" value="' + App.helpers.escape(draft.profit) + '" placeholder="自動計算" disabled></label>'
             + '<label class="field"><span class="field-label">ステータス</span><select class="select" data-child-key="' + key + '" data-child-field="status">'
             + App.constants.projectStatuses.map(function (status) {
                 return '<option value="' + App.helpers.escape(status) + '"' + (draft.status === status ? ' selected' : '') + '>' + App.helpers.escape(status) + '</option>';
@@ -612,7 +612,6 @@
           targetDate: App.ui.byId('projectTargetDate').value,
           sales: App.ui.byId('projectSales').value,
           cost: App.ui.byId('projectCost').value,
-          profit: App.ui.byId('projectProfit').value,
           parentProjectId: App.ui.byId('projectIntegrationProjectId').value,
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value,
           phaseName: App.ui.byId('projectPhaseName').value,
@@ -639,7 +638,7 @@
         App.ui.byId('projectTargetDate').value = project ? App.helpers.serverDateToInput(project.targetDate || project.completedAt) : this.defaultTargetDateInput();
         App.ui.byId('projectSales').value = project ? String(project.sales || '') : '';
         App.ui.byId('projectCost').value = project && Number(project.cost) > 0 ? String(project.cost) : '';
-        App.ui.byId('projectProfit').value = project ? String(project.profit || '') : '';
+        App.ui.byId('projectProfit').value = '';
         App.ui.byId('projectIntegrationProjectId').value = project ? (project.parentProjectId || project.integrationProjectId || '') : '';
         App.ui.byId('projectPhaseName').value = project ? (project.phaseName || '') : '';
         App.ui.byId('projectDepositAmount').value = project && Number(project.depositAmount) > 0 ? String(project.depositAmount) : '';
@@ -665,17 +664,17 @@
         var sales = Number(App.ui.byId('projectSales').value) || 0;
         var cost = Number(App.ui.byId('projectCost').value) || 0;
         var clientId = App.ui.byId('projectClientId').value;
-        var profit = App.ui.byId('projectProfit').value;
         var client = (App.state.projects.clientOptions || []).find(function (item) { return item.id === clientId; }) || null;
         var commissionRate = client && client.commissionRate !== '' ? Number(client.commissionRate) : 0;
+        var fee = commissionRate > 0 ? Math.round(sales * commissionRate / 100) : 0;
+        var calcProfit = Math.max(0, sales - fee - cost);
+        var calcMargin = sales > 0 ? Math.round((calcProfit / sales) * 100) : 0;
+
+        // 利益フィールドに計算値を常時反映
+        App.ui.byId('projectProfit').value = sales > 0 ? String(calcProfit) : '';
+
         var hint = '利益 = 売上 − 販売手数料 − 売上原価 で自動計算します。';
-        if (profit !== '') {
-          var marginPct = sales > 0 ? Math.round((Number(profit) / sales) * 100) : 0;
-          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します（利益率 ' + marginPct + '%）。';
-        } else if (sales > 0) {
-          var fee = commissionRate > 0 ? Math.round(sales * commissionRate / 100) : 0;
-          var calcProfit = Math.max(0, sales - fee - cost);
-          var calcMargin = Math.round((calcProfit / sales) * 100);
+        if (sales > 0) {
           var parts = ['売上 ' + App.helpers.currency(sales)];
           if (fee > 0) parts.push('手数料 −' + App.helpers.currency(fee) + ' (' + commissionRate + '%)');
           if (cost > 0) parts.push('原価 −' + App.helpers.currency(cost));
@@ -744,7 +743,6 @@
           completedAt: App.helpers.inputToServerDate(App.ui.byId('projectTargetDate').value),
           sales: App.ui.byId('projectSales').value === '' ? 0 : Number(App.ui.byId('projectSales').value),
           cost: App.ui.byId('projectCost').value === '' ? 0 : Number(App.ui.byId('projectCost').value),
-          profit: App.ui.byId('projectProfit').value === '' ? null : Number(App.ui.byId('projectProfit').value),
           parentProjectId: App.ui.byId('projectIntegrationProjectId').value.trim(),
           integrationProjectId: App.ui.byId('projectIntegrationProjectId').value.trim(),
           phaseName: App.ui.byId('projectPhaseName').value.trim(),
@@ -767,7 +765,6 @@
               status: child.status || '商談中',
               completedAt: App.helpers.inputToServerDate(child.completedAt),
               sales: child.sales === '' ? 0 : Number(child.sales),
-              profit: child.profit === '' ? null : Number(child.profit),
               parentProjectId: parentProjectId,
               integrationProjectId: parentProjectId,
               phaseName: String(child.phaseName || '').trim(),

@@ -377,12 +377,9 @@ function projectPayloadToRecord_(payload, options) {
 
   const sales = Number(normalizeNonNegativeNumber_(input.sales, 0)) || 0;
   const cost = Number(normalizeNonNegativeNumber_(input.cost, 0)) || 0;
-  const requestedProfit = input.profit === '' || input.profit == null ? '' : normalizeNonNegativeNumber_(input.profit, 0);
   const commissionRate = clientRecord ? normalizeCommissionRate_(clientRecord['販売手数料']) : '';
   const fee = commissionRate !== '' ? Math.round(sales * Number(commissionRate) / 100) : 0;
-  const resolvedProfit = requestedProfit !== ''
-    ? Number(requestedProfit || 0)
-    : Math.max(0, sales - fee - cost);
+  const resolvedProfit = Math.max(0, sales - fee - cost);
 
   const status = normalizeProjectStatus_(input.status);
   const parentProjectId = normalizeString_(input.parentProjectId || input.integrationProjectId);
