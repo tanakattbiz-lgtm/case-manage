@@ -40,7 +40,7 @@ const PROJECT_COLUMNS = Object.freeze([
 const CLIENT_COLUMNS = Object.freeze([
   'ID',
   'クライアント名',
-  '既定利益率',
+  '販売手数料',
   '担当者',
   'メール',
   '電話',

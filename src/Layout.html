@@ -344,7 +344,7 @@
         <div class="section-head">
           <div>
             <h4>売上情報</h4>
-            <p>売上原価か利益を入力してください。両方空欄の場合はクライアントの既定利益率で補完します。</p>
+            <p>利益 = 売上 − 販売手数料 − 売上原価 で自動計算します。利益を直接入力すると優先されます。</p>
           </div>
         </div>
         <div class="field-grid field-grid-2">
@@ -369,7 +369,7 @@
             <span class="field-error" data-field-error="projectTargetDate"></span>
           </label>
         </div>
-        <div class="inline-note" id="projectProfitHint">既定利益率と売上から自動計算します。</div>
+        <div class="inline-note" id="projectProfitHint">利益 = 売上 − 販売手数料 − 売上原価 で自動計算します。</div>
       </section>
 
       <section class="form-section" id="projectChildSection">
@@ -451,7 +451,7 @@
       <div>
         <div class="overline">Client Form</div>
         <h3 id="clientModalTitle">クライアントを追加</h3>
-        <p>連絡先や既定利益率を整理し、案件入力時の手間を減らします。</p>
+        <p>連絡先や販売手数料を整理し、案件入力時の利益自動計算に使われます。</p>
       </div>
       <div class="toolbar-row">
                 <button class="icon-btn" type="button" data-modal-close="clientModal" aria-label="閉じる">
@@ -486,9 +486,9 @@
             <span class="field-error" data-field-error="clientEmail"></span>
           </label>
           <label class="field">
-            <span class="field-label">既定利益率 (%)</span>
-            <input class="input" type="number" min="0" step="0.1" id="clientDefaultProfitRate" placeholder="30">
-            <span class="field-error" data-field-error="clientDefaultProfitRate"></span>
+            <span class="field-label">販売手数料 (%) <span class="field-label-sub">（売上から差し引く手数料率）</span></span>
+            <input class="input" type="number" min="0" max="100" step="0.1" id="clientCommissionRate" placeholder="例: 22">
+            <span class="field-error" data-field-error="clientCommissionRate"></span>
           </label>
         </div>
       </section>

@@ -33,7 +33,7 @@ function getClientOptions(sessionToken) {
       return {
         id: client.id,
         name: client.name,
-        defaultProfitRate: client.defaultProfitRate,
+        commissionRate: client.commissionRate,
       };
     });
 }
@@ -192,7 +192,7 @@ function clientPayloadToRecord_(payload, options) {
   return {
     ID: settings.id,
     'クライアント名': name,
-    '既定利益率': normalizeClientProfitRate_(input.defaultProfitRate),
+    '販売手数料': normalizeCommissionRate_(input.commissionRate),
     '担当者': normalizeString_(input.contactName),
     'メール': normalizeEmail_(input.email),
     '電話': normalizeString_(input.phone),
@@ -207,7 +207,7 @@ function clientRecordToDto_(record, stats) {
     id: record.ID,
     row: record._row,
     name: record['クライアント名'] || '',
-    defaultProfitRate: normalizeClientProfitRate_(record['既定利益率']),
+    commissionRate: normalizeCommissionRate_(record['販売手数料']),
     contactName: record['担当者'] || '',
     email: record['メール'] || '',
     phone: record['電話'] || '',
@@ -222,7 +222,7 @@ function clientRecordToDto_(record, stats) {
   };
 }
 
-function normalizeClientProfitRate_(value) {
+function normalizeCommissionRate_(value) {
   if (value === '' || value == null) return '';
   const normalized = Number(value);
   if (!isFinite(normalized) || normalized < 0) return '';

@@ -73,7 +73,7 @@ function migrateLegacyClientSheet_(sheet) {
   if (!isLegacy) return;
 
   sheet.insertColumnAfter(2);
-  sheet.getRange(1, 3).setValue('既定利益率');
+  sheet.getRange(1, 3).setValue('販売手数料');
 }
 
 function migrateProjectCostColumn_(sheet) {

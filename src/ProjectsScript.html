@@ -667,20 +667,21 @@
         var clientId = App.ui.byId('projectClientId').value;
         var profit = App.ui.byId('projectProfit').value;
         var client = (App.state.projects.clientOptions || []).find(function (item) { return item.id === clientId; }) || null;
-        var hint = '売上原価か利益を入力してください。両方空欄の場合は既定利益率で補完します。';
+        var commissionRate = client && client.commissionRate !== '' ? Number(client.commissionRate) : 0;
+        var hint = '利益 = 売上 − 販売手数料 − 売上原価 で自動計算します。';
         if (profit !== '') {
           var marginPct = sales > 0 ? Math.round((Number(profit) / sales) * 100) : 0;
-          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します。（利益率 ' + marginPct + '%)';
-        } else if (cost > 0 && sales > 0) {
-          var calcProfit = Math.max(0, sales - cost);
+          hint = '手入力した利益 ' + App.helpers.currency(profit || 0) + ' を保存します（利益率 ' + marginPct + '%）。';
+        } else if (sales > 0) {
+          var fee = commissionRate > 0 ? Math.round(sales * commissionRate / 100) : 0;
+          var calcProfit = Math.max(0, sales - fee - cost);
           var calcMargin = Math.round((calcProfit / sales) * 100);
-          hint = '売上原価から自動計算: 利益 ' + App.helpers.currency(calcProfit) + '（利益率 ' + calcMargin + '%）';
+          var parts = ['売上 ' + App.helpers.currency(sales)];
+          if (fee > 0) parts.push('手数料 −' + App.helpers.currency(fee) + ' (' + commissionRate + '%)');
+          if (cost > 0) parts.push('原価 −' + App.helpers.currency(cost));
+          hint = parts.join(' / ') + ' → 利益 ' + App.helpers.currency(calcProfit) + '（利益率 ' + calcMargin + '%）';
         } else if (cost > 0) {
           hint = '売上を入力すると利益を自動計算します。';
-        } else if (sales > 0 && client && client.defaultProfitRate !== '') {
-          hint = '自動計算予定: ' + App.helpers.currency(Math.round(sales * Number(client.defaultProfitRate) / 100)) + ' (' + client.defaultProfitRate + '%)';
-        } else if (sales > 0) {
-          hint = '既定利益率が未設定のため、利益は売上と同額で保存されます。';
         }
         App.ui.byId('projectProfitHint').textContent = hint;
       },
