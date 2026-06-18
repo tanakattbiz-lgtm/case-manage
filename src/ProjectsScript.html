@@ -398,6 +398,7 @@
         App.ui.byId('projectsFilterToggle').disabled = loading;
         App.ui.qq('[data-action="reload-projects"], [data-action="reset-project-filters"], #projectsFilterForm button[type="submit"]')
           .forEach(function (button) { button.disabled = loading; });
+        App.ui.byId('projectsResultsCard').classList.toggle('is-busy', loading);
         App.ui.byId('projectsScopeLabel').textContent = App.state.projects.scope && App.state.projects.scope.label
           ? 'ダッシュボード連動中: ' + App.state.projects.scope.label + (App.state.projects.scope.status ? ' / ' + App.state.projects.scope.status : '')
           : '全案件を表示中です。';
@@ -427,9 +428,13 @@
         }
 
         var summary = App.state.projects.summary || { filteredItems: 0, totalItems: 0 };
-        App.ui.byId('projectsSummary').textContent =
-          summary.filteredItems + '件 / 全' + summary.totalItems + '件'
-          + (App.state.projects.stale ? ' / キャッシュ表示' : '');
+        if (loading) {
+          App.ui.byId('projectsSummary').innerHTML = '<span class="search-status">検索中です…</span>';
+        } else {
+          App.ui.byId('projectsSummary').textContent =
+            summary.filteredItems + '件 / 全' + summary.totalItems + '件'
+            + (App.state.projects.stale ? ' / キャッシュ表示' : '');
+        }
 
         if (!App.state.projects.items.length) {
           var emptyHtml = App.ui.renderStateBlock('一致する案件はありません。', '条件を見直すか、新しい案件を追加してください。', 'info');
@@ -765,7 +770,9 @@
           DataLoader.invalidateReports();
           App.ui.toast(childDrafts.length ? '親案件と子案件を保存しました。' : '案件を保存しました。', 'success');
           await this.ensureLoaded(true);
-          if (parentProjectId) {
+          // すでに詳細を開いている案件を編集した場合のみ詳細を更新する。
+          // 新規登録時に詳細モーダルを勝手に開かない。
+          if (parentProjectId && App.state.projects.selectedId === parentProjectId) {
             await this.openDetail(parentProjectId, true);
           }
         } catch (error) {
