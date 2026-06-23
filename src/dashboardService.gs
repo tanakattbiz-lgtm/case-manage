@@ -47,7 +47,7 @@ function buildDashboardSummary_(projects, filter) {
     statusSales[status] = 0;
   });
 
-  projects.forEach(function (project) {
+  filtered.forEach(function (project) {
     const status = normalizeProjectStatus_(project.status);
     statusCount[status] = (statusCount[status] || 0) + 1;
     // 進行中・商談中は着手金入金済み分を差し引いた残額で集計し、パイプライン指標と一致させる
@@ -133,7 +133,7 @@ function buildDashboardSummary_(projects, filter) {
     clientRanking: clientRanking,
     recent: buildRecentProjects_(revenueProjects.filter(function (project) { return isDateInDashboardPeriod_(project.completedAt, filter); })),
     insights: buildDashboardInsights_(summary, clientRanking, statusCount),
-    staleItems: buildStaleItems_(filtered),
+    staleItems: buildStaleItems_(projects),
     funnel: buildFunnelData_(statusCount, statusSales),
     comparison: buildPeriodComparison_(revenueProjects, filter),
   };
